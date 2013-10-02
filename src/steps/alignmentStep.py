@@ -2,23 +2,21 @@
 # alignmentstep.py module holds AlignmentStep class which descends from LogicalStep class.
 # It performs bwa alignment on single or paired end reads.
 #
-# Inputs: 1 or 2 fastq files, pre-registered in the experiment keyed as:
+# Inputs: 1 or 2 fastq files, pre-registered in the analysis keyed as:
 #         Single: 'fastqRep'+replicate
 #         Paired: 'fastqRd1Rep'+replicate and 'fastqRd2Rep'+replicate 
 #
-# Outputs: a single bam target which will match and experiment target keyed as:
+# Outputs: a single bam target which will match and analysis target keyed as:
 #          'bamRep'+replicate
-# Interim: A single interim file which will match and experiment target keyed as:
-#          'samRep'+replicate
 
 from src.logicalStep import LogicalStep
 from src.wrappers import bwa, samtools
 
 class AlignmentStep(LogicalStep):
 
-    def __init__(self, experiment, replicate):
+    def __init__(self, analysis, replicate):
         self.replicate = str(replicate)
-        LogicalStep.__init__(self, experiment, experiment.readType() + 'Alignment_Rep' + self.replicate)
+        LogicalStep.__init__(self, analysis, analysis.readType() + 'Alignment_Rep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
     def onRun(self):
@@ -27,23 +25,23 @@ class AlignmentStep(LogicalStep):
         samtools.version(self)
         
         # Outputs:
-        sam = self.declareTempFile('samRep' + self.replicate,ext='sam')
-        bam = self.declareExpFile('bamRep' + self.replicate,ext='bam')
+        bam = self.declareTargetFile('bamRep' + self.replicate,ext='bam')
         
         # Inputs:
-        if self.exp.readType() == 'single':
-            input1 = self.exp.getFile('fastqRep' + self.replicate)
-        elif self.exp.readType() == 'paired':
-            input1 = self.exp.getFile('fastqRd1Rep' + self.replicate)
-            input2 = self.exp.getFile('fastqRd2Rep' + self.replicate)
+        if self.ana.readType() == 'single':
+            input1 = self.ana.getFile('fastqRep' + self.replicate)
+        elif self.ana.readType() == 'paired':
+            input1 = self.ana.getFile('fastqRd1Rep' + self.replicate)
+            input2 = self.ana.getFile('fastqRd2Rep' + self.replicate)
              
-        sai1 = self.declareTempFile('sai1')  # Why isn't this a garbage file?
+        sam = self.declareGarbageFile('sam')
+        sai1 = self.declareGarbageFile('sai1')
         bwa.aln(self, input1, sai1)
         
-        if self.exp.readType() == 'single':
+        if self.ana.readType() == 'single':
             bwa.samse(self, sai1, input1, sam)
-        elif self.exp.readType() == 'paired':
-            sai2 = self.declareTempFile('sai2')  # Why isn't this a garbage file?
+        elif self.ana.readType() == 'paired':
+            sai2 = self.declareGarbageFile('sai2')
             bwa.aln(self, input2, sai2)
             bwa.sampe(self, sai1, input1, sai2, input2, sam)
 

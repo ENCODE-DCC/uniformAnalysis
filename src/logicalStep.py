@@ -1,7 +1,7 @@
 import sys, string, pprint, traceback
 import os, os.path, datetime
 from jobTree.scriptTree.target import Target
-from experiment import Experiment
+from analysis import Analysis
 from log import Log
 
 class StepError(Exception):
@@ -18,8 +18,12 @@ class LogicalStep(Target):
     '''
     
     @property
-    def exp(self):
-        return self._experiment
+    def ana(self):
+        return self._analysis
+    
+    @property
+    def analysis(self):
+        return self._analysis
     
     @property
     def dir(self):
@@ -34,21 +38,21 @@ class LogicalStep(Target):
     
     @property
     def version(self):
-        return self.exp.version + '.' + str(self._stepVersion)
+        return self.analysis.version + '.' + str(self._stepVersion)
         
-    def __init__(self, experiment, stepName, ram=1000000000, cpus=1):
+    def __init__(self, analysis, stepName, ram=1000000000, cpus=1):
         Target.__init__(self, time=0.00025, memory=ram, cpu=cpus)
         self._stepVersion = 1
-        self._experiment = experiment
-        self.expFiles = {}
-        self.tempFiles = {}
+        self._analysis = analysis
+        self.targetFiles = {}
+        self.interimFiles = {}
         self.garbageFiles = {}
         self.log = Log() # Before logfile is declared, log print to stdout
         self._stepName = stepName # descendent classes MUST fill in the _stepName
         self._err = -1 # descendent classes should set this to returns from ganular steps
         self._status = 'Init' # Init/Running/Success/Fail
         self._dir = None # needs to make temp directory for itself
-        self.exp.registerStep(self)  # Experiment may manage multiple steps simultaneously
+        self.analysis.registerStep(self)  # Analysis may manage multiple steps simultaneously
 
     def __str__(self):
         return pprint.pformat(self)
@@ -81,7 +85,7 @@ class LogicalStep(Target):
         self._status = 'Success'
         self._err = 0 # by definition
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
-        self.exp.onSucceed(self)
+        self.analysis.onSucceed(self)
         
     def fail(self, message):
         raise StepError(message)
@@ -90,7 +94,7 @@ class LogicalStep(Target):
         self._status = 'Fail'
         self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "'\n")
         self.log.out(traceback.format_exc())
-        self.exp.onFail(self)
+        self.analysis.onFail(self)
 
             
     def status(self):
@@ -101,30 +105,30 @@ class LogicalStep(Target):
         
     def error(self):
         '''
-        Returns the last error code saved savedtemporary 'logical step' directory, creating it if necessary
+        Returns the last error code saved from a granular step
         '''
         return self._err
         
     def createDir(self):
         '''Creates logical step directory'''
-        self._dir = self.exp.createTempDir(self.name)
+        self._dir = self.analysis.createTempDir(self.name)
        
-    def declareExpFile(self, name, ext=None):
+    def declareTargetFile(self, name, ext=None):
         '''
         Reserves name for a file we want to keep permanantly, and returns a
         fully qualified filename in the local temp dir
         '''
-        self.expFiles[name] = self.makeFilePath(name, ext)
-        return self.expFiles[name]
+        self.targetFiles[name] = self.makeFilePath(name, ext)
+        return self.targetFiles[name]
         
-    def declareTempFile(self, name, ext=None):
+    def declareInterimFile(self, name, ext=None):
         '''
         Reserves name for a file we want to keep for part or all of the
         duration of the pipeline before being deleted, and returns a fully
         qualified filename in the local temp dir
         '''
-        self.tempFiles[name] = self.makeFilePath(name, ext)
-        return self.tempFiles[name]
+        self.interimFiles[name] = self.makeFilePath(name, ext)
+        return self.interimFiles[name]
         
     def declareGarbageFile(self, name, ext=None):
         '''
@@ -150,19 +154,19 @@ class LogicalStep(Target):
         self.log.empty()  # Logical step log always starts empty!
         return self.log.file()
         
-    def convertExpFileToTarget(self, name, pathToTarget):
+    def convertFileToTarget(self, name, pathToTarget):
         '''
-        Hard links an experiment file to a target outside the logical step directory.
+        Hard links a 'target' file to the analysis 'target' file in the analysis directory.
         This is expected when a logical step succeeds.
         '''
-        return self.exp.linkOrCopy(self.expFiles[name], pathToTarget, log=self.log)
+        return self.analysis.linkOrCopy(self.targetFiles[name], pathToTarget, log=self.log)
 
-    def convertTempFileToInterim(self, name, pathToInterim):
+    def convertFileToInterim(self, name, pathToInterim):
         '''
-        Hard links a temporary file to an 'interim' experiment file outside the step directory.
+        Hard links a 'interim' file to the analysis 'interim' file in the analysis directory.
         This is expected when a logical step succeeds.
         '''
-        return self.exp.linkOrCopy(self.tempFiles[name], pathToInterim, log=self.log)
+        return self.analysis.linkOrCopy(self.interimFiles[name], pathToInterim, log=self.log)
 
     def cleanup(self):
         '''
@@ -170,8 +174,8 @@ class LogicalStep(Target):
         This is expected when a logical step succeeds.
         '''
         if self._dir != None:
-            self.exp.runCmd('rm -rf ' + self._dir)
-        #self._experiment.removeStep(self)  # Do we want to do this?
+            self.analysis.runCmd('rm -rf ' + self._dir)
+        #self._analysis.removeStep(self)  # Do we want to do this?
         
     def makeFilePath(self, name, ext=None):
         '''
@@ -193,16 +197,16 @@ if __name__ == '__main__':
     Command-line testing
     '''
     print "======== begin '" + sys.argv[0] + "' test ========"
-    e3 = Experiment('/hive/users/tdreszer/galaxy/galaxy-dist/tools/encode/settingsE3.txt',
-                      experimentId='command-line test')
+    e3 = Analysis('/hive/users/tdreszer/galaxy/galaxy-dist/tools/encode/settingsE3.txt',
+                      analysisId='command-line test')
     samInterim = e3.registerInterimOutput('sam',e3.dir + 'rep1Interim.sam')
     bamTarget = e3.registerTargetOutput( 'bam',e3.dir + 'rep1Target.bam')
     
     ls = LogicalStep(e3,stepName='test Logical Step') 
     sai1 = ls.declareGarbageFile('read1','sai')
     sai2 = ls.declareGarbageFile('read2','sai')
-    sam = ls.declareTempFile('sam')
-    bam = ls.declareExpFile('bam')
+    sam = ls.declareInterimFile('sam')
+    bam = ls.declareAnalysisFile('bam')
     ls.run() # should create temp dir, logFile etc.
     # fake some outputs
     e3.getCmdOut('echo sai1 > '+ sai1,logResult=True, log=ls.log)
@@ -217,7 +221,7 @@ if __name__ == '__main__':
     # try success:
     ls.success()
     
-    # Note this test avoids writting to a exp level log!
+    # Note this test avoids writting to a analysis level log!
     cmd = 'ls -l '+ e3.dir
     print '\n> ' + cmd
     print e3.getCmdOut(cmd,logResult=False)

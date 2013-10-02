@@ -15,17 +15,17 @@
 # # 2013-09-18 12:30:03 'samtools view' returned 0
 
 import datetime
-from src.logicalstep import StepError
+from src.logicalStep import StepError
 
 def version(step, logOut=True):
     '''
     Returns tool version.  Will log to stepLog unless requested not to.
     '''
-    version = step.exp.getCmdOut(step.exp.getToolPath('samtools')+' 2>&1 | grep Version', \
+    version = step.ana.getCmdOut(step.ana.getToolPath('samtools')+' 2>&1 | grep Version', \
                                  dryRun=False,logCmd=False)
     version = version[ len('Version: '): ]  # Clip off the version label
-    expected = step.exp.getSetting('samtoolsVersion',version) # Not in settings then not enforced!
-    if step.exp.strict and version != expected:
+    expected = step.ana.getSetting('samtoolsVersion',version) # Not in settings then not enforced!
+    if step.ana.strict and version != expected:
         raise Exception("Expecting samtools [version: "+expected+"], " + \
                         "but found [version: "+version+"]")
     if logOut:
@@ -37,12 +37,12 @@ def samToBam(step, input, output):
     Alignment step.
     '''
     cmd = '{samtools} view -bt {ref} {input} -o {output}'.format( \
-          samtools=step.exp.getToolPath('samtools'), ref=step.exp.getSetting('chromInfoFile'), \
+          samtools=step.ana.getToolPath('samtools'), ref=step.ana.getSetting('chromInfoFile'), \
           input=input, output=output)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'samtools' sam-to-bam conversion begins...")
-    step.err = step.exp.runCmd(cmd, log=step.log)
+    step.err = step.ana.runCmd(cmd, log=step.log)
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'samtools' sam-to-bam conversion returned " + str(step.err))
     if step.err != 0:
@@ -52,11 +52,11 @@ def bamSize(step, bam):
     '''
     Returns size of a bam.
     '''
-    cmd = '{samtools} view -c {bam}'.format( samtools=step.exp.getToolPath('samtools'), bam=bam)
+    cmd = '{samtools} view -c {bam}'.format( samtools=step.ana.getToolPath('samtools'), bam=bam)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'samtools' bam size begins...")
-    bamSizeStr = step.exp.getCmdOut(cmd, log=step.log)
+    bamSizeStr = step.ana.getCmdOut(cmd, log=step.log)
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'samtools' bam size returned " + bamSizeStr)
     # TODO: no err code returned.  Use try?
@@ -65,7 +65,7 @@ def bamSize(step, bam):
     try:
         return int( bamSizeStr )
     except:
-        if step.exp.dryRun():
+        if step.ana.dryRun():
             return 42850405
         raise StepError('bamSize')
 

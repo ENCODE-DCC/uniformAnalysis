@@ -5,14 +5,14 @@
 # Settings required: fastqcPath (or toolsPath)
 
 import datetime
-from src.logicalstep import StepError
+from src.logicalStep import StepError
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    version = step.exp.getCmdOut(step.exp.getToolPath('fastqc')+" -version | awk '{print $2}'",\
+    version = step.ana.getCmdOut(step.ana.getToolPath('fastqc') + " -version | awk '{print $2}'", \
                                  dryRun=False,logCmd=False)
-    expected = step.exp.getSetting('fastqcVersion',version) # Not in settings then not enforced!
-    if step.exp.strict and version != expected:
+    expected = step.ana.getSetting('fastqcVersion',version) # Not in settings: not enforced!
+    if step.ana.strict and version != expected:
         raise Exception("Expecting fastqc [version: "+expected+"], " + \
                         "but found [version: "+version+"]")
     if logOut:
@@ -22,10 +22,10 @@ def version(step, logOut=True):
 def validate(step, input, outDir):
     '''Validation'''
     cmd = '{fastqc} {fastq} --extract -t 4 -q -o {outDir}'.format( \
-          fastqc=step.exp.getToolPath('fastqc'), fastq=input, outDir=outDir)
+          fastqc=step.ana.getToolPath('fastqc'), fastq=input, outDir=outDir)
 
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'fastqc' begins...")
-    step.err = step.exp.runCmd(cmd, log=step.log) # stdout goes to file
+    step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'fastqc' " + \
                  "returned " + str(step.err))
     if step.err != 0:

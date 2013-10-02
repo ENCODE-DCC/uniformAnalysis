@@ -7,38 +7,38 @@ from log import Log
 class Analysis(object):
     '''
     This is the interface for an instantiation of the Encode Analysis 
-    pipeline on a single experiment, which has two specific implementations:
-    - EncodeExperiment: for use in the official pipeline run by ENCODE
-    - GalaxyExperiment: code run by the Galaxy system for end-users
+    pipeline on a single analysis, which has two specific implementations:
+    - EncodeAnalysis: for use in the official pipeline run by ENCODE
+    - GalaxyAnalysis: code run by the Galaxy system for end-users
     '''
     
     @property
-    def expId(self):
-        return self._experimentId
+    def analysisId(self):
+        return self._analysisId
         
     @property
     def dir(self):
-        '''Returns the experiment directory'''
-        if self._expDir == None:
+        '''Returns the analysis directory'''
+        if self._analysisDir == None:
             raise Exception("Trying to retrieve directory before its been created")
-        return self._expDir
+        return self._analysisDir
     
     @property
     def version(self):
         return str(self._pipelineVersion)
         
-    def __init__(self, settingsFile, experimentId=None):
+    def __init__(self, settingsFile, analysisId=None):
         '''
         Takes in a settings file which contains various paths to tools, a temp
-        directory and other configuration setting for all experiments.  Optionally
-        a manifest file for experiment specific details (relevant input files and 
-        experiment ID) may be provided.  If no manifest file is provided, those
-        details will have to be "registered" to the experiment, one by one.
+        directory and other configuration setting for all analyses.  Optionally
+        a manifest file for analysis specific details (relevant input files and 
+        analysis ID) may be provided.  If no manifest file is provided, those
+        details will have to be "registered" to the analysis, one by one.
         '''
-        self._pipelineVersion  = 1
-        self._experimentId    = experimentId
+        self._pipelineVersion = 1
+        self._analysisId      = analysisId
         self.log              = Log() # Before logfile is declared, log print to stdout
-        self._expDir          = None
+        self._analysisDir     = None
         self._tmpDirs         = {}  # Note: these should be replaced with _steps[0].stepDir()
         self._steps           = []  # Keep track of ordered logical steps?
         self._inputFiles      = {}
@@ -106,17 +106,17 @@ class Analysis(object):
             # is missing, then exception will already have the correct message.
             return self.getPath(toolName + 'Path',alt='toolPath') + toolName
         
-    def createExpDir(self):
-        '''creates experiment level directory'''
-        if self.expId == None:
-            raise Exception('This experiment has not been registered or defined in manifest')    
-        if self._expDir != None:
-            raise Exception('The directory for this experiment has already been created')
+    def createAnalysisDir(self):
+        '''creates analysis level directory'''
+        if self.analysisId == None:
+            raise Exception('This analysis has not been registered or defined in manifest')    
+        if self._analysisDir != None:
+            raise Exception('The directory for this analysis has already been created')
             
-        self._expDir = self.getPath('tmpDir') + self.expId.replace(' ','_') + '/'
-        if not os.path.isdir(self._expDir):
-            os.makedirs(self._expDir)
-        return self._expDir
+        self._analysisDir = self.getPath('tmpDir') + self.analysisId.replace(' ','_') + '/'
+        if not os.path.isdir(self._analysisDir):
+            os.makedirs(self._analysisDir)
+        return self._analysisDir
         
     def createTempDir(self, name):
         '''
@@ -124,7 +124,7 @@ class Analysis(object):
         '''
         # Used for logicalStep dirs. Since steps could run in parallel, tmpDirs are in dict.
         if name in self._tmpDirs:
-            raise Exception(name + ' already exists as a temporary directory in this experiment')
+            raise Exception(name + ' already exists as a temporary directory in this analysis')
             
         tmpdir = self.dir + name.replace(' ','_') + '/'
         if not os.path.isdir(tmpdir):
@@ -135,7 +135,7 @@ class Analysis(object):
     def registerInputFile(self, name, fileWithPath=None):
         '''
         Registers a single input file by name.  Retrieve again by name.
-        Input files reside outside the experiment directory and are input to steps.
+        Input files reside outside the analysis directory and are input to steps.
         '''
         if fileWithPath != None:
             self._inputFiles[name] = fileWithPath
@@ -148,8 +148,8 @@ class Analysis(object):
         '''
         Registers a single interim output file by name. Retrieve again by name.
         Interim outputs are generated by some steps to be used by other steps.
-        They reside in the experiment directory and should be deleted when the 
-        experiment concludes.
+        They reside in the analysis directory and should be deleted when the 
+        analysis concludes.
         '''
         if fileNoPath != None:
             self._interimFiles[name] = self.dir + fileNoPath
@@ -161,8 +161,8 @@ class Analysis(object):
     def registerTargetOutput(self, name, outputNoPath=None):
         '''
         Registers a single target output (typically a file) by name. Retrieve again by name.
-        Target outputs are the result of successful steps.  They are written to the experiment
-        directory and are expected to be hard-linked outside of it when the experiment completes.
+        Target outputs are the result of successful steps.  They are written to the analysis
+        directory and are expected to be hard-linked outside of it when the analysis completes.
         '''
         if outputNoPath != None:
             self._targetOutput[name] = self.dir + outputNoPath
@@ -175,7 +175,7 @@ class Analysis(object):
         '''
         Returns the targetFile Name, stripped of the path.
         '''
-        expDir, targetName = os.path.split( self.targetOutput(name) )
+        analysisDir, targetName = os.path.split( self.targetOutput(name) )
         return targetName
         
     def linkOrCopy(self, fromLoc, toLoc, soft=False, logOut=True, log=None):
@@ -206,27 +206,27 @@ class Analysis(object):
 
     def declareLogFile(self, name=None):
         '''
-        Gets or sets the filename for the log that might be created at the experiment level.
+        Gets or sets the filename for the log that might be created at the analysis level.
         '''
         if self.log != None and self.log.file() != None:
             return self.log.file()  # Could check that name matches log
         if name == None:
-            if self._experimentId == None:
-                raise Exception("This 'experiment' has not been registered or defined in manifest.")
-            name = self._experimentId
+            if self._analysisId == None:
+                raise Exception("This 'analysis' has not been registered or defined in manifest.")
+            name = self._analysisId
         self.log.declareFile(self.dir + name.replace(' ','') + '.log')
-        #self.log.empty()  # Experimental log is a running log except when explicitly emptied
+        #self.log.empty()  # Analysis log is a running log except when explicitly emptied
         return self.log.file()
         
     def registerStep(self, step):
         '''
-        Multiple logical steps can be managed by an experiment simultaneously
+        Multiple logical steps can be managed by an analysis simultaneously
         '''
         self._steps.append(step)
         
     def removeStep(self, step):
         '''
-        Multiple logical steps can be managed by an experiment simultaneously
+        Multiple logical steps can be managed by an analysis simultaneously
         '''
         try:
             self._steps.remove(step)
@@ -249,7 +249,7 @@ class Analysis(object):
             if key in skipKeys:
                 continue
             try:
-                step.convertTempFileToInterim(key, self._interimFiles[key])
+                step.convertFileToInterim(key, self._interimFiles[key])
             except:
                 fails = fails + "Failed to find interim result for '"+key+"'\n"
         # copy targets
@@ -257,7 +257,7 @@ class Analysis(object):
             if key in skipKeys:
                 continue
             try:
-                step.convertExpFileToTarget(key, self._targetOutput[key]) 
+                step.convertFileToTarget(key, self._targetOutput[key]) 
             except:
                 fails = fails + "Failed to find target result for '"+key+"'\n"
         if len(fails) > 0:
@@ -272,7 +272,7 @@ class Analysis(object):
         pipeline will handle all success steps, like copying out files we care
         about and maybe trashing the directory as well?
         '''
-        # deliver the files from step to exp directory
+        # deliver the files from step to analysis directory
         try:
             self.deliverFiles(step, skipKeys=self._skipDeliveries)  
         except:
@@ -280,8 +280,8 @@ class Analysis(object):
             
         step.log.out("'\n--- End of step ---")
         step.log.dump( self.log.file() ) # to stdout if no runningLog
-        # Morgan, do you want the step log going to stdout even if there is an expLog?
-        #if self.log.file() != None:  # If exp log, then be sure to just print step log to stdout
+        # Morgan, do you want the step log going to stdout even if there is an analysis log?
+        #if self.log.file() != None:  # If analysis log, be sure to just print step log to stdout
         #    step.log.dump()
         if not self.dryRun():
             step.cleanup()               # Removes step.stepDir()
@@ -298,7 +298,7 @@ class Analysis(object):
         '''
         step.log.out("\n--- End of step ---")
         step.log.dump(self.log.file()) # to stdout if no runningLog  
-        if self.log.file() != None:  # If exp log, then be sure to just print step log to stdout
+        if self.log.file() != None:  # If analysis log, be sure to just print step log to stdout
             step.log.dump()
         if self.dryRun():
             self.log.out('') # skip a lineline
@@ -310,7 +310,7 @@ class Analysis(object):
     def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         '''
         Runs the provided command and returns error code.  Does NOT trigger onFail.
-        Note that you can pass in a log object if you don't want to use the experiment log.
+        Note that you can pass in a log object if you don't want to use the analysis log.
         '''
         if dryRun == None:
             dryRun=self._dryRun
@@ -332,7 +332,7 @@ class Analysis(object):
     def getCmdOut(self, cmd, dryRun=None, logCmd=True, logResult=False, default='', log=None, errOk=False):
         '''
         Runs the provided command and returns the stdout.
-        Note that you can pass in a log object if you don't want to use the experiment log.
+        Note that you can pass in a log object if you don't want to use the analysis log.
         '''
         if dryRun == None:
             dryRun=self._dryRun
@@ -358,7 +358,7 @@ if __name__ == '__main__':
     Command-line testing
     '''
     print "======== begin '" + sys.argv[0] + "' test ========"
-    e3 = Experiment('/hive/users/tdreszer/galaxy/galaxy-dist/tools/encode/settingsE3.txt') 
+    e3 = Analysis('/hive/users/tdreszer/galaxy/uniformAnalysis/src/test/settingsE3.txt') 
 
     # test getSetting    
     fastqSampleReads = e3.getSetting('fastqSampleReads','100000')
@@ -366,16 +366,16 @@ if __name__ == '__main__':
     # Expect exception:
     #flippyFloppy = e3.getSetting('flippyFloppy')
 
-    # test expDir which implicitly tests getSetting:    
-    e3.experimentId('command-line test') # Should throw exception without this line
-    expDir = e3.createExpDir()
-    print "expDir:     " + expDir
+    # test analysisDir which implicitly tests getSetting:    
+    e3.analysisId('command-line test') # Should throw exception without this line
+    analysisDir = e3.createAnalysisDir()
+    print "analysisDir:     " + analysisDir
     
-    # test running log which shouuld implicitly test expDir   
+    # test running log which should implicitly test analysisDir   
     runningLog = e3.declareLogFile('running')
     print "runningLog: " + runningLog
     e3.log.empty()  # previous test might have left some junk here
-    e3.log.out("--- Beginning Running Log for experiment '" +e3.experimentId()+ "' ---")
+    e3.log.out("--- Beginning Running Log for analysis '" +e3.analysisId()+ "' ---")
     e3.log.out('Log file name: ' + e3.log.file() + '\n')
 
     # test registerInputFile and registerTargetOutput
@@ -423,7 +423,7 @@ if __name__ == '__main__':
         e3.getCmdOut('ls -l '+ stepDir,logResult=True)
     except:
         pass
-    e3.getCmdOut('ls -l '+ expDir,logResult=True)
+    e3.getCmdOut('ls -l '+ analysisDir,logResult=True)
     print '\n..... Contents of new running log:'
     os.system('cat ' + e3.log.file())
     print '...................................................'

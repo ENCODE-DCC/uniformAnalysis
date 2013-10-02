@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
-# galaxyExperiment.py module holds GalaxyExperiment, which is the descendent of Experiment class
-#               for Encode3 Pipeline analysis of submitted experiments.  This derived class 
+# galaxyAnaylysi.py module holds GalaxyAnalysis class which is the descendent of Analysis class
+#               for Encode3 Pipeline analysis of submissions.  This derived class 
 #               is specialized for Galaxy workflows.  The encode3 anapysis pipeline works
 #               within a temporary directory and at the end of each logical step (e.g. alignment)
 #               all targets are moved to their final destinations.  When run in Galaxy, the 
@@ -10,9 +10,9 @@
 #               (1) This derived class handles conversion of galaxy to nonGalaxy names and will 
 #               symlink nonGalaxy outputs back into galaxy for future access.  
 #               (2) While the complete Encode3 pipeline will have a clear concept of an
-#               "experiment" as all processing of multiple replicates from raw input to 
+#               "analysis" as all processing of multiple replicates from raw input to 
 #               alignment, peak calling, analysis and quality characterization; 
-#               the galaxy "pipeline" is expected to support running a single "experiment"
+#               the galaxy "pipeline" is expected to support running a single "analysis"
 #               in a series of workFlow steps.  This may be necessary as data becomes 
 #               available at different times or replicates fail and need to be replaced.
 #               In galaxy the processing is kicked off manually, not simply when data arrives.
@@ -24,13 +24,13 @@ from src.log import Log
 
 class GalaxyAnalysis(Analysis):
     '''
-    Descendent from Experiment class with 'galaxy' specific methods.
+    Descendent from Analysis class with 'galaxy' specific methods.
 
     Functions are for resolving names/paths and logging
     '''
 
-    def __init__(self, settingsFile, experimentId):
-        Experiment.__init__(self, settingsFile, experimentId=experimentId)
+    def __init__(self, settingsFile,analysisId):
+        Analysis.__init__(self, settingsFile, analysisId=analysisId)
         self._resultsDir = None  # Outside of galaxy and tmpDir struct. Same as inputFile location
         self._stayWithinGalaxy = self._settings.getBoolean('stayWithinGalaxy', False)
         self._galaxyInputs = {}      # May be in galaxy-dist/database/files or else symlinked lib
@@ -40,33 +40,33 @@ class GalaxyAnalysis(Analysis):
                            'galaxyOutput': self._galaxyOutputs, 
                         'nonGalaxyInput' : self._inputFiles, 
                         'nonGalaxyOutput': self._nonGalaxyOutputs, 
-                              'expOutput': self._targetOutput, 
+                                 'target': self._targetOutput, 
                            'intermediate': self._interimFiles }
         self._skipGalaxyDeliveries = None
-        self.createExpDir() # encode pipeline creates this via the manifest.
+        self.createAnalysisDir() # encode pipeline creates this via the manifest.
         self.declareLogFile()
                            
-    def createExpDir(self):
+    def createAnalysisDir(self):
         '''
-        creates experiment level directory
+        creates analysis level directory
         MUST override default version for galaxy
         '''
-        if self.expId == None:
-            raise Exception('This experiment has not been registered or defined in manifest')    
-        if self._expDir != None:
-            #raise Exception('The directory for this experiment has already been created')
-            return self._expDir
+        if self.analysisId == None:
+            raise Exception('This analysis has not been registered or defined in manifest')    
+        if self._analysisDir != None:
+            #raise Exception('The directory for this analysis has already been created')
+            return self._analysisDir
             
         if self._stayWithinGalaxy:
-            self._expDir = os.getcwd() # Override the Experiment class version for this
-            if not self._expDir.endswith('/'):
-                self._expDir = self._expDir + '/'
+            self._analysisDir = os.getcwd() # Override the Analysis class version for this
+            if not self._analysisDir.endswith('/'):
+                self._analysisDir = self._analysisDir + '/'
         else:
-            self._expDir = self.getPath('tmpDir')
-        self._expDir = self._expDir + self.expId.replace(' ','_') + '/'
-        if not os.path.isdir(self._expDir):
-            os.makedirs(self._expDir)
-        return self._expDir
+            self._analysisDir = self.getPath('tmpDir')
+        self._analysisDir = self._analysisDir + self.analysisId.replace(' ','_') + '/'
+        if not os.path.isdir(self._analysisDir):
+            os.makedirs(self._analysisDir)
+        return self._analysisDir
         
     def fileParse(self, someFile, typeOfFile=None ):
         '''
@@ -118,7 +118,7 @@ class GalaxyAnalysis(Analysis):
         fullPath =  os.path.abspath( someFile )  # Always work with absolute paths
         if io == 'nonGalaxyInput':
             self.registerInputFile(name, fullPath)
-        elif io == 'nonGalaxyOutput': # 2 files: one in expDir, second in resultsDir
+        elif io == 'nonGalaxyOutput': # 2 files: one in analysisDir, second in resultsDir
             self._fileSets[ io ][ name ] = fullPath   
             self.registerTargetOutput(name, self.fileGetPart(fullPath,'fileName'))
         elif io == 'intermediate':
@@ -276,9 +276,9 @@ class GalaxyAnalysis(Analysis):
         if log == None:
             log = self.log
         log.out('\n# Location settings:')
-        log.out('experiment dir:'.ljust(tab) + self.dir)
+        log.out('analysis dir:'.ljust(tab) + self.dir)
         if self.log.file() != None:
-            log.out('experiment log:'.ljust(tab) + self.log.file())
+            log.out('analysis log:'.ljust(tab) + self.log.file())
         if self._settingsFile != None:  # raise exception?
             log.out('settingsFile:'.ljust(tab) + self._settingsFile)
         if self._resultsDir != None:  # raise exception?
@@ -308,12 +308,12 @@ class GalaxyAnalysis(Analysis):
                 for name in sorted( step.garbageFiles.keys() ):
                     title = "garbage[%s]:" % (name)
                     log.out(title.ljust(tab) + step.garbageFiles[name])
-                for name in sorted( step.tempFiles.keys() ):
-                    title = "tmpFile[%s]:" % (name)
-                    log.out(title.ljust(tab) + step.tempFiles[name])
-                for name in sorted( step.expFiles.keys() ):
-                    title = "expFile[%s]:" % (name)
-                    log.out(title.ljust(tab) + step.expFiles[name])
+                for name in sorted( step.interimFiles.keys() ):
+                    title = "interimFile[%s]:" % (name)
+                    log.out(title.ljust(tab) + step.interimFiles[name])
+                for name in sorted( step.targetFiles.keys() ):
+                    title = "targetFile[%s]:" % (name)
+                    log.out(title.ljust(tab) + step.targetFiles[name])
         log.out('') # add a blank line at the end
 
     def deliverToGalaxy(self, skipKeys=None, log=None):
@@ -322,9 +322,9 @@ class GalaxyAnalysis(Analysis):
         Moves targetOutput files to NonGalaxy locations,
         then symlinks nonGalaxyOutputs to galaxyOutputs.
         """
-        # interim files stay in expDir
-        # copy targets from expDir to resultsDir
-        # NOTE: cmds are logged to expLog, not stepLog
+        # interim files stay in analysisDir
+        # copy targets from analysisDir to resultsDir
+        # NOTE: cmds are logged to analysisLog, not stepLog
         if log == None:
             log = self.log
         if skipKeys == None:
@@ -342,7 +342,7 @@ class GalaxyAnalysis(Analysis):
                 if self._stayWithinGalaxy:
                     permanentOutput = self._galaxyOutputs[key]
                 
-                # hardlink target in expDir to resultsDir
+                # hardlink target in analysisDir to resultsDir
                 err = self.linkOrCopy(self._targetOutput[key],permanentOutput,log=log)
                 if err != 0:
                     fails = fails + "Failure to tidy up: '" + \
@@ -376,9 +376,9 @@ class GalaxyAnalysis(Analysis):
         
     def logToResultDir(self):
         '''
-        Copies the experiment log to the results dir, if it is outside galaxy
+        Copies the analysis log to the results dir, if it is outside galaxy
         '''
-        # TODO: figure out what to do inside galaxy.  Replace stepLog with experient log?
+        # TODO: figure out what to do inside galaxy.  Replace stepLog with analysis log?
         if not self._stayWithinGalaxy:
             if self.log.file() != None:
                 nonGalaxyLog = self.resultsDir() + self.fileGetPart( self.log.file(), 'fileName' )
@@ -387,11 +387,11 @@ class GalaxyAnalysis(Analysis):
         
     def onSucceed(self, step):
         """
-        Extend experiment.onSucceed to handle galaxy specific pipeline will handle all success 
+        Extend analysis.onSucceed to handle galaxy specific pipeline will handle all success 
         steps, like copying out files we care about and emptying the step directory
         """
-        #if self.dryRun():
-        #    self.printPaths(log=step.log)   # For posterity
+        if self.dryRun():
+            self.printPaths(log=step.log)   # For posterity
         
         #try:
         self.deliverFiles(step, skipKeys=self._skipDeliveries)
@@ -403,7 +403,7 @@ class GalaxyAnalysis(Analysis):
         
         step.log.dump( self.log.file() ) # to stdout if no runningLog
         self.logToResultDir()
-        if self.log.file() != None:  # If exp log, then be sure to just print step log to stdout
+        if self.log.file() != None:  # If analysisLog, then be sure to just print step log to stdout
             step.log.dump()
         if not self.dryRun():
             step.cleanup()               # Removes logicalStep.stepDir()
@@ -415,12 +415,12 @@ class GalaxyAnalysis(Analysis):
     
     def onFail(self, logicalStep):
         """
-        Override Experiment.onFail() to include galaxy specific things
+        Override Analysis.onFail() to include galaxy specific things
         """
         if self.dryRun():
             self.printPaths(log=logicalStep.log)   # For posterity
 
-        err = Experiment.onFail(self,logicalStep)
+        err = Analysis.onFail(self,logicalStep)
         exit( err )
     
 
@@ -433,7 +433,7 @@ if __name__ == '__main__':
     from logicalstep import LogicalStep
     
     print "======== begin '" + sys.argv[0] + "' test ========"
-    expId = 'galaxyExperiment Test' 
+    analysisId = 'galaxyAnalysis Test' 
     repNo = '1'   
     stepName = 'Test E3 Fake Step'
     
@@ -443,7 +443,7 @@ if __name__ == '__main__':
     galaxyOutputFile = '/hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_269.dat'
     galaxyPath = '/hive/users/tdreszer/galaxy/'
     
-    e3 = GalaxyExperiment(settingFile, expId)
+    e3 = GalaxyAnalysis(settingFile, analysisId)
     e3.dryRun(True)
     
     # Command-line args predefined in in settings:
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     sampleOf     = step.declareGarbageFile('sampleOf_s' + reads, suffix='fastq')
     sampledStats = step.declareGarbageFile('sampledStats', suffix='txt')
     # The following 2 are bound together by the same nameKey:
-    stepFile      = step.declareExpFile('validateRep'+repNo, suffix='html') # will become nonGalaxyOutput
+    stepFile      = step.declareTargetFile('validateRep'+repNo, suffix='html') # will become nonGalaxyOutput
     nonGalaxyOutput = e3.createOutFile('validateRep'+repNo,'nonGalaxyOutput', \
                                    '%s_s'+reads+'_fastqc/fastqc_report', ext='html' )
 
