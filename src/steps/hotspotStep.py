@@ -5,8 +5,7 @@ class AlignmentStep(LogicalStep):
 
     def __init__(self, experiment, replicate):
         self.replicate = str(replicate)
-        LogicalStep.__init__(self, experiment, experiment.readType() + 'Alignment_Rep' + self.replicate)
-        self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
+        LogicalStep.__init__(self, experiment, experiment.readType() + 'Hotspot_Rep' + self.replicate)
 
     def onRun(self):
         # Versions:

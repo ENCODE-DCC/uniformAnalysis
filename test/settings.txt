@@ -1,6 +1,5 @@
-tmpDir /cluster/home/mmaddren/grad/pipeline/tmp/
-jobTreePath /cluster/home/mmaddren/grad/pipeline/tmp/jobTreeRun
-outputPath /cluster/home/mmaddren/grad/pipeline/tmp/output/
+tmpDir /cluster/home/mmaddren/grad/uniformAnalysis/tmp/
+outputPath /cluster/home/mmaddren/grad/uniformAnalysis/output/
 
 dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
 chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 

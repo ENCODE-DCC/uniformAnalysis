@@ -29,7 +29,7 @@ def main():
         return
     args = parser.parse_args(sys.argv[1:])
     
-    exp = EncodeAnalaysis(args.settings, args.manifest)
+    exp = EncodeAnalysis(args.settings, args.manifest)
     exp.start()
     
     

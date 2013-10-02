@@ -1,5 +1,7 @@
 from src.pipelines.pipeline import Pipeline
-from src.steps.alignmentstep import AlignmentStep
+
+from src.steps.alignmentStep import AlignmentStep
+from src.steps.bamEvaluateStep import BamEvaluateStep
 
 class DnasePipeline(Pipeline):
     """
@@ -10,7 +12,11 @@ class DnasePipeline(Pipeline):
         Pipeline.__init__(self, experiment)
         
     def getSingleReplicatePipeline(self, replicate):
-        return [ AlignmentStep(self.experiment, replicate) ]
+        return [
+            AlignmentStep(self.experiment, replicate),
+            BamEvaluateStep(self.experiment, replicate, 5000000),
+            HotspotStep(self.experiment, replicate)
+        ]
        
     def getSecondPartPipeline(self):
         """

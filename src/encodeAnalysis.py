@@ -3,7 +3,7 @@ from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
 from src.analysis import Analysis
 from src.settings import Settings
-from src.pipelines.dnasepipeline import DnasePipeline
+from src.pipelines.dnasePipeline import DnasePipeline
 
 class EncodeAnalysis(Analysis):
     
@@ -11,7 +11,7 @@ class EncodeAnalysis(Analysis):
 
         manifest = Settings(manifestFile)
     
-        Experiment.__init__(self, settingsFile, manifest['expId'])
+        Analysis.__init__(self, settingsFile, manifest['expId'])
     
         self.name = manifest['expName']
         self.dataType = manifest['dataType']
@@ -47,10 +47,10 @@ class EncodeAnalysis(Analysis):
         """
         probably need one of these in experiment
         """
-        self.createExpDir()
+        self.createAnalysisDir()
         stack = Stack(self.pipeline)
         options = stack.getDefaultOptions()
-        options.jobTree = self.getSetting('jobTreePath')
+        options.jobTree = self.getSetting('tmpDir') + '/jobTreeRun'
         options.logLevel = 'INFO'
         
         # need to set batch system, big mem/cpu batches
@@ -60,32 +60,23 @@ class EncodeAnalysis(Analysis):
         print "success!!!"
     
     
-    def runCmd2(self, cmd, stderr):
+    def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
+        if log == None:
+            log = self.log
+        
+        log.out('> ' + cmd)
+        log.close()
+        
+        if dryRun:
+            return
+        
         stdout = None
         if '>' in cmd:
             splits = cmd.split('>')
             cmd = splits[0].strip()
             stdout = splits[1].strip()
-        errstr = ''
-        errfile = None
-        if stderr != None:
-            if not self.args.dryrun:
-                errfile = open(stderr, mode='w')
-            errstr = ' 2> ' + stderr
-        outstr = ''
-        outfile = None
-        if stdout != None:
-            if not self.args.dryrun:
-                outfile = open(stdout, mode='w')
-            outstr = ' 1> ' + stdout
-        self.log('running process...')
-        self.logToMaster(cmd + outstr + errstr)
-        result = 0
-        if not self.args.dryrun:
-            result = subprocess.call(cmd, stdout=outfile, stderr=errfile)
-        self.log('process completes with exit code ' + str(result))
-        if stdout != None and not self.args.dryrun:
-            outfile.close()
-        if stderr != None and not self.args.dryrun:
-            errfile.close()
+
+        result = subprocess.call(cmd, stdout=outfile, stderr=errfile)
+        #self.log('process completes with exit code ' + str(result))
+
         return result
