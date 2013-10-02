@@ -15,7 +15,7 @@ from src.encodeAnalysis import EncodeAnalysis
 #EAP->EDW
 # - gotFile(s): needs manifest.txt, versions.txt
 #       manifest.txt: filename, format, outputtype, experiment, replicate, enrichedin, ucscDb
-
+# 
 
 def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')

@@ -3,7 +3,7 @@ jobTreePath /cluster/home/mmaddren/grad/pipeline/tmp/jobTreeRun
 outputPath /cluster/home/mmaddren/grad/pipeline/tmp/output/
 
 dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
-chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt
+chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
 bowtieIndexPath /cluster/home/mmaddren/grad/pipeline/data/ref.bt2
 bowtiePath /cluster/home/mmaddren/grad/pipeline/bowtie2-2.1.0/bowtie2
 macsPath /cluster/home/mmaddren/grad/pipeline/MACS-master/bin/macs2
@@ -16,3 +16,7 @@ peakSeqPath /cluster/home/mmaddren/grad/pipeline/peakseq-1.1/bin/PeakSeq
 samtoolsPath /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
 fastqcPath /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
 picardToolsPath /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
+
+hotspotDirectory /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
+hotspotChromInfoFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed
+hotspotMappableRegionsFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch
