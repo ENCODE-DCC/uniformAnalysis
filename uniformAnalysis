@@ -1,0 +1,38 @@
+#!/cluster/home/mmaddren/python/bin/python
+
+import sys, os, shutil, argparse, urllib2, re
+from src.encodeAnalysis import EncodeAnalysis
+
+# TODO:
+# - rename ucscUniformAnalysis to uniformAnalysis
+# - rename experiment to something else--submission?
+#   or analysis and then manifest is analysisparams
+#   or analysissettings and then settings would be 
+#   environemnt or configuration
+
+#EDW->EAP
+# - gotReplicate: needs analysisSettings.ra
+#EAP->EDW
+# - gotFile(s): needs manifest.txt, versions.txt
+#       manifest.txt: filename, format, outputtype, experiment, replicate, enrichedin, ucscDb
+
+
+def main():
+    parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')
+    parser.add_argument('-d', '--dryrun', action='store_true', default=False, help='dry run')
+    parser.add_argument('settings', help='Settings file')
+    parser.add_argument('manifest', help='Manifest file')
+
+    if len(sys.argv) < 2:
+        parser.print_usage() 
+        return
+    args = parser.parse_args(sys.argv[1:])
+    
+    exp = EncodeAnalaysis(args.settings, args.manifest)
+    exp.start()
+    
+    
+if __name__ == '__main__':
+    main()
+    

@@ -1,0 +1,71 @@
+# ENCODE 3 pipeline/galaxy settings file: for defining important locations and settings
+encodeSettingsVersion 1.0
+stayWithinGalaxy False
+
+# Location outside of galaxy to put important results.  If results are needed inside galaxy
+# for further steps, they will be symlinked into galaxy.
+# NOTE: Only needed or used if input files are located inside galaxy database.
+#       Input files from symlinked library will be considered outside of galaxy.
+# must end in '/'. or be undeclared
+resultsDir /hive/users/tdreszer/galaxy/out/
+
+# Location outside of galaxy to put temporary, intermediate results
+# NOTE: files written to tmpDir are considered expendable as soon as the step that writes thm ends.
+# must end in '/'. Undeclared means temp files are written into galaxy execution directory
+tmpDir	/hive/users/tdreszer/galaxy/tmp/
+
+# Location of assembly file for alignments
+dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+
+# Location of chromosome information for current DB
+chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt
+
+# Location of sort sam sorting jar file
+samSortJarFile /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/SortSam.jar
+
+# Standard and tool specific locations.
+# Note: If single executable for tool then path should be full path to executable, 
+        keyed on executable name+'Path' (e.g. bwa exec is keyed on 'bwaPath' 
+# If tool contains several executables, then path is to directory containing all executables.
+# NOTE: if toolPath is declared, it is the default path for all tools.  
+#       (e.g. if bwaPath not found then {toolPath}bwa is expected to exist.
+toolPath /cluster/home/mmaddren/grad/pipeline/
+fastqcPath /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
+bwaPath /cluster/home/mmaddren/grad/pipeline/gcap/bin/bwa
+samtoolsPath /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
+pythonPath /cluster/home/mmaddren/python/bin/python2.7
+# Following tools contain a collection of executable:
+bedtoolsPath /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/
+censusPath /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
+phantomToolsPath /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools/
+picardToolsPath /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
+# javaPath    is currently '' (java expected on the path)
+# RscriptPath is currently '' (Rscript expected on the path)
+# sampleBamPath should fall back on toolPath, which is where it is currently found
+
+# Expected tool versions:  (Define them here and they will be enforced in strict mode)
+bwaVersion          0.5.8c (r1536)
+samtoolsVersion     0.1.19-44428cd
+fastqcVersion       v0.10.1
+bedtoolsVersion     v2.17.0
+javaVersion         1.6.0_24
+pythonVersion       2.7.1
+censusVersion       0.8
+phantomToolsVersion 2.0
+RscriptVersion      2.15.2
+picardToolsVersion  1.94(1484)
+
+# Miscellaneous command-line params
+fastqSampleReads 100000
+fastqSampleSeed 12345 
+
+## # This is just a bunch of test settings for debugging the "Settings" class in settingsE3.py
+##  testBeginSpace            Beginning spaces?
+##   # testComment1 with spaces?
+## testContinuation  test continuation first line \         
+## withSecond line here!
+## testCont2  test contuation first line \
+##            second line
+## testComment  test comment # at end
+## testComment2  test comment \# escaped
+

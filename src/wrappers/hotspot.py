@@ -1,0 +1,81 @@
+from src.logicalstep import StepError
+
+@static
+def runhotspot(step, input, output):
+    result = step.experiment.runCmd(
+        '{bwa} aln -t {threads} {ref} {input} > {output}'
+        .format(bwa=step.experiment.settings.bwaPath, threads=4, reference=step.experiment.settings.hg19Path, input=input, output=output))
+    if (result != 0)
+        raise StepError('aln')
+        
+            tokensName = self.localFilename('tokens.txt')
+        runhotspotName = self.localFilename('runhotspot.sh')
+        
+        # generate tokens.txt file
+        tokens = open(tokensName, 'w')
+        tokens.write('[script-tokenizer]')
+        tokens.write('_TAGS_ = ' + self.expFilename(self.input))
+        tokens.write('_USE_INPUT_ = F')
+        tokens.write('_INPUT_TAGS_ =')
+        tokens.write('_GENOME_ = hg19')
+        tokens.write('_K_ = 36')
+        tokens.write('_CHROM_FILE_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed')
+        tokens.write('_MAPPABLE_FILE_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch')
+        tokens.write('_DUPOK_ = T')
+        tokens.write('_FDRS_ = "0.01"')
+        tokens.write('_DENS_:')
+        tokens.write('_OUTDIR_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/pipeline-scripts/test')
+        tokens.write('_RANDIR_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/pipeline-scripts/test')
+        tokens.write('_OMIT_REGIONS_: /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/Satellite.hg19.bed')
+        tokens.write('_CHECK_ = T')
+        tokens.write('_CHKCHR_ = chrX')
+        tokens.write('_HOTSPOT_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/hotspot-deploy/bin/hotspot')
+        tokens.write('_CLEAN_ = T')
+        tokens.write('_PKFIND_BIN_ = /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/hotspot-deploy/bin/wavePeaks')
+        tokens.write('_PKFIND_SMTH_LVL_ = 3')
+        tokens.write('_SEED_=101')
+        tokens.write('_THRESH_ = 2')
+        tokens.write('_WIN_MIN_ = 200')
+        tokens.write('_WIN_MAX_ = 300')
+        tokens.write('_WIN_INCR_ = 50')
+        tokens.write('_BACKGRD_WIN_ = 50000')
+        tokens.write('_MERGE_DIST_ = 150')
+        tokens.write('_MINSIZE_ = 10')
+        tokens.close()
+        
+        # generate runhotspot file
+        runhotspot = open(runhotspotName, 'w')
+        runhotspot.write('#! /bin/bash')
+        runhotspot.write('scriptTokBin=/cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/ScriptTokenizer/src/script-tokenizer.py')
+        runhotspot.write('pipeDir=/cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/pipeline-scripts')
+        runhotspot.write('tokenFile=' + tokensName)
+        runhotspot.write('scripts="$pipeDir/run_badspot')
+        runhotspot.write('    $pipeDir/run_make_lib')
+        runhotspot.write('    $pipeDir/run_wavelet_peak_finding')
+        runhotspot.write('    $pipeDir/run_10kb_counts')
+        runhotspot.write('    $pipeDir/run_generate_random_lib')
+        runhotspot.write('    $pipeDir/run_pass1_hotspot')
+        runhotspot.write('    $pipeDir/run_pass1_merge_and_thresh_hotspots')
+        runhotspot.write('    $pipeDir/run_pass2_hotspot')
+        runhotspot.write('    $pipeDir/run_rescore_hotspot_passes')
+        runhotspot.write('    $pipeDir/run_spot')
+        runhotspot.write('    $pipeDir/run_thresh_hot.R')
+        runhotspot.write('    $pipeDir/run_both-passes_merge_and_thresh_hotspots')
+        runhotspot.write('    $pipeDir/run_add_peaks_per_hotspot')
+        runhotspot.write('    $pipeDir/run_final"')
+        runhotspot.write('$scriptTokBin \ ')
+        runhotspot.write('    --clobber \ ')
+        runhotspot.write('    --output-dir=`pwd` \ ')
+        runhotspot.write('    $tokenFile \ ')
+        runhotspot.write('    $scripts')
+        runhotspot.write('for script in $scripts')
+        runhotspot.write('do')
+        runhotspot.write('    ./$(basename $script).tok')
+        runhotspot.write('done')
+        
+        result = self.runProc([runhotspotName], logfilename, outputfilename) # TODO: NEED TO CHANGE THIS
+        if result == 0:
+            self.copyOut(outputfilename, self.outname)
+            self.copyOutLog(logfilename, self.name)
+        else:
+            self.fail()
