@@ -42,7 +42,7 @@ class GalaxyAnalysis(Analysis):
                         'nonGalaxyOutput': self._nonGalaxyOutputs, 
                                  'target': self._targetOutput, 
                            'intermediate': self._interimFiles }
-        self._skipGalaxyDeliveries = None
+        self._deliverToGalaxyKeys = None
         self.createAnalysisDir() # encode pipeline creates this via the manifest.
         self.declareLogFile()
                            
@@ -68,9 +68,9 @@ class GalaxyAnalysis(Analysis):
             os.makedirs(self._analysisDir)
         return self._analysisDir
         
-    def fileParse(self, someFile, typeOfFile=None ):
+    def fileParse(self, someFile):
         '''
-        Returns an dict object with type, fullPath, dir, fileName, root, and ext
+        Returns an dict object with fullPath, dir, fileName, root, and ext
         broken upon cleanly and normalized.
         '''
         
@@ -79,10 +79,7 @@ class GalaxyAnalysis(Analysis):
         root, ext = os.path.splitext( fileName )
         if ext == None or ext == '':
             ext = 'dir'
-        if typeOfFile == None:
-            typeOfFile = ext
-        return { 'type': typeOfFile, 'fullPath': fullPath, 
-                 'dir': directory + '/',  # normalize dirs to end in '/'
+        return { 'fullPath': fullPath, 'dir': directory + '/',  # normalize dirs to end in '/'
                  'fileName': fileName, 'root': root, 'ext': ext}
                  
     def stayWithinGalaxy(self):
@@ -105,7 +102,7 @@ class GalaxyAnalysis(Analysis):
         except:
             return None
 
-    def registerFile(self, name, io, someFile, typeOfFile=None ):
+    def registerFile(self, name, io, someFile ):
         '''
         Registers one file of a given io type in the set of all files that are being tracked.
         '''
@@ -263,8 +260,6 @@ class GalaxyAnalysis(Analysis):
             return self._fileSets[ io ][ name ] 
         elif io == 'intermediate':
             return self.registerInterimOutput(name, fileName)
-        #elif io == 'temporary':
-        #    return fileName  # TODO Should this be an exception???
         else:
             raise ValueError("Unknown file type '" + io + "' when creating file!")
     
@@ -316,7 +311,7 @@ class GalaxyAnalysis(Analysis):
                     log.out(title.ljust(tab) + step.targetFiles[name])
         log.out('') # add a blank line at the end
 
-    def deliverToGalaxy(self, skipKeys=None, log=None):
+    def deliverToGalaxy(self, log=None):
         """
         Call this after successfully completing logical steps.
         Moves targetOutput files to NonGalaxy locations,
@@ -327,32 +322,39 @@ class GalaxyAnalysis(Analysis):
         # NOTE: cmds are logged to analysisLog, not stepLog
         if log == None:
             log = self.log
-        if skipKeys == None:
-            skipKeys = []
         err=0
         count=0
         # Because we do not want to stop the loop for an exception
         # we record exceptions and raise one at the end.
         fails = '' 
-        for key in self._targetOutput.keys():
-            if key in skipKeys:
+        fullSetOfKeys = self._targetOutput.keys()
+        deliveryKeys = fullSetOfKeys
+        if self._deliverToGalaxyKeys != None:
+            deliveryKeys = self._deliverToGalaxyKeys
+        for key in deliveryKeys:
+            if key not in fullSetOfKeys:
                 continue
             try:
                 permanentOutput = self._nonGalaxyOutputs[key]
                 if self._stayWithinGalaxy:
-                    permanentOutput = self._galaxyOutputs[key]
+                    if key in self._galaxyOutputs:
+                        permanentOutput = self._galaxyOutputs[key]
+                    else:
+                        permanentOutput = None
                 
                 # hardlink target in analysisDir to resultsDir
-                err = self.linkOrCopy(self._targetOutput[key],permanentOutput,log=log)
-                if err != 0:
-                    fails = fails + "Failure to tidy up: '" + \
-                            self._targetOutput[key]+"' to '"+permanentOutput+"'\n"
-                else:
-                    count = count + 1
+                if permanentOutput != None:
+                    err = self.linkOrCopy(self._targetOutput[key],permanentOutput,log=log)
+                    if err != 0:
+                        fails = fails + "Failure to tidy up: '" + \
+                                self._targetOutput[key]+"' to '"+permanentOutput+"'\n"
+                    else:
+                        count = count + 1
                 # symlink result back into galaxy
-                if not self._stayWithinGalaxy:
+                if not self._stayWithinGalaxy and key in self._galaxyOutputs:
                     galaxyOutput = self._galaxyOutputs[key]
-                    err = self.linkOrCopy(self._targetOutput[key],galaxyOutput,soft=True,log=log)
+                    # softlink so permenant location can be discovered by future steps
+                    err = self.linkOrCopy(permanentOutput,galaxyOutput,soft=True,log=log)
                     if err != 0:
                         fails = fails + "Failure to tidy up: '" + \
                                 self._targetOutput[key]+"' to '"+galaxyOutput+"'\n"
@@ -370,9 +372,12 @@ class GalaxyAnalysis(Analysis):
         if len(fails) > 0:
             raise Exception(fails)
         
-    def skipGalaxyDeliveries(self,skipThisSet):
-        '''Register certain names to skip during deliverFiles'''
-        self._skipGalaxyDeliveries = skipThisSet
+    def deliverToGalaxyKeys(self,justThisSet):
+        '''
+        Register certain keys to be delived in deliverToGalaxy and in this order.
+        Without setting this, all target file keys will be delivered.
+        '''
+        self._deliverToGalaxyKeys = justThisSet
         
     def logToResultDir(self):
         '''
@@ -394,8 +399,8 @@ class GalaxyAnalysis(Analysis):
             self.printPaths(log=step.log)   # For posterity
         
         #try:
-        self.deliverFiles(step, skipKeys=self._skipDeliveries)
-        self.deliverToGalaxy(log=step.log, skipKeys=self._skipGalaxyDeliveries)
+        self.deliverFiles(step)
+        self.deliverToGalaxy(log=step.log)
         #except:
         #    pass # Lets see any exceptions
         

@@ -4,7 +4,7 @@
 #
 # Settings required: fastqcPath (or toolsPath)
 
-import datetime
+import os, datetime
 from src.logicalStep import StepError
 
 def version(step, logOut=True):
@@ -21,8 +21,8 @@ def version(step, logOut=True):
 
 def validate(step, input, outDir):
     '''Validation'''
-    cmd = '{fastqc} {fastq} --extract -t 4 -q -o {outDir}'.format( \
-          fastqc=step.ana.getToolPath('fastqc'), fastq=input, outDir=outDir)
+    cmd = '{fastqc} {fastq} --extract -q'.format( \
+          fastqc=step.ana.getToolPath('fastqc'), fastq=input)
 
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'fastqc' begins...")
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file

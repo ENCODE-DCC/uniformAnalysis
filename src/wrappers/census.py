@@ -33,15 +33,17 @@ def metrics(step, bam, metrics):
     '''
     Generates metrics histogram from bam.
     '''
-    cmd = '{python} {censusPath}bam_to_histo.py {censusPath}seq.cov005.ONHG19.bed {input} | {python} {censusPath}calculate_libsize.py - > {output}'.format( \
-          python=step.ana.getToolPath('python'), \
+    singleFlag = ''
+    if step.ana.readType() == 'single':
+        singleFlag = ' --single_ended'
+    cmd = '{python} {censusPath}bam_to_histo.py{flags} {censusPath}seq.cov005.ONHG19.bed {input} | {python} {censusPath}calculate_libsize.py - > {output}'.format( \
+          python=step.ana.getToolPath('python'), flags=singleFlag, \
           censusPath=step.ana.getPath('censusPath',alt='toolPath'), \
-          samSortJar=step.ana.getSetting('samSortJarFile'), \
-          input=bam, output=metrics)
+          samSortJar=step.ana.getSetting('samSortJarFile'), input=bam, output=metrics)
 
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'python' census metrics begins...")
-    step.err = step.ana.runCmd(cmd, log=step.log)
+    step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'python' census metrics returned " + str(step.err))
     if step.err != 0:

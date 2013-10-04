@@ -47,7 +47,7 @@ class Analysis(object):
         self._readType        = None    
         self._dryRun          = False
         self.strict           = False
-        self._skipDeliveries  = None
+        self._deliveryKeys    = None
         
         self._settingsFile = os.path.abspath( settingsFile )
         self._settings = Settings(self._settingsFile)
@@ -187,8 +187,8 @@ class Analysis(object):
         else:
             err = self.runCmd('ln -f ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
             
-        if err != 0:  # If link won't do, then we need to copy. NOTE: use -s because might be dir
-            err = self.runCmd('cp -sf ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
+        if err != 0:  # If link won't do, then we need to copy. NOTE: use -r because might be dir
+            err = self.runCmd('cp -rf ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
         
         if err != 0:
             raise Exception("Unable to ln or cp '" + fromLoc + "' to '" + toLoc + "'")
@@ -234,27 +234,33 @@ class Analysis(object):
             pass
         
     ### Proccessing support ###         
-    def deliverFiles(self, step, skipKeys=None):
+    def deliverFiles(self, step):
         '''
         Delivers interim and target files based upon matching keys.
         about and maybe trashing the directory as well?
         '''
-        if skipKeys == None:
-            skipKeys = []
         # Because we do not want to stop the loop for an exception
         # we record exceptions and raise one at the end.
         fails = '' 
         # copy interims
-        for key in self._interimFiles.keys():
-            if key in skipKeys:
+        fullSetOfKeys = self._interimFiles.keys()
+        deliveryKeys = fullSetOfKeys
+        if self._deliveryKeys != None:
+            deliveryKeys = self._deliveryKeys
+        for key in deliveryKeys:
+            if key not in fullSetOfKeys:
                 continue
             try:
                 step.convertFileToInterim(key, self._interimFiles[key])
             except:
                 fails = fails + "Failed to find interim result for '"+key+"'\n"
         # copy targets
-        for key in self._targetOutput.keys():
-            if key in skipKeys:
+        fullSetOfKeys = self._targetOutput.keys()
+        deliveryKeys = fullSetOfKeys
+        if self._deliveryKeys != None:
+            deliveryKeys = self._deliveryKeys
+        for key in deliveryKeys:
+            if key not in fullSetOfKeys:
                 continue
             try:
                 step.convertFileToTarget(key, self._targetOutput[key]) 
@@ -263,9 +269,12 @@ class Analysis(object):
         if len(fails) > 0:
             raise Exception(fails)
     
-    def skipDeliveries(self,skipThisSet):
-        '''Register certain keys to skip during deliverFiles'''
-        self._skipDeliveries = skipThisSet
+    def deliveryKeys(self,justThisSet):
+        '''
+        Register certain keys to be delived in deliverFiles and in this order.
+        Without setting this, all keys in interim and target files will be delivered.
+        '''
+        self._deliveryKeys = justThisSet
         
     def onSucceed(self, step):
         '''
@@ -274,7 +283,7 @@ class Analysis(object):
         '''
         # deliver the files from step to analysis directory
         try:
-            self.deliverFiles(step, skipKeys=self._skipDeliveries)  
+            self.deliverFiles(step)  
         except:
             pass # descendent classes should consider this an exception
             

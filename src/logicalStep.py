@@ -113,30 +113,30 @@ class LogicalStep(Target):
         '''Creates logical step directory'''
         self._dir = self.analysis.createTempDir(self.name)
        
-    def declareTargetFile(self, name, ext=None):
+    def declareTargetFile(self, key, name=None, ext=None):
         '''
         Reserves name for a file we want to keep permanantly, and returns a
         fully qualified filename in the local temp dir
         '''
-        self.targetFiles[name] = self.makeFilePath(name, ext)
-        return self.targetFiles[name]
+        self.targetFiles[key] = self.makeFilePath(key, name, ext)
+        return self.targetFiles[key]
         
-    def declareInterimFile(self, name, ext=None):
+    def declareInterimFile(self, key, name=None, ext=None):
         '''
         Reserves name for a file we want to keep for part or all of the
         duration of the pipeline before being deleted, and returns a fully
         qualified filename in the local temp dir
         '''
-        self.interimFiles[name] = self.makeFilePath(name, ext)
-        return self.interimFiles[name]
+        self.interimFiles[key] = self.makeFilePath(key, name, ext)
+        return self.interimFiles[key]
         
-    def declareGarbageFile(self, name, ext=None):
+    def declareGarbageFile(self, key, name=None, ext=None):
         '''
         Reserves name for a file we do not care about, and returns a fully
         qualified filename in the local temp dir
         '''
-        self.garbageFiles[name] = self.makeFilePath(name, ext)
-        return self.garbageFiles[name]
+        self.garbageFiles[key] = self.makeFilePath(key, name, ext)
+        return self.garbageFiles[key]
         
     def declareLogFile(self, name=None):
         '''
@@ -177,12 +177,17 @@ class LogicalStep(Target):
             self.analysis.runCmd('rm -rf ' + self._dir)
         #self._analysis.removeStep(self)  # Do we want to do this?
         
-    def makeFilePath(self, name, ext=None):
+    def makeFilePath(self, key, name=None, ext=None):
         '''
         Returns a fully qualified file/dir name
         '''
         if ext == None:
-            ext = name
+            if name == None:
+                ext = key
+            else:
+                ext = ''
+        if name == None:
+            name = key
         if ext.lower() == 'dir':  # directories are also supported!
             if not name.endswith('/'):
                 ext = '/'

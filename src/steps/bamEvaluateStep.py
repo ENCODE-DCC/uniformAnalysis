@@ -4,10 +4,11 @@
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'bamRep' + replicate
 #
-# Outputs: 1 interim sam       file, keyed as: 'samSampleRep' + replicate
-#          1 target  histogram file, keyed as: 'histoRep' + replicate
+# Outputs: 1 interim sam       file, keyed as: 'samSampleRep'  + replicate
+#          1 target  histogram file, keyed as: 'metricRep'     + replicate
 #          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate
 
+import os
 from src.logicalStep import LogicalStep
 from src.wrappers import samtools, sampleBam, bedtools, picardTools, census, phantomTools
 
@@ -31,8 +32,8 @@ class BamEvaluateStep(LogicalStep):
         # Outputs:
         samSample  = self.declareInterimFile('samSampleRep' + self.replicate, ext='sam')
         #bamSample = self.declareInterimFile('bamSampleRep' + self.replicate, ext='bam')
-        metricHist = self.declareTargetFile( 'histoRep'     + self.replicate, ext='metric')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='')
+        metricHist = self.declareTargetFile( 'metricRep'     + self.replicate, ext='txt')
+        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='txt')
         
         # Inputs:
         bam = self.ana.getFile('bamRep' + self.replicate)
@@ -42,12 +43,16 @@ class BamEvaluateStep(LogicalStep):
         if self.sampleSize > bamSize:
             self.sampleSize=bamSize
         
+        # because garbage bam file name is used in output, it needs a meaningful name:
+        fileName = os.path.split( bam )[1]
+        root = os.path.splitext( fileName )[0]
+
         bed        = self.declareGarbageFile('bed')
-        bamSample  = self.declareGarbageFile('bam')
+        bamSample  = self.declareGarbageFile('bam',name=root+'_sample',ext='bam')
         
         sampleBam.sample(self,bam,bamSize,self.sampleSize,bed)
         bedtools.bedToSam(self,bed,samSample)
-        picardTools.samSortToBam(self,samSample,bamSample)  # Is this a target?  Probably not
+        picardTools.samSortToBam(self,samSample,bamSample)
         census.metrics(self,bamSample,metricHist)
         phantomTools.strandCorr(self,bamSample,strandCorr)
 

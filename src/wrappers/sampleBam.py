@@ -11,7 +11,7 @@ def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     #version = step.ana.getCmdOut(step.ana.getToolPath('sampleBam') + \
     #                             " -version | awk '{print $2}'",dryRun=False,logCmd=False)
-    version = "unknown"  # Sorry, this tool has no version.
+    version = "unversioned"  # Sorry, this tool has no version.
     #expected = step.ana.getSetting('sampleBam',version) # Not in settings then not enforced!
     #if step.ana.strict and version != expected:
     #    raise Exception("Expecting sampleBam [version: "+expected+"], " + \
