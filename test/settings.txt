@@ -13,6 +13,7 @@ gemPath /cluster/home/mmaddren/grad/pipeline/gem/gem.jar
 pashPath /cluster/home/mmaddren/grad/pipeline/pash-3.0.6.2/bin/pash-3.0lx.exe
 peakSeqPath /cluster/home/mmaddren/grad/pipeline/peakseq-1.1/bin/PeakSeq
 samtoolsPath /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
+bedtoolsPath /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/bedtools
 fastqcPath /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
 picardToolsPath /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
 

@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
 from src.analysis import Analysis
@@ -59,24 +59,30 @@ class EncodeAnalysis(Analysis):
         i = stack.startJobTree(options)
         print "success!!!"
     
+    def onFail(self, step):
+        self.pipeline.stop()
+        Analysis.onFail(self, step)
     
-    def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
+    def runCmd2(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         if log == None:
             log = self.log
         
         log.out('> ' + cmd)
-        log.close()
+        #log.close()
         
         if dryRun:
             return
         
         stdout = None
+        outfile = None
         if '>' in cmd:
             splits = cmd.split('>')
             cmd = splits[0].strip()
             stdout = splits[1].strip()
-
-        result = subprocess.call(cmd, stdout=outfile, stderr=errfile)
+            outfile = open(stdout, 'w')
+        
+            
+        result = subprocess.call(cmd, stdout=outfile, stderr=log._log)
         #self.log('process completes with exit code ' + str(result))
 
         return result

@@ -1,6 +1,5 @@
-from src.logicalstep import StepError
+from src.logicalStep import StepError
 
-@static
 def runHotspot(step, tokensName, runhotspotName):
         
         hotspotDir = self.step.an.getSetting('hotspotDirectory')
