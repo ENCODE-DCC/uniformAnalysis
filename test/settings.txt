@@ -17,6 +17,13 @@ bedtoolsPath /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/bedtools
 fastqcPath /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
 picardToolsPath /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
 
+pythonPath /cluster/home/mmaddren/python/bin/python
+samSortJarFile /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/SortSam.jar
+censusPath /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
+RscriptPath /usr/bin/Rscript
+phantomToolsPath /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools
+sampleBamPath /cluster/home/mmaddren/grad/pipeline/sampleBam
+
 hotspotDirectory /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
 hotspotChromInfoFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed
 hotspotMappableRegionsFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch

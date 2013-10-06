@@ -53,7 +53,7 @@ def sampe(step, sai1, fastq1, sai2, fastq2, output):
     '''
     Paired end sam generation
     '''
-    cmd = '{bwa} sampe {ref} {sai1} {fastq1} {sai2} {fq2} > {output}'.format( \
+    cmd = '{bwa} sampe {ref} {sai1} {sai2} {fastq1} {fq2} > {output}'.format( \
           bwa=step.ana.getToolPath('bwa'), ref=step.ana.getSetting('dbAssemblyFile'), \
           sai1=sai1, fastq1=fastq1, sai2=sai2, fq2=fastq2, output=output)
           

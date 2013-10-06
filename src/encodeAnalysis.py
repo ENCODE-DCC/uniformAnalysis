@@ -36,6 +36,8 @@ class EncodeAnalysis(Analysis):
                 self.registerInputFile('fastqRd1Rep2', manifest['fileRd1Rep2'])
                 self.registerInputFile('fastqRd2Rep2', manifest['fileRd2Rep2'])
             
+        self.interimDir = None
+        self.targetDir = None    
         self.pipeline = None
         if self.dataType == 'DNAse':
             self.pipeline = DnasePipeline(self)
@@ -62,6 +64,36 @@ class EncodeAnalysis(Analysis):
     def onFail(self, step):
         self.pipeline.stop()
         Analysis.onFail(self, step)
+        raise Exception('just failing')
+    
+    def getFile(self, name):
+        if name in self._inputFiles:
+            return self._inputFiles[name]
+        elif os.path.isfile(self.interimDir + name):
+            return self.interimDir + name
+        elif os.path.isfile(self.targetDir + name):
+            return self.targetDir + name
+        raise Exception('file not found')
+    
+    def createAnalysisDir(self):
+        Analysis.createAnalysisDir(self)
+        self.interimDir = self.dir + 'interim/'
+        os.mkdir(self.interimDir)
+        self.targetDir = self.dir + 'target/'
+        os.mkdir(self.targetDir)
+        
+    def deliverFiles(self, step):
+        for k in step.interimFiles:
+            os.rename(step.interimFiles[k], self.interimDir + k)
+        for k in step.targetFiles:
+            os.rename(step.targetFiles[k], self.targetDir + k)
+    
+    
+    def onSucceed(self, step):
+        self.deliverFiles(step)
+        step.log.out("'\n--- End of step ---")
+        step.log.dump( self.log.file() )
+        #step.cleanup()
     
     def runCmd2(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         if log == None:

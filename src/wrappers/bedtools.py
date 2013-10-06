@@ -11,8 +11,8 @@ def version(step, logOut=True):
     Returns tool version.  Will log to stepLog unless requested not to.
     '''
     # Note: all bedtools should have the same version.
-    path = step.ana.getPath('bedtoolsPath',alt='toolsPath')
-    version = step.ana.getCmdOut(path + "bedToBam 2>&1 | grep Version | awk '{print $2}'", \
+    path = step.ana.getToolPath('bedtools')
+    version = step.ana.getCmdOut(path + " bedtobam 2>&1 | grep Version | awk '{print $2}'", \
                                  dryRun=False,logCmd=False)
     expected = step.ana.getSetting('bedtoolsVersion',version) # Not in settings: not enforced!
     if step.ana.strict and version != expected:
@@ -26,8 +26,8 @@ def bedToSam(step, bed, sam):
     '''
     Convert Bed to Sam.
     '''
-    cmd = '{path}bedToBam -ubam -i {bed} -g {chromInfo} > {sam}'.format( \
-          path=step.ana.getPath('bedtoolsPath',alt='toolsPath'), bed=bed, \
+    cmd = '{path} bedtobam -ubam -i {bed} -g {chromInfo} > {sam}'.format( \
+          path=step.ana.getToolPath('bedtools'), bed=bed, \
           chromInfo=step.ana.getSetting('chromInfoFile'),sam=sam)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \

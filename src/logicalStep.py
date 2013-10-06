@@ -93,7 +93,8 @@ class LogicalStep(Target):
     def onFail(self, e, logTrace=False):
         self._status = 'Fail'
         self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "'\n")
-        self.log.out(traceback.format_exc())
+        if logTrace:
+            self.log.out(traceback.format_exc())
         self.analysis.onFail(self)
 
             
