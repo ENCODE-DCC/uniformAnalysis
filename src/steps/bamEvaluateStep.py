@@ -41,7 +41,7 @@ class BamEvaluateStep(LogicalStep):
         bamSize = samtools.bamSize(self,bam)
         # Take the whole bam if it is smaller than sampleSize requested.        
         if self.sampleSize > bamSize:
-            self.sampleSize=bamSize
+            self.sampleSize=bamSize - 1 # TODO: this is a hack since sampleBam is currently not working with inSize=outSize, we should handle this case more elegantly
         
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]

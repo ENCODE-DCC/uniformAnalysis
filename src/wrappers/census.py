@@ -36,7 +36,8 @@ def metrics(step, bam, metrics):
     singleFlag = ''
     if step.ana.readType() == 'single':
         singleFlag = ' --single_ended'
-    cmd = '{python} {censusPath}bam_to_histo.py{flags} {censusPath}seq.cov005.ONHG19.bed {input} | {python} {censusPath}calculate_libsize.py - > {output}'.format( \
+    # TODO: Using dummy.bed for test data, need to switch back to using the real one!
+    cmd = '{python} {censusPath}bam_to_histo.py{flags} {censusPath}dummy.bed {input} | {python} {censusPath}calculate_libsize.py - > {output}'.format( \
           python=step.ana.getToolPath('python'), flags=singleFlag, \
           censusPath=step.ana.getPath('censusPath',alt='toolPath'), \
           samSortJar=step.ana.getSetting('samSortJarFile'), input=bam, output=metrics)

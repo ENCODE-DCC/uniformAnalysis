@@ -2,10 +2,10 @@ expName TestData
 expId 12345
 dataType DNAse
 readType paired
-fileRd1Rep1 /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/data/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R1_001.fastq.subset
-fileRd2Rep1 /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/data/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R2_001.fastq.subset
-fileRd1Rep2 /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/data/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R2_001.fastq.subset.6.5M
-fileRd2Rep2 /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/data/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R1_001.fastq.subset.6.5M
+fileRd1Rep1 /hive/groups/encode/encode3/testSets/eap/dnase/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R1_001.fastq.subset
+fileRd2Rep1 /hive/groups/encode/encode3/testSets/eap/dnase/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R2_001.fastq.subset
+fileRd1Rep2 /hive/groups/encode/encode3/testSets/eap/dnase/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R2_001.fastq.subset.6.5M
+fileRd2Rep2 /hive/groups/encode/encode3/testSets/eap/dnase/HL1_LNcap_DHT_50U_50_300bp_CTTGTA_L004_R1_001.fastq.subset.6.5M
 
 
 #expName TestData2

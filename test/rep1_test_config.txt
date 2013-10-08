@@ -1,0 +1,7 @@
+expName TestDataChr22
+expId 123
+dataType DNAse
+readType paired
+fileRd1Rep1 /hive/groups/encode/encode3/testSets/eap/dnase/chr22_r1r1.fastq
+fileRd2Rep1 /hive/groups/encode/encode3/testSets/eap/dnase/chr22_r1r2.fastq
+
