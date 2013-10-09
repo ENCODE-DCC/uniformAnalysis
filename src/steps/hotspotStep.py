@@ -33,8 +33,8 @@ class HotspotStep(LogicalStep):
         # Inputs:
         bam = self.ana.getFile('bamRep' + self.replicate)
         
-        tokensName = self.declareGarbageFile('tokens.txt')
-        runhotspotName = self.declareGarbageFile('runhotspot.sh')
+        tokensName = self.declareGarbageFile('tokens',ext='txt')
+        runhotspotName = self.declareGarbageFile('runhotspot',ext='sh')
         
         hotspot.runHotspot(self, tokensName, runhotspotName, bam, peaks)
 
