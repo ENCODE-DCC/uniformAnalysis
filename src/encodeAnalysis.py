@@ -52,7 +52,7 @@ class EncodeAnalysis(Analysis):
         self.createAnalysisDir()
         stack = Stack(self.pipeline)
         options = stack.getDefaultOptions()
-        options.jobTree = self.getSetting('tmpDir') + '/jobTreeRun'
+        options.jobTree = self.dir + 'jobTreeRun'
         options.logLevel = 'INFO'
         
         # need to set batch system, big mem/cpu batches
@@ -87,7 +87,9 @@ class EncodeAnalysis(Analysis):
             os.rename(step.interimFiles[k], self.interimDir + k)
         for k in step.targetFiles:
             os.rename(step.targetFiles[k], self.targetDir + k)
-    
+        for f in step.metaFiles:
+            step.metaFiles[f].write()
+            os.rename(step.metaFiles[f].filename, self.targetDir + f + '.ra')
     
     def onSucceed(self, step):
         self.deliverFiles(step)

@@ -20,12 +20,20 @@ class AlignmentStep(LogicalStep):
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
     def onRun(self):
+        metadata = self.createMetadataFile('metadata')
+        metadata.createStanza('obj', 'versions')
+    
         # Versions:
-        bwa.version(self)
-        samtools.version(self)
+        metadata['versions']['bwaVersion'] = bwa.version(self)
+        metadata['versions']['samtoolsVersion'] = samtools.version(self)
         
         # Outputs:
         bam = self.declareTargetFile('bamRep' + self.replicate,ext='bam')
+        metadata.createStanza('obj', 'bamRep' + self.replicate)
+        metadata['bamRep' + self.replicate]['fileType'] = 'bam'
+        metadata['bamRep' + self.replicate]['readType'] = self.ana.readType()
+        metadata['bamRep' + self.replicate]['expId'] = self.ana.analysisId
+        metadata['bamRep' + self.replicate]['replicate'] = self.replicate
         
         # Inputs:
         if self.ana.readType() == 'single':

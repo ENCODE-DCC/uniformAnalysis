@@ -3,13 +3,6 @@
 import sys, os, shutil, argparse, urllib2, re
 from src.encodeAnalysis import EncodeAnalysis
 
-# TODO:
-# - rename ucscUniformAnalysis to uniformAnalysis
-# - rename experiment to something else--submission?
-#   or analysis and then manifest is analysisparams
-#   or analysissettings and then settings would be 
-#   environemnt or configuration
-
 #EDW->EAP
 # - gotReplicate: needs analysisSettings.ra
 #EAP->EDW
