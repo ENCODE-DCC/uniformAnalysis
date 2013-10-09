@@ -62,7 +62,7 @@ class GalaxyAnalysis(Analysis):
             if not self._analysisDir.endswith('/'):
                 self._analysisDir = self._analysisDir + '/'
         else:
-            self._analysisDir = self.getPath('tmpDir')
+            self._analysisDir = self.getDir('tmpDir')
         self._analysisDir = self._analysisDir + self.analysisId.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
             os.makedirs(self._analysisDir)

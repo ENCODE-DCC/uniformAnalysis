@@ -1,29 +1,40 @@
+# Setting with Tool, File and Dir suffixes:
+# suffix 'Tool' is a full path to an executable (or script or jar)  The prefix is the executable:
+#               Example: 'bwaTool' is the full path to the 'bwa' executable.
+# suffix 'File' is a full path to a resource file of some kind
+#               Example: 'chromInfoFile' is the full path to the chromInfo file
+# suffix 'Dir' is a ful path to a directory, expected to end in '/'
+#               Example: toolsDir is the default tool bin directory
+ 
 tmpDir /cluster/home/mmaddren/grad/uniformAnalysis/tmp/
 outputPath /cluster/home/mmaddren/grad/uniformAnalysis/output/
+toolsDir /cluster/home/mmaddren/grad/pipeline/
 
 dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
 chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
-bowtieIndexPath /cluster/home/mmaddren/grad/pipeline/data/ref.bt2
-bowtiePath /cluster/home/mmaddren/grad/pipeline/bowtie2-2.1.0/bowtie2
-macsPath /cluster/home/mmaddren/grad/pipeline/MACS-master/bin/macs2
-hotspotPath /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/hotspot-deploy/bin/hotspot
-starPath /cluster/home/mmaddren/grad/pipeline/STAR_2.3.0e.Linux_x86_64/STAR
-bwaPath /cluster/home/mmaddren/grad/pipeline/gcap/bin/bwa
-gemPath /cluster/home/mmaddren/grad/pipeline/gem/gem.jar
-pashPath /cluster/home/mmaddren/grad/pipeline/pash-3.0.6.2/bin/pash-3.0lx.exe
-peakSeqPath /cluster/home/mmaddren/grad/pipeline/peakseq-1.1/bin/PeakSeq
-samtoolsPath /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
-bedtoolsPath /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/bedtools
-fastqcPath /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
-picardToolsPath /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
+bowtieIndexFile /cluster/home/mmaddren/grad/pipeline/data/ref.bt2
+bowtieTool /cluster/home/mmaddren/grad/pipeline/bowtie2-2.1.0/bowtie2
+macsTool /cluster/home/mmaddren/grad/pipeline/MACS-master/bin/macs2
+#hotspotTool /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/hotspot-deploy/bin/hotspot # Not used
+starTool /cluster/home/mmaddren/grad/pipeline/STAR_2.3.0e.Linux_x86_64/STAR
+bwaTool /cluster/home/mmaddren/grad/pipeline/gcap/bin/bwa
+gemTool /cluster/home/mmaddren/grad/pipeline/gem/gem.jar
+pashTool /cluster/home/mmaddren/grad/pipeline/pash-3.0.6.2/bin/pash-3.0lx.exe
+peakSeqTool /cluster/home/mmaddren/grad/pipeline/peakseq-1.1/bin/PeakSeq
+samtoolsTool /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
+#bedtoolsTool /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/bedtools  # Not used
+bedtoolsDir /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/
+fastqcTool /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
+picardToolsDir /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
+#samSortJarFile /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/SortSam.jar  # Not used
 
-pythonPath /cluster/home/mmaddren/python/bin/python
-samSortJarFile /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/SortSam.jar
-censusPath /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
-RscriptPath /usr/bin/Rscript
-phantomToolsPath /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools
-sampleBamPath /cluster/home/mmaddren/grad/pipeline/sampleBam
+pythonTool /cluster/home/mmaddren/python/bin/python
+censusDir /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
+RscriptTool /usr/bin/Rscript
+phantomToolsDir /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools/
+#sampleBamTool /cluster/home/mmaddren/grad/pipeline/sampleBam  # Not needed, as it is in toolsDir
+javaTool    /usr/bin/java
 
-hotspotDirectory /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
-hotspotChromInfoFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed
-hotspotMappableRegionsFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch
+hotspotDir /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
+#hotspotChromInfoFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed  # Not used
+#hotspotMappableRegionsFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch  # Not used

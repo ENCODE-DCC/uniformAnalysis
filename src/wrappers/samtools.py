@@ -1,18 +1,7 @@
 #!/usr/bin/env python2.7
 # samtools.py module holds methods for running samtools from a LogicalStep.
 #
-# Settings required: samtoolsPath (or toolsPath), chromInfoFile, samtoolsVersion
-#
-# Each granular function will add to the step.log: the start and stop time and the complete
-# command line run.  Additionally, the logical styep should include the version() call
-# placing the version in the step.log as well. Example log output:
-#
-# # samtools [version 0.1.19-44428cd]:
-# 
-# # 2013-09-18 12:07:30 'samtools view' begins...
-# > samtools view -bt {ref} {input} -o {output}
-# ... {samtools command stderr output}
-# # 2013-09-18 12:30:03 'samtools view' returned 0
+# Settings required: samtoolsTool (or toolsDir), chromInfoFile
 
 import datetime
 from src.logicalStep import StepError
@@ -21,7 +10,7 @@ def version(step, logOut=True):
     '''
     Returns tool version.  Will log to stepLog unless requested not to.
     '''
-    version = step.ana.getCmdOut(step.ana.getToolPath('samtools')+' 2>&1 | grep Version', \
+    version = step.ana.getCmdOut(step.ana.getTool('samtools')+' 2>&1 | grep Version', \
                                  dryRun=False,logCmd=False)
     version = version[ len('Version: '): ]  # Clip off the version label
     expected = step.ana.getSetting('samtoolsVersion',version) # Not in settings then not enforced!
@@ -37,7 +26,7 @@ def samToBam(step, input, output):
     Alignment step.
     '''
     cmd = '{samtools} view -bt {ref} {input} -o {output}'.format( \
-          samtools=step.ana.getToolPath('samtools'), ref=step.ana.getSetting('chromInfoFile'), \
+          samtools=step.ana.getTool('samtools'), ref=step.ana.getSetting('chromInfoFile'), \
           input=input, output=output)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
@@ -52,7 +41,7 @@ def bamSize(step, bam):
     '''
     Returns size of a bam.
     '''
-    cmd = '{samtools} view -c {bam}'.format( samtools=step.ana.getToolPath('samtools'), bam=bam)
+    cmd = '{samtools} view -c {bam}'.format( samtools=step.ana.getTool('samtools'), bam=bam)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
                  " 'samtools' bam size begins...")

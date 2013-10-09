@@ -17,11 +17,18 @@ class FastqValidationStep(LogicalStep):
         self.suffix = str(suffix)
         LogicalStep.__init__(self, analysis, 'fastqValidation_' + self.suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
+        
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            fastqStatsAndSubsample.version(self)
+            fastqc.version(self)
 
     def onRun(self):
-        # Versions:
-        fastqStatsAndSubsample.version(self)
-        fastqc.version(self)
+        self.writeVersions()
         
         # Outputs:  
         # NOTE: These outputs must be declared even thouugh they don't appear to be used.

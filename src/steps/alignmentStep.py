@@ -19,21 +19,20 @@ class AlignmentStep(LogicalStep):
         LogicalStep.__init__(self, analysis, analysis.readType() + 'Alignment_Rep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            bwa.version(self)
+            samtools.version(self)
+        
     def onRun(self):
-        metadata = self.createMetadataFile('metadata')
-        metadata.createStanza('obj', 'versions')
-    
-        # Versions:
-        metadata['versions']['bwaVersion'] = bwa.version(self)
-        metadata['versions']['samtoolsVersion'] = samtools.version(self)
+        self.writeVersions()  # Could be moved to logicalStep.run() but this is clearer
         
         # Outputs:
         bam = self.declareTargetFile('bamRep' + self.replicate,ext='bam')
-        metadata.createStanza('obj', 'bamRep' + self.replicate)
-        metadata['bamRep' + self.replicate]['fileType'] = 'bam'
-        metadata['bamRep' + self.replicate]['readType'] = self.ana.readType()
-        metadata['bamRep' + self.replicate]['expId'] = self.ana.analysisId
-        metadata['bamRep' + self.replicate]['replicate'] = self.replicate
         
         # Inputs:
         if self.ana.readType() == 'single':

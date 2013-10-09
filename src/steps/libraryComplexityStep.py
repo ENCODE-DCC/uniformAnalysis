@@ -20,13 +20,19 @@ class LibraryComplexityStep(LogicalStep):
         self.replicate = str(replicate)
         LogicalStep.__init__(self, analysis, 'libraryComplexity_Rep' + self.replicate)
         #self.bam = bam
-        
-    def onRun(self):      
 
-        # Versions:
-        picardTools.version(self)
-        census.version(self)
-        phantomTools.version(self)
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            picardTools.version(self)
+            census.version(self)
+            phantomTools.version(self)
+
+    def onRun(self):      
+        self.writeVersions()
         
         # Outputs:
         samSample  = self.declareInterimFile('samSampleRep' + self.replicate, ext='sam')

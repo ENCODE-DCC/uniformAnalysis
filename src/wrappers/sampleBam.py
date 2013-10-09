@@ -2,14 +2,14 @@
 # sampleBam.py module holds methods for running sampleBam from 
 # a LogicalStep.  It is used to sample a fastq.
 #
-# Settings required: sampleBamPath
+# Settings required: sampleBamTool (or toolsDir)
 
 import datetime
 from src.logicalStep import StepError
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    #version = step.ana.getCmdOut(step.ana.getToolPath('sampleBam') + \
+    #version = step.ana.getCmdOut(step.ana.getTool('sampleBam') + \
     #                             " -version | awk '{print $2}'",dryRun=False,logCmd=False)
     version = "unversioned"  # Sorry, this tool has no version.
     #expected = step.ana.getSetting('sampleBam',version) # Not in settings then not enforced!
@@ -25,7 +25,7 @@ def sample(step, bam, bamSize, sampleSize, samSample):
     Alignment step.
     '''
     cmd = '{sampler} {input} {inSize} {outSize} {output}'.format( \
-          sampler=step.ana.getToolPath('sampleBam'), input=bam, \
+          sampler=step.ana.getTool('sampleBam'), input=bam, \
           inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
           
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'sampleBam' begins...")

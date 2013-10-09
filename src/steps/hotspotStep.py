@@ -16,9 +16,16 @@ class HotspotStep(LogicalStep):
         LogicalStep.__init__(self, analysis, analysis.readType() + 'Hotspot_Rep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            hotspot.version(self)
+
     def onRun(self):
-        # Versions:
-        hotspot.version(self)
+        self.writeVersions()
         
         # Outputs:
         peaks = self.declareTargetFile('peaksRep' + self.replicate,ext='bed') # is this a bed?

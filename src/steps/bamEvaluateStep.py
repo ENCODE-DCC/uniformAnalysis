@@ -19,40 +19,46 @@ class BamEvaluateStep(LogicalStep):
         self.sampleSize = sampleSize
         LogicalStep.__init__(self, analysis, 'bamEvaluate_Rep' + self.replicate)
         
-    def onRun(self):      
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            samtools.version(self)
+            sampleBam.version(self)
+            bedtools.version(self)
+            picardTools.version(self)
+            census.version(self)
+            phantomTools.version(self)
 
-        # Versions:
-        samtools.version(self)
-        sampleBam.version(self)
-        bedtools.version(self)
-        picardTools.version(self)
-        census.version(self)
-        phantomTools.version(self)
-        
-        # Outputs:
-        samSample  = self.declareInterimFile('samSampleRep' + self.replicate, ext='sam')
-        #bamSample = self.declareInterimFile('bamSampleRep' + self.replicate, ext='bam')
-        metricHist = self.declareTargetFile( 'metricRep'     + self.replicate, ext='txt')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='txt')
-        
+    def onRun(self):      
+        self.writeVersions()
+
         # Inputs:
         bam = self.ana.getFile('bamRep' + self.replicate)
         
-        bamSize = samtools.bamSize(self,bam)
-        # Take the whole bam if it is smaller than sampleSize requested.        
-        if self.sampleSize > bamSize:
-            self.sampleSize=bamSize - 1 # TODO: this is a hack since sampleBam is currently not working with inSize=outSize, we should handle this case more elegantly
-        
+        # Outputs:
+        metricHist = self.declareTargetFile( 'metricRep'     + self.replicate, ext='txt')
+        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='txt')
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
-
-        bed        = self.declareGarbageFile('bed')
-        bamSample  = self.declareGarbageFile('bam',name=root+'_sample',ext='bam')
+        bamSample  = self.declareInterimFile('bamSampleRep' + self.replicate, \
+                                             name=root + '_sample', ext='bam')
         
-        sampleBam.sample(self,bam,bamSize,self.sampleSize,bed)
-        bedtools.bedToSam(self,bed,samSample)
-        picardTools.samSortToBam(self,samSample,bamSample)
+        bamSize = samtools.bamSize(self,bam)
+        
+        
+        if self.sampleSize < bamSize:
+            bed        = self.declareGarbageFile('bed')
+            bamUnsorted  = self.declareGarbageFile('bamUnsortedSample',ext='bam')
+            sampleBam.sample(self,bam,bamSize,self.sampleSize,bed)
+            bedtools.bedToBam(self,bed,bamUnsorted)
+        else:
+            bamUnsorted = bam
+            
+        picardTools.sortBam(self,bamUnsorted,bamSample)
         census.metrics(self,bamSample,metricHist)
         phantomTools.strandCorr(self,bamSample,strandCorr)
 

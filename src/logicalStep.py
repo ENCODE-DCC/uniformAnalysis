@@ -1,7 +1,6 @@
 import sys, string, pprint, traceback
 import os, os.path, datetime
 from jobTree.scriptTree.target import Target
-from ucscGb.gbData.ra.raFile import RaFile
 from analysis import Analysis
 from log import Log
 
@@ -48,7 +47,6 @@ class LogicalStep(Target):
         self.targetFiles = {}
         self.interimFiles = {}
         self.garbageFiles = {}
-        self.metaFiles = {}
         self.log = Log() # Before logfile is declared, log print to stdout
         self._stepName = stepName # descendent classes MUST fill in the _stepName
         self._err = -1 # descendent classes should set this to returns from ganular steps
@@ -140,13 +138,6 @@ class LogicalStep(Target):
         '''
         self.garbageFiles[key] = self.makeFilePath(key, name, ext)
         return self.garbageFiles[key]
-        
-    def createMetadataFile(self, name):
-        '''
-        creates a metadata file... not yet finalized
-        '''
-        self.metaFiles[name] = RaFile(self.makeFilePath(name, None, 'ra'))
-        return self.metaFiles[name]
         
     def declareLogFile(self, name=None):
         '''

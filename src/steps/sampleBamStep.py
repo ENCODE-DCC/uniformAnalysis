@@ -20,8 +20,19 @@ class SampleBamStep(LogicalStep):
         self.sampleSize = sampleSize
         LogicalStep.__init__(self, analysis, 'sampleBam_Rep' + self.replicate)
         #self.bam = bam
-        
+
+    def writeVersions(self,file=None):
+        '''Writes versions to to the log or a file.'''
+        if file != None:
+            #   writes self._stepVersion and each tool version to the file
+            pass
+        else:
+            samtools.version(self)
+            sampleBam.version(self)
+            bedtools.version(self)
+
     def onRun(self):      
+        self.writeVersions()
 
         # Versions:
         samtools.version(self)

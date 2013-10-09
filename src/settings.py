@@ -93,9 +93,9 @@ class Settings(dict):
             return False
         return True
         
-    def getPath(self, key, default=None, alt=None):
+    def getDir(self, key, default=None, alt=None):
         '''
-        Returns an absolute path ending in '/'.
+        Returns an absolute path to a directory (always ending in '/').
         '''
         val = self.get(key, default, alt)
         if val != None and len(val) > 0:

@@ -80,14 +80,14 @@ class Analysis(object):
             raise ValueError('ENCODE3 settings file is unknown!')
         return self._settings.get(settingName,default,alt)
         
-    def getPath(self, settingName, default=None, alt=None):
-        '''        Retrieves full path from the settings file
+    def getDir(self, settingName, default=None, alt=None):
+        '''        Retrieves full path to a directory from the settings file (always ending with '/')
         '''
         if self._settingsFile == None or self._settings == None:
             raise ValueError('ENCODE3 settings file is unknown!')
-        return self._settings.getPath(settingName,default,alt)
+        return self._settings.getDir(settingName,default,alt)
         
-    def getToolPath(self, toolName, orInPath=False):
+    def getTool(self, toolName, orInPath=False):
         '''        Retrieves full path to tool from the settings file
         '''
         # NOTE: set orInPath=True then missing full path will default to execution path
@@ -97,14 +97,14 @@ class Analysis(object):
         if self._settingsFile == None or self._settings == None:
             raise ValueError('ENCODE3 settings file is unknown!')
         try:
-            toolPath = self._settings.get(toolName + 'Path')
+            toolPath = self._settings.get(toolName + 'Tool')
             return os.path.abspath(toolPath)
         except:
             if orInPath:
                 return toolName
             # to clever by half: we know there is no toolName+'Path' so if toolPath
             # is missing, then exception will already have the correct message.
-            return self.getPath(toolName + 'Path',alt='toolPath') + toolName
+            return self.getDir(toolName + 'Dir',alt='toolsDir') + toolName
         
     def createAnalysisDir(self):
         '''creates analysis level directory'''
@@ -113,7 +113,7 @@ class Analysis(object):
         if self._analysisDir != None:
             raise Exception('The directory for this analysis has already been created')
             
-        self._analysisDir = self.getPath('tmpDir') + self.analysisId.replace(' ','_') + '/'
+        self._analysisDir = self.getDir('tmpDir') + self.analysisId.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
             os.makedirs(self._analysisDir)
         return self._analysisDir
