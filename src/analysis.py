@@ -81,14 +81,16 @@ class Analysis(object):
         return self._settings.get(settingName,default,alt)
         
     def getDir(self, settingName, default=None, alt=None):
-        '''        Retrieves full path to a directory from the settings file (always ending with '/')
+        '''
+        Retrieves full path to a directory from the settings file (always ending with '/')
         '''
         if self._settingsFile == None or self._settings == None:
             raise ValueError('ENCODE3 settings file is unknown!')
         return self._settings.getDir(settingName,default,alt)
         
     def getTool(self, toolName, orInPath=False):
-        '''        Retrieves full path to tool from the settings file
+        '''
+        Retrieves full path to tool from the settings file
         '''
         # NOTE: set orInPath=True then missing full path will default to execution path
         #       Example: if toolName is 'bwa' and 'bwaPath' not in settings file, and

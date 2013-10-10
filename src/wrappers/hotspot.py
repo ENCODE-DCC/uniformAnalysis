@@ -82,12 +82,8 @@ def runHotspot(step, tokensName, runhotspotName, bam, peaks):
     runhotspot.write('do\n')
     runhotspot.write('    ./$(basename $script).tok\n')
     runhotspot.write('done\n')
-    
-    # TODO: chmod to be executable?
-        
-        #result = self.ana.runCmd([runhotspotName], logfilename, outputfilename) # TODO: NEED TO CHANGE THIS
-        #if result != 0:
-        #    self.fail()
+    runhotspot.close()
+    os.chmod(runhotspotName, 0775) # Make this executable (leading 0 is for octal)
     
     #cmd = './{script} > {peaks}'.format(script=runhotspotName, peaks=peaks)
     cmd = './' + runhotspotName
