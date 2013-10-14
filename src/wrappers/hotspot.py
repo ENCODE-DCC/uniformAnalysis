@@ -80,13 +80,13 @@ def runHotspot(step, tokensName, runhotspotName, bam, peaks):
     runhotspot.write('$scriptTokBin --clobber --output-dir=' + step.dir + ' $tokenFile $scripts\n')
     runhotspot.write('for script in $scripts\n')
     runhotspot.write('do\n')
-    runhotspot.write('    ./$(basename $script).tok\n')
+    runhotspot.write('    ' + step.dir + '$(basename $script).tok\n')
     runhotspot.write('done\n')
     runhotspot.close()
     os.chmod(runhotspotName, 0775) # Make this executable (leading 0 is for octal)
     
     #cmd = './{script} > {peaks}'.format(script=runhotspotName, peaks=peaks)
-    cmd = './' + runhotspotName
+    cmd = runhotspotName
 
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'hotspot' begins...")
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file

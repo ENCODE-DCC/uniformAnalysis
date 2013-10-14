@@ -84,12 +84,16 @@ class EncodeAnalysis(Analysis):
         
     def deliverFiles(self, step):
         for k in step.interimFiles:
+            if not os.path.exists(step.interimFiles[k]):
+                raise Exception('file not found: ' + step.interimFiles[k])
             os.rename(step.interimFiles[k], self.interimDir + k)
         for k in step.targetFiles:
+            if not os.path.exists(step.targetFiles[k]):
+                raise Exception('file not found: ' + step.targetFiles[k])
             os.rename(step.targetFiles[k], self.targetDir + k)
-        for f in step.metaFiles:
-            step.metaFiles[f].write()
-            os.rename(step.metaFiles[f].filename, self.targetDir + f + '.ra')
+        #for f in step.metaFiles:
+        #    step.metaFiles[f].write()
+        #    os.rename(step.metaFiles[f].filename, self.targetDir + f + '.ra')
     
     def onSucceed(self, step):
         self.deliverFiles(step)
