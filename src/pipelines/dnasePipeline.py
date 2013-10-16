@@ -11,6 +11,7 @@ class DnasePipeline(Pipeline):
     
     def __init__(self, analysis):
         Pipeline.__init__(self, analysis)
+        self.version = '0.9'
         
     def getSingleReplicatePipeline(self, replicate):
         return [

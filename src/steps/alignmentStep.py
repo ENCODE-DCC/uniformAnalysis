@@ -22,14 +22,14 @@ class AlignmentStep(LogicalStep):
     def writeVersions(self,file=None):
         '''Writes versions to to the log or a file.'''
         if file != None:
-            #   writes self._stepVersion and each tool version to the file
-            pass
+            file.add('bwa', bwa.version(self))
+            file.add('samtools', samtools.version(self))
         else:
             bwa.version(self)
             samtools.version(self)
         
     def onRun(self):
-        self.writeVersions()  # Could be moved to logicalStep.run() but this is clearer
+        #self.writeVersions()  # Could be moved to logicalStep.run() but this is clearer
         
         # Outputs:
         bam = self.declareTargetFile('bamRep' + self.replicate,ext='bam')

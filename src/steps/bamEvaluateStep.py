@@ -22,8 +22,12 @@ class BamEvaluateStep(LogicalStep):
     def writeVersions(self,file=None):
         '''Writes versions to to the log or a file.'''
         if file != None:
-            #   writes self._stepVersion and each tool version to the file
-            pass
+            file.add('samtools', samtools.version(self))
+            file.add('sampleBam', sampleBam.version(self))
+            file.add('bedtools', bedtools.version(self))
+            file.add('picardTools', picardTools.version(self))
+            file.add('census', census.version(self))
+            file.add('phantomTools', phantomTools.version(self))
         else:
             samtools.version(self)
             sampleBam.version(self)
@@ -36,7 +40,7 @@ class BamEvaluateStep(LogicalStep):
         self.writeVersions()
 
         # Inputs:
-        bam = self.ana.getFile('bamRep' + self.replicate)
+        bam = self.ana.getFile('bamRep%s.bam' % self.replicate)
         
         # Outputs:
         metricHist = self.declareTargetFile( 'metricRep'     + self.replicate, ext='txt')

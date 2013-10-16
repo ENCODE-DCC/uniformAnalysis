@@ -10,6 +10,12 @@ from src.encodeAnalysis import EncodeAnalysis
 #       manifest.txt: filename, format, outputtype, experiment, replicate, enrichedin, ucscDb
 # 
 
+# 10/15
+# I think declareLogFile doesn't work for the non-step log, so I'm back to using the metadata object but I'm only putting it in encodeAnalysis so that galaxy doesn't need
+# will likely need to read Ra files from Jim so it makes sense for me to have
+# prefer that the caller does the writeVersion() instead of the run function
+# analysis.readType() method seems out of place, just let it be a normal variable
+
 def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')

@@ -47,6 +47,7 @@ class LogicalStep(Target):
         self.targetFiles = {}
         self.interimFiles = {}
         self.garbageFiles = {}
+        self.metaFiles = {}
         self.log = Log() # Before logfile is declared, log print to stdout
         self._stepName = stepName # descendent classes MUST fill in the _stepName
         self._err = -1 # descendent classes should set this to returns from ganular steps
@@ -64,6 +65,7 @@ class LogicalStep(Target):
         self.log.out("--- Beginning '" + self._stepName + "' [version: "+self.version+"] [" + 
                      datetime.datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
         try:
+            self.ana.onRun(self)
             self.onRun() #now this calls child onRun directly
         except StepError as e:
             self.onFail(e)
@@ -143,9 +145,9 @@ class LogicalStep(Target):
         '''
         Gets or sets the filename for the log that will be created by this logical step.
         '''
-        if self.log != None and self.log.file() != None:
+        if self.log != None and self.log.file() != None and name != None:
             return self.log.file()
-        self.encodeDebug(str(self))
+        #self.encodeDebug(str(self))
         if name == None:
             if self._stepName != None:
                 name = self._stepName

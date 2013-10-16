@@ -1,6 +1,7 @@
-import os, subprocess
+import os, subprocess, shutil
 from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
+from ucscGb.gbData.ra.raFile import RaFile
 from src.analysis import Analysis
 from src.settings import Settings
 from src.pipelines.dnasePipeline import DnasePipeline
@@ -12,13 +13,13 @@ class EncodeAnalysis(Analysis):
         manifest = Settings(manifestFile)
     
         Analysis.__init__(self, settingsFile, manifest['expId'])
-    
+
         self.name = manifest['expName']
         self.dataType = manifest['dataType']
-        self.readType( manifest['readType'] )
+        self._readType = manifest['readType']
         self.replicates = []
         
-        if self.readType() == 'single':
+        if self._readType == 'single':
             if 'fileRep1' in manifest:
                 self.replicates.append(1)
                 self.registerInputFile('fastqRep1', manifest['fileRep1'])
@@ -26,7 +27,7 @@ class EncodeAnalysis(Analysis):
                 self.replicates.append(2)
                 self.registerInputFile('fastqRep2', manifest['fileRep2'])
 
-        elif self.readType() == 'paired':
+        elif self._readType == 'paired':
             if 'fileRd1Rep1' in manifest:
                 self.replicates.append(1)
                 self.registerInputFile('fastqRd1Rep1', manifest['fileRd1Rep1'])
@@ -83,23 +84,48 @@ class EncodeAnalysis(Analysis):
         os.mkdir(self.targetDir)
         
     def deliverFiles(self, step):
+        subDir = self.dir + step.name + '_submit/'
+        os.mkdir(subDir)
+    
         for k in step.interimFiles:
             if not os.path.exists(step.interimFiles[k]):
                 raise Exception('file not found: ' + step.interimFiles[k])
-            os.rename(step.interimFiles[k], self.interimDir + k)
-        for k in step.targetFiles:
-            if not os.path.exists(step.targetFiles[k]):
-                raise Exception('file not found: ' + step.targetFiles[k])
-            os.rename(step.targetFiles[k], self.targetDir + k)
-        #for f in step.metaFiles:
-        #    step.metaFiles[f].write()
-        #    os.rename(step.metaFiles[f].filename, self.targetDir + f + '.ra')
+            os.rename(step.interimFiles[k], self.interimDir + os.path.basename(step.interimFiles[k]))
+        if len(step.targetFiles) > 0:
+            md = self.createMetadataFile(step, 'files')
+            for k in step.targetFiles:
+                if not os.path.exists(step.targetFiles[k]):
+                    raise Exception('file not found: ' + step.targetFiles[k])
+                os.rename(step.targetFiles[k], self.targetDir + os.path.basename(step.targetFiles[k]))
+                shutil.copy(self.targetDir + os.path.basename(step.targetFiles[k]), subDir + os.path.basename(step.targetFiles[k]))
+                md.createStanza('object', k)
+                md.add('fileName', subDir + os.path.basename(step.targetFiles[k]))
+                md.add('readType', self._readType)
+                md.add('expId', self.analysisId)
+                md.add('replicate', step.replicate) # TODO: will break after single-replicate part... will need to rewrite this to be better
+                
+        for f in step.metaFiles:
+            step.metaFiles[f].write()
+            os.rename(step.metaFiles[f].filename, subDir + f + '.ra')
     
     def onSucceed(self, step):
         self.deliverFiles(step)
         step.log.out("'\n--- End of step ---")
         step.log.dump( self.log.file() )
         #step.cleanup()
+    
+    def createMetadataFile(self, step, name):
+        if name in step.metaFiles:
+            raise Exception('metadata file already exists')
+        step.metaFiles[name] = RaFile(step.dir + name + '.ra')
+        return step.metaFiles[name]
+    
+    def onRun(self, step):
+        versions = self.createMetadataFile(step, 'versions')
+        versions.createStanza('pipeline', self.pipeline.version)
+        versions.add(step.name, step.version)
+        step.writeVersions(versions)
+        
     
     def runCmd2(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         if log == None:

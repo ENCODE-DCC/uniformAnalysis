@@ -26,6 +26,7 @@ class Pipeline(Target):
         Target.__init__(self, time=0.00025, memory=ram, cpu=cpus)
         self.analysis = analysis
         self.running = False
+        self.version = '99999'
         
     def getSingleReplicatePipeline(self, replicate):
         """

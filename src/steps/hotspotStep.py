@@ -31,7 +31,7 @@ class HotspotStep(LogicalStep):
         peaks = self.declareTargetFile('peaksRep' + self.replicate,ext='bed') # is this a bed?
         
         # Inputs:
-        bam = self.ana.getFile('bamRep' + self.replicate)
+        bam = self.ana.getFile('bamRep%s.bam' % self.replicate)
         
         tokensName = self.declareGarbageFile('tokens',ext='txt')
         runhotspotName = self.declareGarbageFile('runhotspot',ext='sh')

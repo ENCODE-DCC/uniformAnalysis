@@ -53,6 +53,9 @@ class Analysis(object):
         self._settings = Settings(self._settingsFile)
 
 
+    def onRun(self, step):
+        pass
+        
     def dryRun(self,setTo=None):
         '''
         Sets or returns the dryRun variable.
