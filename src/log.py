@@ -55,6 +55,16 @@ class Log(object):
         self._log.write(text + '\n')
         self.close()  # always close again, so that others might append in turn
 
+    def appendFile(self, fileToAppend):
+        """
+        Dumps the contents of a file into the log
+        """
+        self.close()
+        if self._logFile != None:
+            return os.system('cat ' + fileToAppend + ' >> ' + self._logFile)
+        else:
+            return os.system('cat ' + fileToAppend)
+
     def dump(self, appendToLog=None):
         """
         Dumps the log to stdout or a provided appendToLog
