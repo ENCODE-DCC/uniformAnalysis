@@ -27,6 +27,7 @@ tmpDir	/hive/users/tdreszer/galaxy/tmp/
 toolsDir /cluster/home/mmaddren/grad/pipeline/
 
 # Location of assembly file for alignments
+#dbAssemblyFile /hive/groups/encode/encode3/encValData/hg19/hg19.fa  # Not there yet!
 dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
 
 # Location of chromosome information for current DB
@@ -50,6 +51,7 @@ javaTool    /usr/bin/java
 
 # Following tool directories contain a collection of executables and resources:
 bedtoolsDir /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/
+bedopsDir /cluster/home/mmaddren/grad/pipeline/bedops/
 censusDir /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
 phantomToolsDir /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools/
 picardToolsDir /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
