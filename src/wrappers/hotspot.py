@@ -20,12 +20,14 @@ def version(step, logOut=True):
         step.log.out("# hotspot [version: " + version + "]")
     return version
 
-def runHotspot(step, tokensName, runhotspotName, bam, peaks):
+def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
         
+    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'hotspot' begins...")
+
     hotspotDir = step.ana.getDir('hotspotDir')
-        
+
     # generate tokens.txt file
-    tokens = open(tokensName, 'w')
+    tokens = open(tokensFile, 'w')
     tokens.write('[script-tokenizer]\n')
     tokens.write('_TAGS_ = ' + bam + '\n')
     tokens.write('_USE_INPUT_ = F\n')
@@ -34,16 +36,16 @@ def runHotspot(step, tokensName, runhotspotName, bam, peaks):
     tokens.write('_K_ = 36\n')
     tokens.write('_CHROM_FILE_ = ' + hotspotDir + 'data/hg19.chromInfo.bed\n')
     tokens.write('_MAPPABLE_FILE_ = ' + hotspotDir + 'data/hg19.K36.mappable_only.bed.starch\n')
-    tokens.write('_DUPOK_ = T\n')
+    tokens.write('_DUPOK_ = T\n')      # TODO: 'T' for DNase but 'F' otherwise
     tokens.write('_FDRS_ = "0.01"\n')
     tokens.write('_DENS_:\n')
-    tokens.write('_OUTDIR_ = ' + hotspotDir + 'pipeline-scripts/test\n')
-    tokens.write('_RANDIR_ = ' + hotspotDir + 'pipeline-scripts/test\n')
+    tokens.write('_OUTDIR_ = ' + step.dir[ :-1 ] + '\n') # outputs must be written to step.dir
+    tokens.write('_RANDIR_ = ' + step.dir + 'rand\n')    # outputs must be written to step.dir
     tokens.write('_OMIT_REGIONS_: ' + hotspotDir + 'data/Satellite.hg19.bed\n')
     tokens.write('_CHECK_ = T\n')
-    tokens.write('_CHKCHR_ = chrX\n')
+    tokens.write('_CHKCHR_ = chr22\n')  # TODO: Change to chr22 (from chrX) until end of debug
     tokens.write('_HOTSPOT_ = ' + hotspotDir + 'hotspot-deploy/bin/hotspot\n')
-    tokens.write('_CLEAN_ = T\n')
+    tokens.write('_CLEAN_ = F\n')    # Changed to F (from T) because step.dir is cleaned up anyway
     tokens.write('_PKFIND_BIN_ = ' + hotspotDir + 'hotspot-deploy/bin/wavePeaks\n')
     tokens.write('_PKFIND_SMTH_LVL_ = 3\n')
     tokens.write('_SEED_=101\n')
@@ -55,14 +57,24 @@ def runHotspot(step, tokensName, runhotspotName, bam, peaks):
     tokens.write('_MERGE_DIST_ = 150\n')
     tokens.write('_MINSIZE_ = 10\n')
     tokens.close()
-    # TODO: put all these tokens in the log?
-        
+    # Put all these tokens in the log:
+    step.log.out('Tokenized parameters:')
+    step.log.appendFile(tokensFile)
+    step.log.out('')  # skip a line
+    
+    # Extend PATH because various tools are expected
+    envPath = os.getenv('PATH')
+    envPath = envPath + ':' + step.ana.getDir('bedtoolsDir',alt='toolsDir')
+    envPath = envPath + ':' + step.ana.getDir('bedopsDir',alt='toolsDir')
+    envPath = envPath + ':' + hotspotDir + 'hotspot-deploy/bin/'
+    os.putenv('PATH',envPath)
+    
     # generate runhotspot file
-    runhotspot = open(runhotspotName, 'w')
+    runhotspot = open(runhotspotScript, 'w')
     runhotspot.write('#! /bin/bash\n')
     runhotspot.write('scriptTokBin=' + hotspotDir + 'ScriptTokenizer/src/script-tokenizer.py\n')
     runhotspot.write('pipeDir=' + hotspotDir + 'pipeline-scripts\n')
-    runhotspot.write('tokenFile=' + tokensName + '\n')
+    runhotspot.write('tokenFile=' + tokensFile + '\n')
     runhotspot.write('scripts="$pipeDir/run_badspot\n')
     runhotspot.write('    $pipeDir/run_make_lib\n')
     runhotspot.write('    $pipeDir/run_wavelet_peak_finding\n')
@@ -78,18 +90,19 @@ def runHotspot(step, tokensName, runhotspotName, bam, peaks):
     runhotspot.write('    $pipeDir/run_add_peaks_per_hotspot\n')
     runhotspot.write('    $pipeDir/run_final"\n')
     runhotspot.write('$scriptTokBin --clobber --output-dir=' + step.dir + ' $tokenFile $scripts\n')
+    runhotspot.write('cd ' + step.dir + '\n')   # outputs must be written to step.dir
     runhotspot.write('for script in $scripts\n')
     runhotspot.write('do\n')
     runhotspot.write('    ' + step.dir + '$(basename $script).tok\n')
     runhotspot.write('done\n')
     runhotspot.close()
-    os.chmod(runhotspotName, 0775) # Make this executable (leading 0 is for octal)
+    os.chmod(runhotspotScript, 0775) # Make this executable (leading 0 is for octal)
+    # TODO: add runhotspotScript to the log?
+    #step.log.out('Run hotspot script:')
+    #step.log.appendFile(runhotspotScript)
+    #step.log.out('')  # skip a line
     
-    #cmd = './{script} > {peaks}'.format(script=runhotspotName, peaks=peaks)
-    cmd = runhotspotName
-
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'hotspot' begins...")
-    step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
+    step.err = step.ana.runCmd(runhotspotScript, log=step.log) # stdout goes to file
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'hotspot' " + \
                  "returned " + str(step.err))
     if step.err != 0:

@@ -6,10 +6,10 @@
 # librarycomplexity.py module holds LibraryComplexityStep class which descends from LogicalStep class.
 # It takes a sample sam and characterizes the library completity
 #
-# Inputs: 1 sampled sam, pre-registered in the analysis keyed as: 'samSampleRep' + replicate
+# Inputs: 1 sampled sam, pre-registered in the analysis keyed as: 'samSampleRep' + replicate+'.sam'
 #
-# Outputs: 1 target  histogram file, keyed as: 'histoRep' + replicate
-#          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate
+# Outputs: 1 target  histogram file, keyed as: 'histoRep' + replicate + '.txt'
+#          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate + '.txt'
 
 from src.logicalstep import LogicalStep
 from src.wrappers import picardTools, census, phantomTools
@@ -21,9 +21,9 @@ class LibraryComplexityStep(LogicalStep):
         LogicalStep.__init__(self, analysis, 'libraryComplexity_Rep' + self.replicate)
         #self.bam = bam
 
-    def writeVersions(self,file=None):
+    def writeVersions(self,raFile=None):
         '''Writes versions to to the log or a file.'''
-        if file != None:
+        if raFile != None:
             #   writes self._stepVersion and each tool version to the file
             pass
         else:
@@ -32,16 +32,13 @@ class LibraryComplexityStep(LogicalStep):
             phantomTools.version(self)
 
     def onRun(self):      
-        self.writeVersions()
-        
         # Outputs:
-        samSample  = self.declareInterimFile('samSampleRep' + self.replicate, ext='sam')
-        #bamSample = self.declareInterimFile('bamSampleRep' + self.replicate, ext='bam')
-        metricHist = self.declareTargetFile( 'histoRep'     + self.replicate, ext='metric')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='')
+        #samSample  = self.declareInterimFile('samSampleRep' + self.replicate + '.sam', ext='sam')
+        metricHist = self.declareTargetFile( 'histoRep'     + self.replicate + '.txt', ext='metric')
+        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt', ext='')
         
         # Inputs:
-        samSample = self.ana.getFile('samSampleRep' + self.replicate)
+        samSample = self.ana.getFile('samSampleRep' + self.replicate + '.sam')
         
         bamSample  = self.declareGarbageFile('bam')
         

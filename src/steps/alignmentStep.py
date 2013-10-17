@@ -3,11 +3,11 @@
 # It performs bwa alignment on single or paired end reads.
 #
 # Inputs: 1 or 2 fastq files, pre-registered in the analysis keyed as:
-#         Single: 'fastqRep'+replicate
-#         Paired: 'fastqRd1Rep'+replicate and 'fastqRd2Rep'+replicate 
+#         Single: 'tagsRep'+replicate+'.fastq'
+#         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 #
 # Outputs: a single bam target which will match and analysis target keyed as:
-#          'bamRep'+replicate
+#          'alignmentRep'+replicate+'.bam'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import bwa, samtools
@@ -16,38 +16,36 @@ class AlignmentStep(LogicalStep):
 
     def __init__(self, analysis, replicate):
         self.replicate = str(replicate)
-        LogicalStep.__init__(self, analysis, analysis.readType() + 'Alignment_Rep' + self.replicate)
+        LogicalStep.__init__(self, analysis, analysis.readType + 'Alignment_Rep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
-    def writeVersions(self,file=None):
+    def writeVersions(self,raFile=None):
         '''Writes versions to to the log or a file.'''
-        if file != None:
-            file.add('bwa', bwa.version(self))
-            file.add('samtools', samtools.version(self))
+        if raFile != None:
+            raFile.add('bwa', bwa.version(self))
+            raFile.add('samtools', samtools.version(self))
         else:
             bwa.version(self)
             samtools.version(self)
         
     def onRun(self):
-        #self.writeVersions()  # Could be moved to logicalStep.run() but this is clearer
-        
         # Outputs:
-        bam = self.declareTargetFile('bamRep' + self.replicate,ext='bam')
+        bam = self.declareTargetFile('alignmentRep' + self.replicate+'.bam',ext='bam')
         
         # Inputs:
-        if self.ana.readType() == 'single':
-            input1 = self.ana.getFile('fastqRep' + self.replicate)
-        elif self.ana.readType() == 'paired':
-            input1 = self.ana.getFile('fastqRd1Rep' + self.replicate)
-            input2 = self.ana.getFile('fastqRd2Rep' + self.replicate)
+        if self.ana.readType == 'single':
+            input1 = self.ana.getFile('tagsRep' + self.replicate+'.fastq')
+        elif self.ana.readType == 'paired':
+            input1 = self.ana.getFile('tagsRd1Rep' + self.replicate+'.fastq')
+            input2 = self.ana.getFile('tagsRd2Rep' + self.replicate+'.fastq')
              
         sam = self.declareGarbageFile('sam')
         sai1 = self.declareGarbageFile('sai1')
         bwa.aln(self, input1, sai1)
         
-        if self.ana.readType() == 'single':
+        if self.ana.readType == 'single':
             bwa.samse(self, sai1, input1, sam)
-        elif self.ana.readType() == 'paired':
+        elif self.ana.readType == 'paired':
             sai2 = self.declareGarbageFile('sai2')
             bwa.aln(self, input2, sai2)
             bwa.sampe(self, sai1, input1, sai2, input2, sam)

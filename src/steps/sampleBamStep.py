@@ -6,9 +6,9 @@
 # samplebamstep.py module holds SampleBamStep class which descends from LogicalStep class.
 # It takes a sample of a bam and converts it to a sam file
 #
-# Inputs: 1 bam, pre-registered in the analysis keyed as: 'bamRep' + replicate
+# Inputs: 1 bam, pre-registered in the analysis keyed as: 'bamRep' + replicate + '.bam'
 #
-# Outputs: 1 interim sam file, keyed as: 'samSample' + replicate
+# Outputs: 1 interim sam file, keyed as: 'samSample' + replicate + '.sam'
 
 from src.logicalstep import LogicalStep
 from src.wrappers import samtools, sampleBam, bedtools
@@ -21,9 +21,9 @@ class SampleBamStep(LogicalStep):
         LogicalStep.__init__(self, analysis, 'sampleBam_Rep' + self.replicate)
         #self.bam = bam
 
-    def writeVersions(self,file=None):
+    def writeVersions(self,raFile=None):
         '''Writes versions to to the log or a file.'''
-        if file != None:
+        if raFile != None:
             #   writes self._stepVersion and each tool version to the file
             pass
         else:
@@ -32,19 +32,12 @@ class SampleBamStep(LogicalStep):
             bedtools.version(self)
 
     def onRun(self):      
-        self.writeVersions()
-
-        # Versions:
-        samtools.version(self)
-        sampleBam.version(self)
-        bedtools.version(self)
-        
         # Outputs:
-        samSample = self.declareInterimFile('samSampleRep' + self.replicate, ext='sam')
-        #bamSample = self.declareTargetFile( 'bamSampleRep' + self.replicate, ext='bam')
+        samSample = self.declareInterimFile('samSampleRep' + self.replicate + '.sam', ext='sam')
+        #bamSample = self.declareTargetFile( 'bamSampleRep' + self.replicate + '.bam', ext='bam')
         
         # Inputs:
-        bam = self.ana.getFile('bamRep' + self.replicate)
+        bam = self.ana.getFile('bamRep' + self.replicate + '.bam')
         
         bamSize = samtools.bamSize(self,bam)
         # Take the whole bam if it is smaller than sampleSize requested.        

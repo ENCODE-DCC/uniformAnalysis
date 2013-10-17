@@ -26,12 +26,20 @@ def sample(step, input, simpleStats, sampleFastq):
     '''
     cmd = '{sampler} -sampleSize={reads} -seed={seed} {input} {outStats} {outSample}'.format( \
           sampler=step.ana.getTool('fastqStatsAndSubsample'), \
-          reads=step.ana.getSetting('fastqSampleReads','100000'), \
-          seed=step.ana.getSetting('fastqSampleSeed', '12345'), \
+          reads='{sample}',seed=step.ana.getSetting('fastqSampleSeed', '12345'), \
           input=input, outStats=simpleStats, outSample=sampleFastq)
-          
+    
+    sampleSize = int( step.ana.getSetting('fastqSampleReads','100000') )
+      
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'sampleFastq' begins...")
-    step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
+    
+    #step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
+    while sampleSize > 50000:
+        step.err = step.ana.runCmd(cmd.format(sample=sampleSize), log=step.log)
+        if step.err != 65280: # size error
+            break;
+        sampleSize = sampleSize - 15000
+        
     step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'sampleFastq' " + \
                  "returned " + str(step.err))
     if step.err != 0:

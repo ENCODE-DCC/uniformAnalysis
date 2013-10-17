@@ -2,11 +2,11 @@
 # bamEvaluateStep.py module holds BamEvaluateStep class which descends from LogicalStep class.
 # It takes a sample of a bam and characterizes the library completity
 #
-# Inputs: 1 bam, pre-registered in the analysis keyed as: 'bamRep' + replicate
+# Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
 #
-# Outputs: 1 interim sam       file, keyed as: 'samSampleRep'  + replicate
-#          1 target  histogram file, keyed as: 'metricRep'     + replicate
-#          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate
+# Outputs: 1 interim sam       file, keyed as: 'sampleRep'  + replicate + '.sam'
+#          1 target  histogram file, keyed as: 'metricRep'     + replicate + '.txt'
+#          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate + '.txt'
 
 import os
 from src.logicalStep import LogicalStep
@@ -19,15 +19,15 @@ class BamEvaluateStep(LogicalStep):
         self.sampleSize = sampleSize
         LogicalStep.__init__(self, analysis, 'bamEvaluate_Rep' + self.replicate)
         
-    def writeVersions(self,file=None):
+    def writeVersions(self,raFile=None):
         '''Writes versions to to the log or a file.'''
-        if file != None:
-            file.add('samtools', samtools.version(self))
-            file.add('sampleBam', sampleBam.version(self))
-            file.add('bedtools', bedtools.version(self))
-            file.add('picardTools', picardTools.version(self))
-            file.add('census', census.version(self))
-            file.add('phantomTools', phantomTools.version(self))
+        if raFile != None:
+            raFile.add('samtools', samtools.version(self))
+            raFile.add('sampleBam', sampleBam.version(self))
+            raFile.add('bedtools', bedtools.version(self))
+            raFile.add('picardTools', picardTools.version(self))
+            raFile.add('census', census.version(self))
+            raFile.add('phantomTools', phantomTools.version(self))
         else:
             samtools.version(self)
             sampleBam.version(self)
@@ -37,18 +37,16 @@ class BamEvaluateStep(LogicalStep):
             phantomTools.version(self)
 
     def onRun(self):      
-        self.writeVersions()
-
         # Inputs:
-        bam = self.ana.getFile('bamRep%s.bam' % self.replicate)
+        bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        metricHist = self.declareTargetFile( 'metricRep'     + self.replicate, ext='txt')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate, ext='txt')
+        metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt', ext='txt')
+        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt', ext='txt')
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareInterimFile('bamSampleRep' + self.replicate, \
+        bamSample  = self.declareInterimFile('sampleRep' + self.replicate + '.sam', \
                                              name=root + '_sample', ext='bam')
         
         bamSize = samtools.bamSize(self,bam)

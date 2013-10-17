@@ -34,7 +34,7 @@ def metrics(step, bam, metrics):
     Generates metrics histogram from bam.
     '''
     singleFlag = ''
-    if step.ana.readType() == 'single':
+    if step.ana.readType == 'single':
         singleFlag = ' --single_ended'
     # TODO: Using dummy.bed for test data, need to switch back to using the real one!
     cmd = '{python} {censusPath}bam_to_histo.py{flags} {censusPath}dummy.bed {input} | {python} {censusPath}calculate_libsize.py - > {output}'.format( \

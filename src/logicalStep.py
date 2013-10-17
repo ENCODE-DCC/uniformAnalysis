@@ -1,5 +1,5 @@
-import sys, string, pprint, traceback
-import os, os.path, datetime
+import sys, pprint, traceback
+import datetime
 from jobTree.scriptTree.target import Target
 from analysis import Analysis
 from log import Log
@@ -235,4 +235,3 @@ if __name__ == '__main__':
     print e3.getCmdOut(cmd,logResult=False)
 
     print "======== end '" + sys.argv[0] + "' test ========"
-

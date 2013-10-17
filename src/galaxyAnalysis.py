@@ -51,7 +51,7 @@ class GalaxyAnalysis(Analysis):
         creates analysis level directory
         MUST override default version for galaxy
         '''
-        if self.analysisId == None:
+        if self.id == None:
             raise Exception('This analysis has not been registered or defined in manifest')    
         if self._analysisDir != None:
             #raise Exception('The directory for this analysis has already been created')
@@ -63,7 +63,7 @@ class GalaxyAnalysis(Analysis):
                 self._analysisDir = self._analysisDir + '/'
         else:
             self._analysisDir = self.getDir('tmpDir')
-        self._analysisDir = self._analysisDir + self.analysisId.replace(' ','_') + '/'
+        self._analysisDir = self._analysisDir + self.id.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
             os.makedirs(self._analysisDir)
         return self._analysisDir
@@ -85,8 +85,8 @@ class GalaxyAnalysis(Analysis):
     def stayWithinGalaxy(self):
         return self._stayWithinGalaxy
         
-    def fileGetPart(self, file, part):
-        fileParts = self.fileParse(file)
+    def fileGetPart(self, fileName, part):
+        fileParts = self.fileParse(fileName)
         try:
             return fileParts[part]
         except:
@@ -107,9 +107,7 @@ class GalaxyAnalysis(Analysis):
         Registers one file of a given io type in the set of all files that are being tracked.
         '''
         
-        try:
-            filesContainer = self._fileSets[ io ]
-        except:
+        if io not in self._fileSets:
             raise ValueError("File IO type'" + io + "' not supported!")
             
         fullPath =  os.path.abspath( someFile )  # Always work with absolute paths
@@ -198,7 +196,6 @@ class GalaxyAnalysis(Analysis):
         '''
         Returns the ID of a particular galaxy output (e.g. 'dataset_278.dat' returns '278'). 
         '''
-        galaxyId = ''
         galaxyRoot = self.fileGetPart(fileName,'root')
         if galaxyRoot == None or len(galaxyRoot) == 0:
             return "0"
@@ -207,7 +204,7 @@ class GalaxyAnalysis(Analysis):
             return "-1"
         return piecesOfRoot[1] 
     
-    def _makeNameWithTemplate(self, rootTemplate=None, ext=None, input='', input2=None ):
+    def _makeNameWithTemplate(self, rootTemplate=None, ext=None, input1='', input2=None ):
         '''
         Creates a file name without a path from a template and existing input file(s).
         If inputs are omitted then a single input is assumed and will be indeterminate if
@@ -215,11 +212,11 @@ class GalaxyAnalysis(Analysis):
         If template is omitted it will default to '%s' or '%s_%s' if 2 inputs. 
         '''
         root = root2 = ''
-        if input == '':
-            input = self.anyKey('nonGalaxyInput')
+        if input1 == '':
+            input1 = self.anyKey('nonGalaxyInput')
         try:
-            if input != None and input != '':
-                root  = self.fileGetPart( self._fileSets['nonGalaxyInput'][input], 'root')
+            if input1 != None and input1 != '':
+                root  = self.fileGetPart( self._fileSets['nonGalaxyInput'][input1], 'root')
             if input2 != None and input2 != '':
                 root2 = self.fileGetPart( self._fileSets['nonGalaxyInput'][input2],'root')
         except:
@@ -227,11 +224,10 @@ class GalaxyAnalysis(Analysis):
             
         fileName = rootTemplate
         if root != '' and root2 != '':
-            len2 = len(root2)
             for ix in range( len(root) ):   # 2nd name should be shortened by common portion
                 if root[ix] != root2[ix]:
                     if ix > 2:
-                         root2 = root2[ ix: ]
+                        root2 = root2[ ix: ]
                     break
             if rootTemplate == None or rootTemplate == '':
                 rootTemplate = '%s_%s'
@@ -248,12 +244,12 @@ class GalaxyAnalysis(Analysis):
                 fileName = fileName + '.' + ext
         return fileName    
     
-    def createOutFile(self, name, io, rootTemplate=None, ext=None, input='', input2=None ):
+    def createOutFile(self, name, io, rootTemplate=None, ext=None, input1='', input2=None ):
         '''
         Creates, registers and returns an output file name based upon input file(s).
         Note that ext='dir' will create a directory.
         '''
-        fileName = self._makeNameWithTemplate(rootTemplate, ext, input, input2 )
+        fileName = self._makeNameWithTemplate(rootTemplate, ext, input1, input2 )
         if io == 'nonGalaxyOutput':
             self.registerTargetOutput(name, fileName)
             self._fileSets[ io ][ name ] = self.resultsDir() + fileName   
@@ -309,6 +305,9 @@ class GalaxyAnalysis(Analysis):
                 for name in sorted( step.targetFiles.keys() ):
                     title = "targetFile[%s]:" % (name)
                     log.out(title.ljust(tab) + step.targetFiles[name])
+        log.out('') # add a blank line at the end
+        log.out('Variables:')
+        log.out(str( self._variables ) )
         log.out('') # add a blank line at the end
 
     def deliverToGalaxy(self, log=None):
@@ -410,12 +409,13 @@ class GalaxyAnalysis(Analysis):
         self.logToResultDir()
         if self.log.file() != None:  # If analysisLog, then be sure to just print step log to stdout
             step.log.dump()
-        if not self.dryRun():
-            step.cleanup()               # Removes logicalStep.stepDir()
+        ### TODO: cleanup step dir AFTER debugging phase.
+        ###if not self.dryRun():
+        ###    step.cleanup()               # Removes logicalStep.stepDir()
         #else:
         #    self.runCmd('ls -l ' + step.dir, dryRun=False)
         #    self.log.out('')
-        self.removeStep(step)  # Do we want to do this?   
+        self.removeStep(step)
         return 0
     
     def onFail(self, logicalStep):

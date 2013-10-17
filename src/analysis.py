@@ -13,10 +13,6 @@ class Analysis(object):
     '''
     
     @property
-    def analysisId(self):
-        return self._analysisId
-        
-    @property
     def dir(self):
         '''Returns the analysis directory'''
         if self._analysisDir == None:
@@ -36,7 +32,8 @@ class Analysis(object):
         details will have to be "registered" to the analysis, one by one.
         '''
         self._pipelineVersion = 1
-        self._analysisId      = analysisId
+        self._variables       = {}
+        self._variables['analysisId'] = analysisId
         self.log              = Log() # Before logfile is declared, log print to stdout
         self._analysisDir     = None
         self._tmpDirs         = {}  # Note: these should be replaced with _steps[0].stepDir()
@@ -44,7 +41,6 @@ class Analysis(object):
         self._inputFiles      = {}
         self._interimFiles    = {}
         self._targetOutput    = {}
-        self._readType        = None    
         self._dryRun          = False
         self.strict           = False
         self._deliveryKeys    = None
@@ -54,7 +50,7 @@ class Analysis(object):
 
 
     def onRun(self, step):
-        pass
+        step.writeVersions()
         
     def dryRun(self,setTo=None):
         '''
@@ -64,16 +60,47 @@ class Analysis(object):
             self._dryRun = setTo
         return self._dryRun
 
-    def readType(self,setTo=None):
+    @property
+    def readType(self):
+        return self._variables['readType']
+    
+    @readType.setter
+    def readType(self,value):
         '''
-        Sets or returns the dryRun variable.
+        Sets the readType variable.
         '''
-        if setTo != None:
-            if setTo.lower() == 'paired':
-                self._readType = 'paired'
-            else:
-                self._readType = 'single'
-        return self._readType
+        if value == 'paired' or value == 'single':
+            self._variables['readType'] = value
+        else:
+            raise ValueError("readType must be either 'paired' or 'single'")
+
+    @property
+    def type(self):
+        return self._variables['analysisType']
+    
+    @type.setter
+    def type(self,value):
+        '''
+        Sets the analysis type variable.
+        '''
+        if value == 'DNase' or value == 'ChIPseq':
+            self._variables['analysisType'] = value
+        else:
+            raise ValueError("Analysis type must be one of 'DNase' or 'ChIPseq'")
+
+    @property
+    def id(self):
+        return self._variables['analysisId']
+        
+    @id.setter
+    def id(self,value):
+        '''
+        Sets the analysis ID variable.
+        '''
+        if 'analysisId' in self._variables:
+            raise ValueError("Analysis ID already set to '"+self._variables['analysisId']+"'")
+             
+        self._variables['analysisId'] = value
 
     def getSetting(self, settingName, default=None, alt=None):
         '''
@@ -113,12 +140,12 @@ class Analysis(object):
         
     def createAnalysisDir(self):
         '''creates analysis level directory'''
-        if self.analysisId == None:
+        if self.id == None:
             raise Exception('This analysis has not been registered or defined in manifest')    
         if self._analysisDir != None:
             raise Exception('The directory for this analysis has already been created')
             
-        self._analysisDir = self.getDir('tmpDir') + self.analysisId.replace(' ','_') + '/'
+        self._analysisDir = self.getDir('tmpDir') + self.id.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
             os.makedirs(self._analysisDir)
         return self._analysisDir
@@ -194,6 +221,10 @@ class Analysis(object):
             
         if err != 0:  # If link won't do, then we need to copy. NOTE: use -r because might be dir
             err = self.runCmd('cp -rf ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
+         
+        # Perhaps dryRun should create empty files, since it doesn't actually runCmd:   
+        if self.dryRun():
+            err = self.runCmd('touch ' + toLoc, logOut=False, logErr=False,dryRun=False,log=log)
         
         if err != 0:
             raise Exception("Unable to ln or cp '" + fromLoc + "' to '" + toLoc + "'")
@@ -216,9 +247,9 @@ class Analysis(object):
         if self.log != None and self.log.file() != None:
             return self.log.file()  # Could check that name matches log
         if name == None:
-            if self._analysisId == None:
+            if self.id == None:
                 raise Exception("This 'analysis' has not been registered or defined in manifest.")
-            name = self._analysisId
+            name = self.id
         self.log.declareFile(self.dir + name.replace(' ','') + '.log')
         #self.log.empty()  # Analysis log is a running log except when explicitly emptied
         return self.log.file()
@@ -330,7 +361,8 @@ class Analysis(object):
             dryRun=self._dryRun
         if log == None:
             log = self.log
-        log.out('> ' + cmd)  # Always log command itself
+        if logOut or logErr:
+            log.out('> ' + cmd)  # Always log command itself
         if dryRun:
             return 0
         log.close()  # Ensure log is closed so that command redirect can be tacked on
@@ -381,7 +413,7 @@ if __name__ == '__main__':
     #flippyFloppy = e3.getSetting('flippyFloppy')
 
     # test analysisDir which implicitly tests getSetting:    
-    e3.analysisId('command-line test') # Should throw exception without this line
+    e3.id = 'command-line test' # Should throw exception without this line
     analysisDir = e3.createAnalysisDir()
     print "analysisDir:     " + analysisDir
     
@@ -389,7 +421,7 @@ if __name__ == '__main__':
     runningLog = e3.declareLogFile('running')
     print "runningLog: " + runningLog
     e3.log.empty()  # previous test might have left some junk here
-    e3.log.out("--- Beginning Running Log for analysis '" +e3.analysisId()+ "' ---")
+    e3.log.out("--- Beginning Running Log for analysis '" +e3.id+ "' ---")
     e3.log.out('Log file name: ' + e3.log.file() + '\n')
 
     # test registerInputFile and registerTargetOutput
@@ -448,5 +480,3 @@ if __name__ == '__main__':
     # def onFail(self, logicalstep)
 
     print "======== end '" + sys.argv[0] + "' test ========"
-
-        

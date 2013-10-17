@@ -16,10 +16,10 @@ class EncodeAnalysis(Analysis):
 
         self.name = manifest['expName']
         self.dataType = manifest['dataType']
-        self._readType = manifest['readType']
+        self.readType = manifest['readType']
         self.replicates = []
         
-        if self._readType == 'single':
+        if self.readType == 'single':
             if 'fileRep1' in manifest:
                 self.replicates.append(1)
                 self.registerInputFile('fastqRep1', manifest['fileRep1'])
@@ -27,7 +27,7 @@ class EncodeAnalysis(Analysis):
                 self.replicates.append(2)
                 self.registerInputFile('fastqRep2', manifest['fileRep2'])
 
-        elif self._readType == 'paired':
+        elif self.readType == 'paired':
             if 'fileRd1Rep1' in manifest:
                 self.replicates.append(1)
                 self.registerInputFile('fastqRd1Rep1', manifest['fileRd1Rep1'])
@@ -100,8 +100,8 @@ class EncodeAnalysis(Analysis):
                 shutil.copy(self.targetDir + os.path.basename(step.targetFiles[k]), subDir + os.path.basename(step.targetFiles[k]))
                 md.createStanza('object', k)
                 md.add('fileName', subDir + os.path.basename(step.targetFiles[k]))
-                md.add('readType', self._readType)
-                md.add('expId', self.analysisId)
+                md.add('readType', self.readType)
+                md.add('expId', self.id)
                 md.add('replicate', step.replicate) # TODO: will break after single-replicate part... will need to rewrite this to be better
                 
         for f in step.metaFiles:
