@@ -4,6 +4,48 @@
 #
 # Settings required: hotspotDir
 
+# SELECTED notes copied from hotspot README:
+# This distribution includes scripts for computing minimally thresholded (z-score = 2) hotspots; 
+# FDR thresholded hotspots, using randomly generated tags; and FDR thresholded peaks within
+# hotspots. 
+#
+# Hotspot calls, FDR thresholding and peak-calling require two passes of calls to hotspot, as well 
+# as generation of random data, hotspot calling on that, and peak-calling on tag densities.
+#
+# For ChIP-seq data, you have the option of including an additional ChIP-seq input file
+# (tokens _USE_INPUT_ and _INPUT_TAGS_), which will trigger subtracting input tags from the 
+# ChIP tags in hotspots in the final scoring of hotspots.
+#
+# The hotspot program makes use of mappability information.  For a given tag length (k-mer size, 
+# variable _K_), only a subset of the genome is uniquely mappable.  Hotspot uses this information 
+# to help compute the background expectation for gauging enrichment.  The file defined by 
+# variable _MAPPABLE_FILE_ in runall.tokens.txt contains the mappable positions in the 
+# genome for a given k-mer size. We have included a file for 36-mers and the human genome hg19 
+# in the data directory.  If you need a different combination, we provide a script in the
+# hotspot-deploy/bin directory, called enumerateUniquelyMappableSpace, which will generate the
+# mappability file for you, given a genome name and a k-mer size.
+#
+# (Running hotspot) will leave a final output directory whose name is the same as the
+# tags file name, appended with the suffix "-final".  Within this directory will be found 
+# files with some or all of the following names:
+#   *.hot.bed                 minimally thresholded hotspots
+#   *.fdr0.01.hot.bed         FDR thresholded hotspots
+#   *.fdr0.01.pks.bed         FDR thresholded peaks
+#   *.fdr0.01.pks.dens.txt    smoothed tag density value at each peak
+#   *.fdr0.01.pks.zscore.txt  z-score for the hotspot containing each peak
+#   *.fdr0.01.pks.pval.txt    binomial p-value for the hotspot containing each peak
+#
+# Dependencies needed in PATH:
+# python2.6+, R, bedops v2.0.0+ 64bit, bedTools, wavelets (in hotspot-deploy/bin/)
+# The unix utility program bc is used to perform some calculations.
+#
+# auxillary script: enumerateUniquelyMappableSpace requires:
+# bowtie and bowtie-build must be in your path, /usr/bin/perl, 
+# qsub for parallelizing (unparallelize: comment out the two lines that start with "qsub,"
+# and the two lines that start with "EOF.")
+
+
+
 import os, datetime
 from src.logicalStep import StepError
 
@@ -21,7 +63,7 @@ def version(step, logOut=True):
     return version
 
 def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
-        
+    
     step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'hotspot' begins...")
 
     hotspotDir = step.ana.getDir('hotspotDir')
@@ -33,7 +75,7 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
     tokens.write('_USE_INPUT_ = F\n')
     tokens.write('_INPUT_TAGS_ =\n')
     tokens.write('_GENOME_ = hg19\n')
-    tokens.write('_K_ = 36\n')
+    tokens.write('_K_ = 36\n')         # <<<<<<<<<<<<<< IMPORTANT TO SET BASED UPON DATA !!!!
     tokens.write('_CHROM_FILE_ = ' + hotspotDir + 'data/hg19.chromInfo.bed\n')
     tokens.write('_MAPPABLE_FILE_ = ' + hotspotDir + 'data/hg19.K36.mappable_only.bed.starch\n')
     tokens.write('_DUPOK_ = T\n')      # TODO: 'T' for DNase but 'F' otherwise

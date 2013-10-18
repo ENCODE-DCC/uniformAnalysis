@@ -33,12 +33,21 @@ class HotspotStep(LogicalStep):
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
         peaks = self.declareTargetFile('peaksRep' + self.replicate + '.bed', \
-                                       name=root + '-peaks/' + root + '.peaks',ext='bed')
+                                       name=root + '-final/' + root + '.fdr0.01.pks',ext='bed')
         # TODO: determine what the actual targets really are:
         #hotspots = self.declareTargetFile('hotRep' + self.replicate + '.bed', \
         #                               name=root + '-final/' + root + '.hot',ext='bed')
         #starchedBed = self.declareTargetFile('bedRep' + self.replicate + '.starch', \
         #                           name=root + '-peaks/' + root + '.tagdensity.bed.starch',ext='')
+        # FROM hotspot README (Running hotspot) will leave a final output directory whose name is
+        # the same as the tags file name, appended with the suffix "-final".  Within this
+        # directory will be found files with some or all of the following names:
+        #   *.hot.bed                 minimally thresholded hotspots
+        #   *.fdr0.01.hot.bed         FDR thresholded hotspots
+        #   *.fdr0.01.pks.bed         FDR thresholded peaks
+        #   *.fdr0.01.pks.dens.txt    smoothed tag density value at each peak
+        #   *.fdr0.01.pks.zscore.txt  z-score for the hotspot containing each peak
+        #   *.fdr0.01.pks.pval.txt    binomial p-value for the hotspot containing each peak
         
         tokensName = self.declareGarbageFile('tokens',ext='txt')
         runhotspotName = self.declareGarbageFile('runhotspot',ext='sh')
