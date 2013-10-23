@@ -49,3 +49,15 @@ def sortBam(step, sam, bam):
     if step.err != 0:
         raise StepError('sortBam')
 
+def fragmentSize(step):
+    '''
+    Calculates the fragment size
+    '''
+    
+    step.log.logToolStart()
+    
+    step.err = step.ana.runCmd(
+        '{java} -Xmx5g -XX:ParallelGCThreads={threads} -jar {picard}Frag {param[insertsize]} HISTOGRAM_FILE={output[pdf]} I={input[bam]} O={output[insert]} VALIDATION_STRINGENCY=SILENT')
+        
+    step.log.logToolEnd()
+    

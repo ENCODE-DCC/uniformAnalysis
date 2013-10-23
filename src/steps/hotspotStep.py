@@ -49,8 +49,16 @@ class HotspotStep(LogicalStep):
         #   *.fdr0.01.pks.zscore.txt  z-score for the hotspot containing each peak
         #   *.fdr0.01.pks.pval.txt    binomial p-value for the hotspot containing each peak
         
+        # TODO: check GCAP pipeline code for config parameters:
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/peaks_calling.py spot_conf()
+        
         tokensName = self.declareGarbageFile('tokens',ext='txt')
         runhotspotName = self.declareGarbageFile('runhotspot',ext='sh')
         
         hotspot.runHotspot(self, tokensName, runhotspotName, bam, peaks)
+        
+        # TODO: Additional processing to generate bigWig file and filter output, and get SPOT score by running on 5M sampling:
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/peaks_calling.py _hotspot_on_replicates()
 
+        # TODO: Union DHS overlap on the peaks with hotspot
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/union_dhs_overlap.py union_DHS_overlap()

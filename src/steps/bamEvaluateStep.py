@@ -62,5 +62,14 @@ class BamEvaluateStep(LogicalStep):
             
         picardTools.sortBam(self,bamUnsorted,bamSample)
         census.metrics(self,bamSample,metricHist)
+        
+        # TODO: convert census metrics into json + document
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/library_complexity.py stat_redun_census(), redundancy_doc()
+        
         phantomTools.strandCorr(self,bamSample,strandCorr)
+        
+        # TODO: convert strand corr into json + document
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/nsc_rsc.py stat_strand_cor() strand_cor_doc()
 
+        # TODO: calculate fragment size with picard tools (pe) or macs2 (se) create document
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/fragment.py fragment_size()

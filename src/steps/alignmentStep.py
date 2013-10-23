@@ -50,5 +50,9 @@ class AlignmentStep(LogicalStep):
             bwa.aln(self, input2, sai2)
             bwa.sampe(self, sai1, input1, sai2, input2, sam)
 
+        # TODO: unique autosome mapping count:
+        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/mapping.py reads_mapping()
+        # autosomeCount
+            
         samtools.samToBam(self, sam, bam)
 
