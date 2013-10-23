@@ -5,9 +5,6 @@
 
 ##### TODO: Resolve path for java.  
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''
     Returns tool version.  Will log to stepLog unless requested not to.
@@ -41,23 +38,19 @@ def sortBam(step, sam, bam):
           java=step.ana.getTool('java',orInPath=True), \
           picard=step.ana.getDir('picardToolsDir',alt='toolsDir'), input=sam, output=bam)
 
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'java' sortBam begins...")
+    toolName = __name__ + " java:sortBam"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log)
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'java' sortBam returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('sortBam')
+    step.toolEnds(toolName,step.err)
 
 def fragmentSize(step):
     '''
     Calculates the fragment size
     '''
+    cmd = '{java} -Xmx5g -XX:ParallelGCThreads={threads} -jar {picard}Frag {param[insertsize]} HISTOGRAM_FILE={output[pdf]} I={input[bam]} O={output[insert]} VALIDATION_STRINGENCY=SILENT'
     
-    step.log.logToolStart()
-    
-    step.err = step.ana.runCmd(
-        '{java} -Xmx5g -XX:ParallelGCThreads={threads} -jar {picard}Frag {param[insertsize]} HISTOGRAM_FILE={output[pdf]} I={input[bam]} O={output[insert]} VALIDATION_STRINGENCY=SILENT')
-        
-    step.log.logToolEnd()
+    toolName = __name__ + " java:fragmentSize"
+    step.toolBegins(toolName)
+    step.err = step.ana.runCmd(cmd, log=step.log)
+    step.toolEnds(toolName,step.err)
     

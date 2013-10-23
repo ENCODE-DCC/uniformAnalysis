@@ -4,9 +4,6 @@
 #
 # Settings required: sampleBamTool (or toolsDir)
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     #version = step.ana.getCmdOut(step.ana.getTool('sampleBam') + \
@@ -28,10 +25,7 @@ def sample(step, bam, bamSize, sampleSize, samSample):
           sampler=step.ana.getTool('sampleBam'), input=bam, \
           inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'sampleBam' begins...")
+    toolName = __name__
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'sampleBam' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('sampleBam')
-
+    step.toolEnds(toolName,step.err)

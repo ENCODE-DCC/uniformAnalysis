@@ -4,9 +4,6 @@
 #
 # Settings required: fastqStatsAndSubsampleTool (or toolsDir), fastqSampleReads, fastqSampleSeed
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     #version = step.ana.getCmdOut(step.ana.getTool('fastqStatsAndSubsample') + \
@@ -20,28 +17,26 @@ def version(step, logOut=True):
         step.log.out("# fastqStatsAndSubsample [version: " + version + "]")
     return version
 
-def sample(step, input, simpleStats, sampleFastq):
+def sample(step, inFastq, simpleStats, sampleFastq):
     '''
     Alignment step.
     '''
     cmd = '{sampler} -sampleSize={reads} -seed={seed} {input} {outStats} {outSample}'.format( \
           sampler=step.ana.getTool('fastqStatsAndSubsample'), \
           reads='{sample}',seed=step.ana.getSetting('fastqSampleSeed', '12345'), \
-          input=input, outStats=simpleStats, outSample=sampleFastq)
+          input=inFastq, outStats=simpleStats, outSample=sampleFastq)
     
     sampleSize = int( step.ana.getSetting('fastqSampleReads','100000') )
       
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'sampleFastq' begins...")
+    toolName = __name__
+    step.toolBegins(toolName)
     
     #step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
-    while sampleSize > 50000:
+    while sampleSize >= 40000:
         step.err = step.ana.runCmd(cmd.format(sample=sampleSize), log=step.log)
         if step.err != 65280: # size error
             break;
         sampleSize = sampleSize - 15000
         
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'sampleFastq' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('sampleFastq')
+    step.toolEnds(toolName,step.err)
 

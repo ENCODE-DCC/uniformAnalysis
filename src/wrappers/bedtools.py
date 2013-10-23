@@ -1,10 +1,7 @@
 #!/usr/bin/env python2.7
 # bedtools.py module holds methods for running bedtools from a LogicalStep.
 #
-# Settings required: bedtoolsDir (or toolsDir), chromInfoFile
-
-import datetime
-from src.logicalStep import StepError
+# Settings required: bedtoolsDir (or toolsDir), hg19ChromInfoFile
 
 def version(step, logOut=True):
     '''
@@ -28,13 +25,9 @@ def bedToBam(step, bed, bam):
     '''
     cmd = '{path}bedToBam -i {bed} -g {chromInfo} > {bam}'.format( \
           path=step.ana.getDir('bedtoolsDir',alt='toolsDir'), bed=bed, \
-          chromInfo=step.ana.getSetting('chromInfoFile'),bam=bam)
+          chromInfo=step.ana.getSetting(step.ana.genome+'ChromInfoFile'),bam=bam)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'bedtools' bed-to-bam conversion begins...")
+    toolName = __name__ + " bedToBam"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'bedtools' bed-to-bam conversion returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('bedToBam')
-
+    step.toolEnds(toolName,step.err)

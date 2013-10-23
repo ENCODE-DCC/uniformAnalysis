@@ -5,9 +5,6 @@
 
 ##### TODO: Resolve path for Rscript. 
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''
     Returns tool version.  Will log to stepLog unless requested not to.
@@ -40,11 +37,8 @@ def strandCorr(step, bam, strandCor):
           phantomTools=step.ana.getDir('phantomToolsDir',alt='toolsDir'), \
           input=bam, output=strandCor)
 
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'Rscript' phantomTools strandCorr begins...")
+    toolName = __name__ + " R:strandCorr"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log)
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'Rscript' phantomTools strandCorr returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('strandCorr')
+    step.toolEnds(toolName,step.err)
 

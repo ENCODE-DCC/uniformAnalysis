@@ -46,7 +46,7 @@
 
 
 
-import os, datetime
+import os
 from src.logicalStep import StepError
 
 def version(step, logOut=True):
@@ -62,11 +62,17 @@ def version(step, logOut=True):
         step.log.out("# hotspot [version: " + version + "]")
     return version
 
-def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
+def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'hotspot' begins...")
+    toolName = __name__ + " peak calling"
+    step.toolBegins(toolName)
 
+    # raise this exception where tagLength is actually used.
+    if tagLen not in ['32','36','40','50','58','72','76','100']:
+        raise StepError('hotspot tag length ' + tagLen + ' not supported!')
+    
     hotspotDir = step.ana.getDir('hotspotDir')
+    genome = step.ana.genome
 
     # generate tokens.txt file
     tokens = open(tokensFile, 'w')
@@ -74,16 +80,17 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
     tokens.write('_TAGS_ = ' + bam + '\n')
     tokens.write('_USE_INPUT_ = F\n')
     tokens.write('_INPUT_TAGS_ =\n')
-    tokens.write('_GENOME_ = hg19\n')
-    tokens.write('_K_ = 36\n')         # <<<<<<<<<<<<<< IMPORTANT TO SET BASED UPON DATA !!!!
-    tokens.write('_CHROM_FILE_ = ' + hotspotDir + 'data/hg19.chromInfo.bed\n')
-    tokens.write('_MAPPABLE_FILE_ = ' + hotspotDir + 'data/hg19.K36.mappable_only.bed.starch\n')
+    tokens.write('_GENOME_ = ' + genome + '\n')
+    tokens.write('_CHROM_FILE_ = ' + hotspotDir + 'data/' + genome + '.chromInfo.bed\n')
+    tokens.write('_K_ = ' + tagLen + '\n') # <<<<<<<<<<<<<< IMPORTANT TO SET BASED UPON DATA !!!!
+    tokens.write('_MAPPABLE_FILE_ = ' + hotspotDir + 'data/' + \
+                                        genome + '.K' + tagLen + '.mappable_only.bed\n')
     tokens.write('_DUPOK_ = T\n')      # TODO: 'T' for DNase but 'F' otherwise
     tokens.write('_FDRS_ = "0.01"\n')
     tokens.write('_DENS_:\n')
     tokens.write('_OUTDIR_ = ' + step.dir[ :-1 ] + '\n') # outputs must be written to step.dir
     tokens.write('_RANDIR_ = ' + step.dir + 'rand\n')    # outputs must be written to step.dir
-    tokens.write('_OMIT_REGIONS_: ' + hotspotDir + 'data/Satellite.hg19.bed\n')
+    tokens.write('_OMIT_REGIONS_: ' + hotspotDir + 'data/Satellite.' + genome + '.bed\n')
     tokens.write('_CHECK_ = T\n')
     tokens.write('_CHKCHR_ = chr22\n')  # TODO: Change to chr22 (from chrX) until end of debug
     tokens.write('_HOTSPOT_ = ' + hotspotDir + 'hotspot-deploy/bin/hotspot\n')
@@ -145,8 +152,5 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, peaks):
     #step.log.out('')  # skip a line
     
     step.err = step.ana.runCmd(runhotspotScript, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'hotspot' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('hotspot')
+    step.toolEnds(toolName,step.err)
             

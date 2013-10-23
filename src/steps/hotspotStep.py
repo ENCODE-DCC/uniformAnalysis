@@ -12,9 +12,10 @@ from src.wrappers import hotspot
 
 class HotspotStep(LogicalStep):
 
-    def __init__(self, analysis, replicate):
+    def __init__(self, analysis, replicate, tagLen):
         self.replicate = str(replicate)
-        LogicalStep.__init__(self, analysis, analysis.readType + 'Hotspot_Rep' + self.replicate)
+        self.tagLen    = str(tagLen)
+        LogicalStep.__init__(self, analysis, 'hotspot_Rep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
     def writeVersions(self,raFile=None):
@@ -55,7 +56,7 @@ class HotspotStep(LogicalStep):
         tokensName = self.declareGarbageFile('tokens',ext='txt')
         runhotspotName = self.declareGarbageFile('runhotspot',ext='sh')
         
-        hotspot.runHotspot(self, tokensName, runhotspotName, bam, peaks)
+        hotspot.runHotspot(self, tokensName, runhotspotName, bam, self.tagLen)
         
         # TODO: Additional processing to generate bigWig file and filter output, and get SPOT score by running on 5M sampling:
         # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/peaks_calling.py _hotspot_on_replicates()

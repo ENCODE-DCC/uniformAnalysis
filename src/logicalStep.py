@@ -197,6 +197,18 @@ class LogicalStep(Target):
         elif len(ext) > 0 and not ext.startswith('.'):
             ext = '.' + ext
         return self.dir + name + ext
+    
+    def toolBegins(self, toolName):
+        '''Standardized message before tool comandline'''
+        self.out("\n# " + datetime.datetime.now().strftime("%Y-%m-%d %X") + ' ' + toolname + \
+                 ' begins...')
+        
+    def toolEnds(self,toolName,retVal,raiseError=True):
+        '''Standardized message after tool comandline.  Raise exception for non-zero retVal.'''
+        self.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " " + toolName + \
+                     " returned " + str(retVal))
+        if raiseError and retVal != 0:
+            raise StepError(toolName)
 
 
 ############ command line testing ############

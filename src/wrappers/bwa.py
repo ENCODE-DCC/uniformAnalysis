@@ -2,10 +2,7 @@
 # bwa.py module holds methods for running bwa from a LogicalStep.
 # It performs bwa alignment on single or paired end reads.
 #
-# Settings required: bwaTool (or toolsDir), dbAssemblyFile, bwaVersion
-
-import datetime
-from src.logicalStep import StepError
+# Settings required: bwaTool (or toolsDir), hg19AssemblyFile, bwaVersion
 
 def version(step, logOut=True):
     '''
@@ -22,49 +19,43 @@ def version(step, logOut=True):
         step.log.out("# bwa alignment [version: " + version + "]")
     return version
 
-def aln(step, input, output):
+def aln(step, fastq, outSai):
     '''
     Alignment step.
     '''
     cmd = '{bwa} aln -t {threads} {ref} {input} > {output}'.format( \
           bwa=step.ana.getTool('bwa'), threads=4, \
-          ref=step.ana.getSetting('dbAssemblyFile'), \
-          input=input, output=output)
+          ref=step.ana.getSetting(step.ana.genome +'AssemblyFile'), \
+          input=fastq, output=outSai)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'bwa aln' begins...")
+    toolName = __name__ + " aln"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'bwa aln' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('aln')
+    step.toolEnds(toolName,step.err)
         
-def sampe(step, sai1, fastq1, sai2, fastq2, output):
+def sampe(step, sai1, fastq1, sai2, fastq2, outSam):
     '''
     Paired end sam generation
     '''
     cmd = '{bwa} sampe {ref} {sai1} {sai2} {fastq1} {fq2} > {output}'.format( \
-          bwa=step.ana.getTool('bwa'), ref=step.ana.getSetting('dbAssemblyFile'), \
-          sai1=sai1, fastq1=fastq1, sai2=sai2, fq2=fastq2, output=output)
+          bwa=step.ana.getTool('bwa'), ref=step.ana.getSetting(step.ana.genome +'AssemblyFile'), \
+          sai1=sai1, fastq1=fastq1, sai2=sai2, fq2=fastq2, output=outSam)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'bwa sampe' begins...")
+    toolName = __name__ + " sampe"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'bwa sampe' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('sampe')
+    step.toolEnds(toolName,step.err)
     
-def samse(step, sai, fastq, output):
+def samse(step, sai, fastq, outSam):
     '''
     Unpaired (single end) sam generation
     '''
     cmd = '{bwa} samse {ref} {sai} {fastq} > {output}'.format( \
-          bwa=step.ana.getTool('bwa'), ref=step.ana.getSetting('dbAssemblyFile'), \
-          sai=sai, fastq=fastq, output=output)
+          bwa=step.ana.getTool('bwa'), ref=step.ana.getSetting(step.ana.genome +'AssemblyFile'), \
+          sai=sai, fastq=fastq, output=outSam)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'bwa samse' begins...")
+    toolName = __name__ + " samse"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'bwa samse' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('samse')
+    step.toolEnds(toolName,step.err)
 

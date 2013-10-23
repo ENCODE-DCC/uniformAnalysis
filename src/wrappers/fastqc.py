@@ -4,9 +4,6 @@
 #
 # Settings required: fastqcTool (or toolsDir)
 
-import os, datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     version = step.ana.getCmdOut(step.ana.getTool('fastqc') + " -version | awk '{print $2}'", \
@@ -19,15 +16,12 @@ def version(step, logOut=True):
         step.log.out("# fastqc validation [version: " + version + "]")
     return version
 
-def validate(step, input, outDir):
+def validate(step, inFastq, outDir):
     '''Validation'''
     cmd = '{fastqc} {fastq} --extract -q'.format( \
-          fastqc=step.ana.getTool('fastqc'), fastq=input)
+          fastqc=step.ana.getTool('fastqc'), fastq=inFastq)
 
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'fastqc' begins...")
+    toolName = __name__ + " validate"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'fastqc' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('fastqc')
-
+    step.toolEnds(toolName,step.err)

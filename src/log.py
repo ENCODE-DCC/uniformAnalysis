@@ -44,12 +44,6 @@ class Log(object):
         if self._log != None and self._log.closed == False:
             self._log.close()
 
-    def logToolStart(self, toolname):
-        self.out("\n# " + datetime.datetime.now().strftime("%Y-%m-%d %X") + ' ' + toolname + ' begins...')
-            
-    def logToolEnd(self, toolname, errCode):
-        self.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " " + toolname + " returned " + str(errCode))
-            
     def out(self, text, mode='a'):
         '''
         logs a message as a single line to the current log file

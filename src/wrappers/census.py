@@ -3,9 +3,6 @@
 #
 # Settings required: censusDir (or toolsDir), pythonTool (or toolsDir)
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''
     Returns tool version.  Will log to stepLog unless requested not to.
@@ -42,11 +39,8 @@ def metrics(step, bam, metrics):
           censusPath=step.ana.getDir('censusDir',alt='toolsDir'), \
           samSortJar=step.ana.getTool('samSortJar'), input=bam, output=metrics)
 
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'python' census metrics begins...")
+    toolName = __name__ + " python:metrics"
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + \
-                 " 'python' census metrics returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('census')
+    step.toolEnds(toolName,step.err)
 

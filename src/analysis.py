@@ -1,5 +1,4 @@
-import sys, string
-import os, os.path, datetime
+import sys, os.path
 import commands
 from settings import Settings
 from log import Log
@@ -23,7 +22,7 @@ class Analysis(object):
     def version(self):
         return str(self._pipelineVersion)
         
-    def __init__(self, settingsFile, analysisId=None):
+    def __init__(self, settingsFile, analysisId=None, genome='hg19'):
         '''
         Takes in a settings file which contains various paths to tools, a temp
         directory and other configuration setting for all analyses.  Optionally
@@ -34,6 +33,7 @@ class Analysis(object):
         self._pipelineVersion = 1
         self._variables       = {}
         self._variables['analysisId'] = analysisId
+        self.genome           = genome
         self.log              = Log() # Before logfile is declared, log print to stdout
         self._analysisDir     = None
         self._tmpDirs         = {}  # Note: these should be replaced with _steps[0].stepDir()
@@ -102,6 +102,40 @@ class Analysis(object):
              
         self._variables['analysisId'] = value
 
+    @property
+    def genome(self):
+        return self._variables['genome']
+        
+    @genome.setter
+    def genome(self,value):
+        '''
+        Sets the genome variable.
+        '''
+        if 'genome' in self._variables:
+            raise ValueError("Genome already set to '"+self._variables['genome']+"'")
+        
+        if value not in ['hg19']:  # Add mm10, etc. when those are supported
+            raise ValueError("Unsupported genome '" + value + "'")
+
+        self._variables['genome'] = value
+
+    def getVar(self, varName, default=None):
+        '''
+        Retrieves variable for the Analysis variables.
+        '''
+        if varName in self._variables:
+            return self._variables[varName]
+        return default
+        
+    def setVar(self, varName, val):
+        '''
+        Sets an Analysis variable.  If set to None, will be removed.
+        '''
+        if val == None:
+            del self._variables[varName]
+        else:
+            self._variables[varName] = val
+        
     def getSetting(self, settingName, default=None, alt=None):
         '''
         Retrieves setting from the settings file
@@ -207,8 +241,7 @@ class Analysis(object):
         '''
         Returns the targetFile Name, stripped of the path.
         '''
-        analysisDir, targetName = os.path.split( self.targetOutput(name) )
-        return targetName
+        return os.path.split( self.targetOutput(name) )[1]
         
     def linkOrCopy(self, fromLoc, toLoc, soft=False, logOut=True, log=None):
         '''
