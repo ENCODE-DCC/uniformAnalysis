@@ -3,7 +3,6 @@
 #
 # Settings required: samtoolsTool (or toolsDir), hg19ChromInfoFile
 
-import datetime
 from src.logicalStep import StepError
 
 def version(step, logOut=True):
