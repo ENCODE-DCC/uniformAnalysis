@@ -51,20 +51,22 @@ from src.logicalStep import StepError
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    version = step.ana.getCmdOut(step.ana.getDir('hotspotDir') + 'hotspot-deploy/bin/hotspot' + \
+    toolName = __name__.split('.')[-1]
+    version = step.ana.getCmdOut(step.ana.getDir(toolName+'Dir') + 'hotspot-deploy/bin/hotspot' + \
                                  " 2>&1 | grep HotSpot | awk '{print $1}'", \
                                  dryRun=False,logCmd=False)
-    expected = step.ana.getSetting('fastqcVersion',version) # Not in settings: not enforced!
+    expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
     if step.ana.strict and version != expected:
-        raise Exception("Expecting hotspot [version: "+expected+"], " + \
+        raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
                         "but found [version: "+version+"]")
     if logOut:
-        step.log.out("# hotspot [version: " + version + "]")
+        step.log.out("# "+toolName+" [version: " + version + "]")
     return version
 
 def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
+    '''Hostspot peak calling tool'''
     
-    toolName = __name__ + " peak calling"
+    toolName = __name__.split('.')[-1] + " peak calling"
     step.toolBegins(toolName)
 
     # raise this exception where tagLength is actually used.

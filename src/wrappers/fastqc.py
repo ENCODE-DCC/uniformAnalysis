@@ -6,22 +6,24 @@
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    version = step.ana.getCmdOut(step.ana.getTool('fastqc') + " -version | awk '{print $2}'", \
+    toolName = __name__.split('.')[-1]
+    version = step.ana.getCmdOut(step.ana.getTool(toolName) + " -version | awk '{print $2}'", \
                                  dryRun=False,logCmd=False)
-    expected = step.ana.getSetting('fastqcVersion',version) # Not in settings: not enforced!
+    expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
     if step.ana.strict and version != expected:
-        raise Exception("Expecting fastqc [version: "+expected+"], " + \
+        raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
                         "but found [version: "+version+"]")
     if logOut:
-        step.log.out("# fastqc validation [version: " + version + "]")
+        step.log.out("# "+toolName+" validation [version: " + version + "]")
     return version
 
 def validate(step, inFastq, outDir):
     '''Validation'''
+    
     cmd = '{fastqc} {fastq} --extract -q'.format( \
           fastqc=step.ana.getTool('fastqc'), fastq=inFastq)
 
-    toolName = __name__ + " validate"
+    toolName = __name__.split('.')[-1] + " validate"
     step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     step.toolEnds(toolName,step.err)
