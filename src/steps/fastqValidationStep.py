@@ -2,7 +2,7 @@
 # fastqValidateStep.py module holds FastqValidateStep class which descends from LogicalStep class.
 # It performs fastq validation obviously enough.
 #
-# Inputs: 1 fastq file, pre-registered in the analysis keyed as: 'tags' + suffix + 'fastq'
+# Inputs: 1 fastq file, pre-registered in the analysis keyed as: 'tags' + suffix + '.fastq'
 #
 # Outputs: directory of files (will include html target) keyed as: 'valDir' + suffix
 #          zipped file of that directory                 keyed as: 'val' + suffix + '.zip'
@@ -30,9 +30,9 @@ class FastqValidationStep(LogicalStep):
         # Outputs:  
         # NOTE: These outputs must be declared even thouugh they don't appear to be used.
         #       This is s that the analysis class can find them on sucess.
-        valDir  = self.declareTargetFile('valDir'  + self.suffix, name='sampleFastq_fastqc', ext='dir')
+        valDir  = self.declareTargetFile('valDir'+self.suffix, name='sampleTags_fastqc', ext='dir')
         valZip  = self.declareTargetFile('val'  + self.suffix + '.zip', 
-                                         name='sampleFastq_fastqc', ext='zip')
+                                         name='sampleTags_fastqc', ext='zip')
         # NOTE: valHtml resides inside valDir and only needs to be known at analysis level.
         #valHtml = self.declareTargetFile('val' + self.suffix + '.html', ext='html') 
         

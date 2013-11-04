@@ -19,8 +19,6 @@
 
 import os,sys
 from src.analysis import Analysis
-from src.settings import Settings
-from src.log import Log
 
 class GalaxyAnalysis(Analysis):
     '''
@@ -29,8 +27,8 @@ class GalaxyAnalysis(Analysis):
     Functions are for resolving names/paths and logging
     '''
 
-    def __init__(self, settingsFile,analysisId):
-        Analysis.__init__(self, settingsFile, analysisId=analysisId)
+    def __init__(self, settingsFile,analysisId,genome=None):
+        Analysis.__init__(self, settingsFile, analysisId=analysisId, genome=genome)
         self._resultsDir = None  # Outside of galaxy and tmpDir struct. Same as inputFile location
         self._stayWithinGalaxy = self._settings.getBoolean('stayWithinGalaxy', False)
         self._galaxyInputs = {}      # May be in galaxy-dist/database/files or else symlinked lib
@@ -435,7 +433,7 @@ if __name__ == '__main__':
     Test this thang
     """
     import datetime
-    from logicalstep import LogicalStep
+    from src.logicalStep import LogicalStep
     
     print "======== begin '" + sys.argv[0] + "' test ========"
     analysisId = 'galaxyAnalysis Test' 

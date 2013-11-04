@@ -1,5 +1,5 @@
 import sys, pprint, traceback
-import datetime
+from datetime import datetime
 from jobTree.scriptTree.target import Target
 from analysis import Analysis
 from log import Log
@@ -63,7 +63,7 @@ class LogicalStep(Target):
         self.createDir()
         self.declareLogFile() # Ensures that the logical step dir and log exist
         self.log.out("--- Beginning '" + self._stepName + "' [version: "+self.version+"] [" + 
-                     datetime.datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
+                     datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
         try:
             self.ana.onRun(self)
             self.onRun() #now this calls child onRun directly
@@ -197,6 +197,18 @@ class LogicalStep(Target):
         elif len(ext) > 0 and not ext.startswith('.'):
             ext = '.' + ext
         return self.dir + name + ext
+    
+    def toolBegins(self, toolName):
+        '''Standardized message before tool comandline'''
+        self.log.out("\n# " + datetime.now().strftime("%Y-%m-%d %X") + " '" + toolName + \
+                     "' begins...")
+        
+    def toolEnds(self,toolName,retVal,raiseError=True):
+        '''Standardized message after tool comandline.  Raise exception for non-zero retVal.'''
+        self.log.out("# "+datetime.now().strftime("%Y-%m-%d %X") + " '" + toolName + \
+                     "' returned " + str(retVal))
+        if raiseError and retVal != 0:
+            raise StepError(toolName)
 
 
 ############ command line testing ############

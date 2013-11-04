@@ -4,34 +4,28 @@
 #
 # Settings required: sampleBamTool (or toolsDir)
 
-import datetime
-from src.logicalStep import StepError
-
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    #version = step.ana.getCmdOut(step.ana.getTool('sampleBam') + \
+    toolName = __name__.split('.')[-1]
+    #version = step.ana.getCmdOut(step.ana.getTool(toolName) + \
     #                             " -version | awk '{print $2}'",dryRun=False,logCmd=False)
     version = "unversioned"  # Sorry, this tool has no version.
-    #expected = step.ana.getSetting('sampleBam',version) # Not in settings then not enforced!
+    #expected = step.ana.getSetting(toolName+'Version',version) # Not in settings then not enforced!
     #if step.ana.strict and version != expected:
-    #    raise Exception("Expecting sampleBam [version: "+expected+"], " + \
+    #    raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
     #                    "but found [version: "+version+"]")
     if logOut:
-        step.log.out("# sampleBam [version: " + version + "]")
+        step.log.out("# "+toolName+" [version: " + version + "]")
     return version
 
 def sample(step, bam, bamSize, sampleSize, samSample):
-    '''
-    Alignment step.
-    '''
+    '''Alignment step.'''
+    
     cmd = '{sampler} {input} {inSize} {outSize} {output}'.format( \
           sampler=step.ana.getTool('sampleBam'), input=bam, \
           inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
           
-    step.log.out("\n# "+datetime.datetime.now().strftime("%Y-%m-%d %X")+" 'sampleBam' begins...")
+    toolName = __name__.split('.')[-1]
+    step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
-    step.log.out("# "+datetime.datetime.now().strftime("%Y-%m-%d %X") + " 'sampleBam' " + \
-                 "returned " + str(step.err))
-    if step.err != 0:
-        raise StepError('sampleBam')
-
+    step.toolEnds(toolName,step.err)

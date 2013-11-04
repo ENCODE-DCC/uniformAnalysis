@@ -14,7 +14,7 @@ encodeSettingsVersion 1.0
 # NOTE: Only needed or used if input files are located inside galaxy database.
 #       Input files from symlinked library will be considered outside of galaxy.
 # must end in '/'. or be undeclared
-resultsDir /hive/users/tdreszer/galaxy/out/
+#resultsDir /hive/users/tdreszer/galaxy/out/
 
 # Location outside of galaxy to put temporary, intermediate results
 # NOTE: files written to tmpDir are considered expendable as soon as the step that writes thm ends.
@@ -24,15 +24,16 @@ tmpDir	/hive/users/tdreszer/galaxy/tmp/
 # Default location of tools.  If full {exe}Tool path not defined then the tool is looked for here
 # If toolBinPath is not defined then all tools without explicit paths defined are expected
 # to be found in the environment PATH
-toolsDir /cluster/home/mmaddren/grad/pipeline/
+toolsDir /hive/groups/encode/encode3/tools/
 
-# Location of assembly file for alignments
-#dbAssemblyFile /hive/groups/encode/encode3/encValData/hg19/hg19.fa  # Not there yet!
-dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+# Location of assembly files for alignments
+## OBSOLETE dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+### TODO: hg19AssemblyFile /hive/groups/encode/encode3/encValData/hg19/hg19.fa  # Not there yet! Why?
+hg19AssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
 
-# Location of chromosome information for current DB
-chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt
-
+# Location of chromosome information for different reference genomes.
+## OBSOLETE chromInfoFile /hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_hg19.txt
+hg19ChromInfoFile /hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_hg19.txt
 
 # Standard and tool specific locations.
 # Note: If single executable for tool then path should be full path to executable, 
@@ -40,22 +41,23 @@ chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromIn
 # If tool contains several executables, then {tool}Dir is to directory containing all executables.
 # NOTE: if toolsDir is declared, it is the default path for all tools.  
 #       (e.g. if bwaTool not found then {toolsDir}bwa is expected to exist.
-fastqcTool /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
-bwaTool /cluster/home/mmaddren/grad/pipeline/gcap/bin/bwa
-samtoolsTool /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
-pythonTool /cluster/home/mmaddren/python/bin/python2.7
-RscriptTool /usr/bin/Rscript
-javaTool    /usr/bin/java
+fastqcTool       /hive/groups/encode/encode3/tools/FastQC/fastqc
+bwaTool          /hive/groups/encode/encode3/tools/gcap/bin/bwa
+samtoolsTool     /hive/groups/encode/encode3/tools/samtools-0.1.19/samtools
+### TODO: Figure out why /usr/bin/python2.7 doesn't work!!!
+pythonTool       /cluster/home/mmaddren/python/bin/python2.7
+RscriptTool      /usr/bin/Rscript
+javaTool         /usr/bin/java
 # sampleBamTool should fall back on toolPath, which is where it is currently found
-# fastqStatsAndSubsampleTool should fall back on toolPath, which is where it is currently found
+# fastqStatsAndSubsampleTool should fall back on toolsDir, which is where it is currently found
 
 # Following tool directories contain a collection of executables and resources:
-bedtoolsDir /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/
-bedopsDir /cluster/home/mmaddren/grad/pipeline/bedops/
-censusDir /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
-phantomToolsDir /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools/
-picardToolsDir /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
-hotspotDir /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
+bedtoolsDir      /hive/groups/encode/encode3/tools/bedtools-2.17.0/bin/
+bedopsDir        /hive/groups/encode/encode3/tools/bedops/
+censusDir        /hive/groups/encode/encode3/tools/gcap/census-master/
+phantomToolsDir  /hive/groups/encode/encode3/tools/gcap/phantompeakqualtools/
+picardToolsDir   /hive/groups/encode/encode3/tools/picard-tools-1.94/
+hotspotDir       /hive/groups/encode/encode3/tools/hotspot-distr-v4/
 
 # Expected tool versions:  (Define them here and they will be enforced in strict mode)
 bwaVersion          0.5.8c (r1536)
