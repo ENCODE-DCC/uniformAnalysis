@@ -22,6 +22,31 @@ from src.encodeAnalysis import EncodeAnalysis
 # ask jim about hotspot read length organization, how do I get that.
 # ask jim about the document creation, most of the time it's not calculating anything, just sticking in pdf
 
+# ask alvin why they care about the autosome
+# ask them whats important to keep from e.g. hotpsot
+
+# ask jim about mapping stuff I think?
+
+#10/30
+#Alvin: which files do we care about
+    #probably all of them
+#Alvin: would UW cooperate in modifying hotspot to work better?
+    #probably, email Bob Thurman <rthurman@uw.edu> Richard S. Sandstrom <sull@uw.edu>
+#Alvin: what is "*-final/*.fdr0.01.hot.bed       FDR thresholded hotspots  ( corresponding to hotspot v3 c)" called?
+#    https://github.com/qinqian/GCAP/blob/master/gcap/funcs/peaks_calling.py line 111
+    #Additional processing step on the broadPeaks
+#Alvin: bed_duplicates.sh where is it
+    # dont care using bam
+#Alvin: do we really care about the 4 files for the 5M and combo etc? are the density peak beds targets?
+    #yes
+    #3 operations on hotspot v4 peaks calling
+    #1. z score minimal threshold, 2. fdr filter, 3. merge peaks with tag density.
+# Jim: Hotspot is being updated unofficially since major dist
+# Jim: Hotspot requires code modifications to work correctly: return codes, tmp dir, dir cleaning
+# Jim: which of the above files do we want to name what?
+
+
+
 def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')

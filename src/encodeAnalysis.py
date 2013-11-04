@@ -1,7 +1,7 @@
 import os, subprocess, shutil
 from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
-from ucscGb.gbData.ra.raFile import RaFile
+from ra.raFile import RaFile
 from src.analysis import Analysis
 from src.settings import Settings
 from src.pipelines.dnasePipeline import DnasePipeline
@@ -19,23 +19,25 @@ class EncodeAnalysis(Analysis):
         self.readType = manifest['readType']
         self.replicates = []
         
+        self.json = {}
+        
         if self.readType == 'single':
             if 'fileRep1' in manifest:
                 self.replicates.append(1)
-                self.registerInputFile('fastqRep1', manifest['fileRep1'])
+                self.registerInputFile('tagsRep1.fastq', manifest['fileRep1'])
             if 'fileRep2' in manifest:
                 self.replicates.append(2)
-                self.registerInputFile('fastqRep2', manifest['fileRep2'])
+                self.registerInputFile('tagsRep2.fastq', manifest['fileRep2'])
 
         elif self.readType == 'paired':
             if 'fileRd1Rep1' in manifest:
                 self.replicates.append(1)
-                self.registerInputFile('fastqRd1Rep1', manifest['fileRd1Rep1'])
-                self.registerInputFile('fastqRd2Rep1', manifest['fileRd2Rep1'])
+                self.registerInputFile('tagsRd1Rep1.fastq', manifest['fileRd1Rep1'])
+                self.registerInputFile('tagsRd2Rep1.fastq', manifest['fileRd2Rep1'])
             if 'fileRd1Rep2' in manifest:
                 self.replicates.append(2)
-                self.registerInputFile('fastqRd1Rep2', manifest['fileRd1Rep2'])
-                self.registerInputFile('fastqRd2Rep2', manifest['fileRd2Rep2'])
+                self.registerInputFile('tagsRd1Rep2.fastq', manifest['fileRd1Rep2'])
+                self.registerInputFile('tagsRd2Rep2.fastq', manifest['fileRd2Rep2'])
             
         self.interimDir = None
         self.targetDir = None    
@@ -90,16 +92,16 @@ class EncodeAnalysis(Analysis):
         for k in step.interimFiles:
             if not os.path.exists(step.interimFiles[k]):
                 raise Exception('file not found: ' + step.interimFiles[k])
-            os.rename(step.interimFiles[k], self.interimDir + os.path.basename(step.interimFiles[k]))
+            os.rename(step.interimFiles[k], self.interimDir + k)
         if len(step.targetFiles) > 0:
             md = self.createMetadataFile(step, 'files')
             for k in step.targetFiles:
                 if not os.path.exists(step.targetFiles[k]):
                     raise Exception('file not found: ' + step.targetFiles[k])
-                os.rename(step.targetFiles[k], self.targetDir + os.path.basename(step.targetFiles[k]))
-                shutil.copy(self.targetDir + os.path.basename(step.targetFiles[k]), subDir + os.path.basename(step.targetFiles[k]))
+                os.rename(step.targetFiles[k], self.targetDir + k)
+                shutil.copy(self.targetDir + k, subDir + k)
                 md.createStanza('object', k)
-                md.add('fileName', subDir + os.path.basename(step.targetFiles[k]))
+                md.add('fileName', subDir + k)
                 md.add('readType', self.readType)
                 md.add('expId', self.id)
                 md.add('replicate', step.replicate) # TODO: will break after single-replicate part... will need to rewrite this to be better
