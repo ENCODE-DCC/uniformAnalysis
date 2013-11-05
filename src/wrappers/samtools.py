@@ -20,7 +20,7 @@ def version(step, logOut=True):
     return version
 
 def samToBam(step, inSam, outBam):
-    '''Alignment step.'''
+    '''Sam to Bam converion.'''
     
     cmd = '{samtools} view -bt {ref} {input} -o {output}'.format( \
           samtools=step.ana.getTool('samtools'), \
@@ -43,15 +43,29 @@ def bamSize(step, bam):
     
     # no err code returned.  Generate one if return not an integer
     bamSize = 0
-    try:
-        bamSize = int( bamSizeStr )
-    except:
-        if step.ana.dryRun():
-            bamSize = 42850405
-        step.err = -1
+    step.err = 0
+    if step.ana.dryRun():
+        bamSize = 42850405
+    else:
+        try:
+            bamSize = int( bamSizeStr )
+        except:
+            step.err = -1
     
     step.toolEnds(toolName,bamSize,raiseError=False) # Return was not an error code
     if step.err != 0:
         raise StepError(toolName)
     
     return bamSize
+
+def merge(step, inList, outBam):
+    '''Mer bams.'''
+    cmd = '{samtools} merge -f {output} {inList}'.format( \
+          samtools=step.ana.getTool('samtools'), output=outBam, \
+          inList=' '.join(inList))
+          
+    toolName = __name__.split('.')[-1] + " merge"
+    step.toolBegins(toolName)
+    step.err = step.ana.runCmd(cmd, log=step.log)
+    step.toolEnds(toolName,step.err)
+        

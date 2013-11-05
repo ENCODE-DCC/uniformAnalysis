@@ -38,22 +38,34 @@ class LogicalStep(Target):
     
     @property
     def version(self):
-        return self.analysis.version + '.' + str(self._stepVersion)
+        return self.ana.version + '.' + str(self._stepVersion)
+        
+    @property
+    def err(self):
+        return self._err
+    
+    @err.setter
+    def err(self,value):
+        self._err = value
+
+    @property
+    def status(self):
+        '''Returns status of step: Init/Running/Success/Fail.'''
+        return self._status
         
     def __init__(self, analysis, stepName, ram=1000000000, cpus=1):
         Target.__init__(self, time=0.00025, memory=ram, cpu=cpus)
         self._stepVersion = 1
         self._analysis = analysis
-        self.targetFiles = {}
-        self.interimFiles = {}
-        self.garbageFiles = {}
-        self.metaFiles = {}
+        self._resultFiles = {}
+        self._garbageFiles = {}
+        self.metaFiles = {}  # ???
         self.log = Log() # Before logfile is declared, log print to stdout
         self._stepName = stepName # descendent classes MUST fill in the _stepName
         self._err = -1 # descendent classes should set this to returns from ganular steps
         self._status = 'Init' # Init/Running/Success/Fail
         self._dir = None # needs to make temp directory for itself
-        self.analysis.registerStep(self)  # Analysis may manage multiple steps simultaneously
+        self.ana.registerStep(self)  # Analysis may manage multiple steps simultaneously
 
     def __str__(self):
         return pprint.pformat(self)
@@ -85,9 +97,11 @@ class LogicalStep(Target):
         
     def success(self):
         self._status = 'Success'
+        if self.ana.dryRun():
+            self.mockUpResults()
         self._err = 0 # by definition
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
-        self.analysis.onSucceed(self)
+        self.ana.onSucceed(self)
         
     def fail(self, message):
         raise StepError(message)
@@ -97,49 +111,29 @@ class LogicalStep(Target):
         self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "'\n")
         if logTrace:
             self.log.out(traceback.format_exc())
-        self.analysis.onFail(self)
+        if self._err == 0:
+            self._err = 1  # Make sure this error is noticed!
+        self.ana.onFail(self)
 
-            
-    def status(self):
-        '''
-        Returns status of step: Init/Running/Success/Fail.
-        '''
-        return self._status
-        
-    def error(self):
-        '''
-        Returns the last error code saved from a granular step
-        '''
-        return self._err
-        
     def createDir(self):
         '''Creates logical step directory'''
-        self._dir = self.analysis.createTempDir(self.name)
+        self._dir = self.ana.createTempDir(self.name)
        
-    def declareTargetFile(self, key, name=None, ext=None):
+    def declareResultFile(self, key, name=None, ext=''):
         '''
         Reserves name for a file we want to keep permanantly, and returns a
         fully qualified filename in the local temp dir
         '''
-        self.targetFiles[key] = self.makeFilePath(key, name, ext)
-        return self.targetFiles[key]
+        self._resultFiles[key] = self.makeFilePath(key, name, ext)
+        return self._resultFiles[key]
         
-    def declareInterimFile(self, key, name=None, ext=None):
-        '''
-        Reserves name for a file we want to keep for part or all of the
-        duration of the pipeline before being deleted, and returns a fully
-        qualified filename in the local temp dir
-        '''
-        self.interimFiles[key] = self.makeFilePath(key, name, ext)
-        return self.interimFiles[key]
-        
-    def declareGarbageFile(self, key, name=None, ext=None):
+    def declareGarbageFile(self, key, name=None, ext=''):
         '''
         Reserves name for a file we do not care about, and returns a fully
         qualified filename in the local temp dir
         '''
-        self.garbageFiles[key] = self.makeFilePath(key, name, ext)
-        return self.garbageFiles[key]
+        self._garbageFiles[key] = self.makeFilePath(key, name, ext)
+        return self._garbageFiles[key]
         
     def declareLogFile(self, name=None):
         '''
@@ -157,19 +151,27 @@ class LogicalStep(Target):
         self.log.empty()  # Logical step log always starts empty!
         return self.log.file()
         
-    def convertFileToTarget(self, name, pathToTarget):
+    def mockUpResults(self):
         '''
-        Hard links a 'target' file to the analysis 'target' file in the analysis directory.
-        This is expected when a logical step succeeds.
+        For each result file, will create it empty if it does not exist.
+        This is used to mock up results in a dry run.
         '''
-        return self.analysis.linkOrCopy(self.targetFiles[name], pathToTarget, log=self.log)
+        for key in self._resultFiles.keys():
+            try:
+                self.ana.runCmd('touch ' + self._resultFiles[key], 
+                                logOut=False, logErr=False, dryRun=False, log=self.log)
+            except:
+                pass
 
-    def convertFileToInterim(self, name, pathToInterim):
+    def deliverResultFile(self, name, pathToTarget):
         '''
-        Hard links a 'interim' file to the analysis 'interim' file in the analysis directory.
-        This is expected when a logical step succeeds.
+        Hard links a step 'result' file to the analysis 'interim' or 'target' file in
+        the analysis directory. This is expected when a logical step succeeds.
         '''
-        return self.analysis.linkOrCopy(self.interimFiles[name], pathToInterim, log=self.log)
+        # Because dryRun should mock up result files, we should set dryRun to False to actually
+        # make links to the mocked up files.
+        return self.ana.linkOrCopy(self._resultFiles[name], pathToTarget,
+                                   logOut=True,dryRun=False,log=self.log)
 
     def cleanup(self):
         '''
@@ -177,25 +179,21 @@ class LogicalStep(Target):
         This is expected when a logical step succeeds.
         '''
         if self._dir != None:
-            self.analysis.runCmd('rm -rf ' + self._dir)
+            self.ana.runCmd('rm -rf ' + self._dir)
         #self._analysis.removeStep(self)  # Do we want to do this?
         
-    def makeFilePath(self, key, name=None, ext=None):
+    def makeFilePath(self, key, name=None, ext=''):
         '''
         Returns a fully qualified file/dir name
         '''
-        if ext == None:
-            if name == None:
-                ext = key
-            else:
-                ext = ''
         if name == None:
             name = key
-        if ext.lower() == 'dir':  # directories are also supported!
-            if not name.endswith('/'):
-                ext = '/'
-        elif len(ext) > 0 and not ext.startswith('.'):
-            ext = '.' + ext
+        if len(ext) > 0:
+            if ext.lower() == 'dir':  # directories are also supported!
+                if not name.endswith('/'):
+                    ext = '/'
+            elif not ext.startswith('.'):
+                ext = '.' + ext
         return self.dir + name + ext
     
     def toolBegins(self, toolName):
@@ -207,8 +205,39 @@ class LogicalStep(Target):
         '''Standardized message after tool comandline.  Raise exception for non-zero retVal.'''
         self.log.out("# "+datetime.now().strftime("%Y-%m-%d %X") + " '" + toolName + \
                      "' returned " + str(retVal))
-        if raiseError and retVal != 0:
-            raise StepError(toolName)
+        if raiseError and not retVal == 0:
+            self._err = retVal
+            self.fail(toolName + " returned " + str(self._err))
+
+    def writeVersions(self,raFile=None):
+        '''Writes versions to to the log or a file.'''
+        # Each logical step is expected to extend or replace this to record the actual tool versions
+        if raFile != None:
+            raFile.add("ENCODE_Analysis_pipeline",self.ana.version)
+            self.log.out("# ENCODE Analysis pipeline [version: " + self.ana.version + "]")
+            raFile.add(self.name+'_Step',self.version)
+            self.log.out("# "+self.name+"_Step [version: " + self.version + "]")
+        else:
+            self.log.out("# ENCODE Analysis pipeline [version: "+self.ana.version+"]")
+            self.log.out("# "+self.name+"_Step [version: "+self.version+ "]")
+            
+    def printPaths(self, tab, log=None):
+        '''Used in debugging; prints step's paths, etc.'''
+        if log == None:
+            log = self.log
+        if self._dir != None:
+            title = self.name + ' dir:'
+            log.out(title.ljust(tab) + self.dir )
+        if self.log.file() != None:
+            title = self.name + ' log:'
+            log.out(title.ljust(tab) + self.log.file() )
+        for key in sorted( self._garbageFiles.keys() ):
+            title = "garbage[%s]:" % (key)
+            log.out(title.ljust(tab) + self._garbageFiles[key])
+        for key in sorted( self._resultFiles.keys() ):
+            title = "resultFile[%s]:" % (key)
+            log.out(title.ljust(tab) + self._resultFiles[key])
+    
 
 
 ############ command line testing ############

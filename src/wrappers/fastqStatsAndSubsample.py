@@ -1,3 +1,7 @@
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+
 #!/usr/bin/env python2.7
 # fastqStatsAndSubsample.py module holds methods for running fastqStatsAndSubsample from 
 # a LogicalStep.  It is used to sample a fastq.

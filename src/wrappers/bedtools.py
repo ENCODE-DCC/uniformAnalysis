@@ -29,3 +29,29 @@ def bedToBam(step, bed, bam):
     step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
     step.toolEnds(toolName,step.err)
+
+def intersectBed(step, inBed1, inBed2, outBed):
+    '''Intersects bed with chromInfo Bed to Bam.'''
+    
+    cmd = '{path}intersectBed -a {bedA} -b {bedB} -f 1.00 > {bedOut}'.format( \
+          path=step.ana.getDir('bedtoolsDir',alt='toolsDir'),bedA=inBed1,bedB=inBed2,bedOut=outBed)
+          
+    toolName = __name__.split('.')[-1] + " intersectBed"
+    step.toolBegins(toolName)
+    step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
+    step.toolEnds(toolName,step.err)
+
+def toBedGraph(step, tagLen, inBed, outBedGraph):
+    '''Convert Bed to bedGraph.'''
+    
+    intersectWith = step.ana.getDir('hotspotDir') + 'data/' + step.ana.genome + \
+                                                    '.K' + tagLen + '.mappable_only.bed'
+
+    cmd = '{path}intersectBed -a {bedA} -b {bedB} -f 1.00 | cut -f 1,2,3,5> {bedGraph}'.format( \
+          path=step.ana.getDir('bedtoolsDir',alt='toolsDir'),bedA=inBed, \
+          bedB=intersectWith,bedGraph=outBedGraph)
+          
+    toolName = __name__.split('.')[-1] + " toBedGraph"
+    step.toolBegins(toolName)
+    step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
+    step.toolEnds(toolName,step.err)

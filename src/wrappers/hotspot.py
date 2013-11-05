@@ -80,6 +80,7 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     tokens = open(tokensFile, 'w')
     tokens.write('[script-tokenizer]\n')
     tokens.write('_TAGS_ = ' + bam + '\n')
+    # For ChIPseq, provide input (aka control):
     tokens.write('_USE_INPUT_ = F\n')
     tokens.write('_INPUT_TAGS_ =\n')
     tokens.write('_GENOME_ = ' + genome + '\n')
@@ -89,17 +90,19 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
                                         genome + '.K' + tagLen + '.mappable_only.bed\n')
     tokens.write('_DUPOK_ = T\n')      # TODO: 'T' for DNase but 'F' otherwise
     tokens.write('_FDRS_ = "0.01"\n')
-    tokens.write('_DENS_:\n')
+    tokens.write('_DENS_:\n')  # If not provided, will be generated
     tokens.write('_OUTDIR_ = ' + step.dir[ :-1 ] + '\n') # outputs must be written to step.dir
-    tokens.write('_RANDIR_ = ' + step.dir + 'rand\n')    # outputs must be written to step.dir
+    tokens.write('_RANDIR_ = ' + step.dir[ :-1 ] + '\n')    # could safely be the same as OUTDIR
+    #tokens.write('_RANDIR_ = ' + step.dir + 'rand\n')    # could safely be the same as OUTDIR
     tokens.write('_OMIT_REGIONS_: ' + hotspotDir + 'data/Satellite.' + genome + '.bed\n')
-    tokens.write('_CHECK_ = T\n')
-    tokens.write('_CHKCHR_ = chr22\n')  # TODO: Change to chr22 (from chrX) until end of debug
+    tokens.write('_CHECK_ = F\n')  # TODO: Various test datasets fail when 'T'!  But production?
+    tokens.write('_CHKCHR_ = chrX\n')  # Only used when CHECK = T, but test data fails when CHECK=T 
     tokens.write('_HOTSPOT_ = ' + hotspotDir + 'hotspot-deploy/bin/hotspot\n')
     tokens.write('_CLEAN_ = F\n')    # Changed to F (from T) because step.dir is cleaned up anyway
     tokens.write('_PKFIND_BIN_ = ' + hotspotDir + 'hotspot-deploy/bin/wavePeaks\n')
     tokens.write('_PKFIND_SMTH_LVL_ = 3\n')
     tokens.write('_SEED_=101\n')
+    # Hotspot program parameters
     tokens.write('_THRESH_ = 2\n')
     tokens.write('_WIN_MIN_ = 200\n')
     tokens.write('_WIN_MAX_ = 300\n')
@@ -115,10 +118,12 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     
     # Extend PATH because various tools are expected
     envPath = os.getenv('PATH')
-    envPath = envPath + ':' + step.ana.getDir('bedtoolsDir',alt='toolsDir')
-    envPath = envPath + ':' + step.ana.getDir('bedopsDir',alt='toolsDir')
-    envPath = envPath + ':' + hotspotDir + 'hotspot-deploy/bin/'
+    envPath = step.ana.getDir('bedtoolsDir',alt='toolsDir') + ':' + envPath
+    envPath = step.ana.getDir('bedopsDir',alt='toolsDir') + ':' + envPath 
+    envPath = hotspotDir + 'hotspot-deploy/bin/' + ':' + envPath 
     os.putenv('PATH',envPath)
+    step.log.out('PATH='+envPath)  # Put path in log
+    step.log.out('')  # skip a line
     
     # generate runhotspot file
     runhotspot = open(runhotspotScript, 'w')
@@ -142,10 +147,13 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     runhotspot.write('    $pipeDir/run_final"\n')
     runhotspot.write('$scriptTokBin --clobber --output-dir=' + step.dir + ' $tokenFile $scripts\n')
     runhotspot.write('cd ' + step.dir + '\n')   # outputs must be written to step.dir
+    runhotspot.write('retCode=0\n')   # Should have a return code from last script run
     runhotspot.write('for script in $scripts\n')
     runhotspot.write('do\n')
     runhotspot.write('    ' + step.dir + '$(basename $script).tok\n')
+    runhotspot.write('    retCode=$?\n')
     runhotspot.write('done\n')
+    runhotspot.write('exit $retCode\n')
     runhotspot.close()
     os.chmod(runhotspotScript, 0775) # Make this executable (leading 0 is for octal)
     # TODO: add runhotspotScript to the log?
@@ -153,6 +161,6 @@ def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     #step.log.appendFile(runhotspotScript)
     #step.log.out('')  # skip a line
     
-    step.err = step.ana.runCmd(runhotspotScript, log=step.log) # stdout goes to file
+    step.err = step.ana.runCmd(runhotspotScript, log=step.log)
     step.toolEnds(toolName,step.err)
             

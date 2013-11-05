@@ -4,13 +4,13 @@
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
 #
-# Outputs: 1 interim sam       file, keyed as: 'sampleRep'  + replicate + '.sam'
+# Outputs: 1 interim sam       file, keyed as: 'sampleRep'  + replicate + '.bam'
 #          1 target  histogram file, keyed as: 'metricRep'     + replicate + '.txt'
 #          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate + '.txt'
 
 import os
 from src.logicalStep import LogicalStep
-from src.wrappers import samtools, sampleBam, bedtools, picardTools, census, phantomTools
+from src.wrappers import samtools, ucscUtils, bedtools, picardTools, census, phantomTools
 
 class BamEvaluateStep(LogicalStep):
 
@@ -19,18 +19,20 @@ class BamEvaluateStep(LogicalStep):
         self.sampleSize = sampleSize
         LogicalStep.__init__(self, analysis, 'bamEvaluate_Rep' + self.replicate)
         
-    def writeVersions(self,raFile=None):
+    def writeVersions(self,raFile=None,allLevels=False):
         '''Writes versions to to the log or a file.'''
+        if allLevels:
+            LogicalStep.writeVersions(self, raFile)
         if raFile != None:
             raFile.add('samtools', samtools.version(self))
-            raFile.add('sampleBam', sampleBam.version(self))
+            raFile.add('ucscUtils', ucscUtils.version(self,tool='sampleBam'))
             raFile.add('bedtools', bedtools.version(self))
             raFile.add('picardTools', picardTools.version(self))
             raFile.add('census', census.version(self))
             raFile.add('phantomTools', phantomTools.version(self))
         else:
             samtools.version(self)
-            sampleBam.version(self)
+            ucscUtils.version(self,tool='sampleBam')
             bedtools.version(self)
             picardTools.version(self)
             census.version(self)
@@ -41,21 +43,21 @@ class BamEvaluateStep(LogicalStep):
         bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt', ext='txt')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt', ext='txt')
+        metricHist = self.declareResultFile( 'metricRep'    + self.replicate + '.txt')
+        strandCorr = self.declareResultFile( 'strandCorrRep'+ self.replicate + '.txt')
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareInterimFile('sampleRep' + self.replicate + '.sam', \
-                                             name=root + '_sample', ext='bam')
+        bamSample  = self.declareResultFile('sampleRep' + self.replicate + '.bam', \
+                                             name=root + '_sample.bam')
         
         bamSize = samtools.bamSize(self,bam)
         
         
         if self.sampleSize < bamSize:
-            bed        = self.declareGarbageFile('bed')
-            bamUnsorted  = self.declareGarbageFile('bamUnsortedSample',ext='bam')
-            sampleBam.sample(self,bam,bamSize,self.sampleSize,bed)
+            bed        = self.declareGarbageFile('sample.bed')
+            bamUnsorted  = self.declareGarbageFile('bamUnsortedSample.bam')
+            ucscUtils.sampleBam(self,bam,bamSize,self.sampleSize,bed)
             bedtools.bedToBam(self,bed,bamUnsorted)
         else:
             bamUnsorted = bam

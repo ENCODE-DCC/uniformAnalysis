@@ -1,3 +1,7 @@
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+########### OBSOLETE!  Replaced by ucscUtils.py ############
+
 #!/usr/bin/env python2.7
 # sampleBam.py module holds methods for running sampleBam from 
 # a LogicalStep.  It is used to sample a fastq.

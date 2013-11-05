@@ -50,6 +50,7 @@ RscriptTool      /usr/bin/Rscript
 javaTool         /usr/bin/java
 # sampleBamTool should fall back on toolPath, which is where it is currently found
 # fastqStatsAndSubsampleTool should fall back on toolsDir, which is where it is currently found
+# bedGraphToBigWigTool should fall back on toolsDir, which is where it is currently found
 
 # Following tool directories contain a collection of executables and resources:
 bedtoolsDir      /hive/groups/encode/encode3/tools/bedtools-2.17.0/bin/
@@ -63,7 +64,9 @@ hotspotDir       /hive/groups/encode/encode3/tools/hotspot-distr-v4/
 bwaVersion          0.5.8c (r1536)
 samtoolsVersion     0.1.19-44428cd
 fastqcVersion       v0.10.1
+bedopsVersion       2.2.0
 bedtoolsVersion     v2.17.0
+bedGraphToBigWigVersion 4
 javaVersion         1.6.0_24
 pythonVersion       2.7.1
 censusVersion       0.8

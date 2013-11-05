@@ -261,7 +261,7 @@ class GalaxyAnalysis(Analysis):
         '''
         Prints all known input and output paths and file names.
         '''
-        tab=30  # Makes for aligned values in output
+        tab=40  # Makes for aligned values in output
         if log == None:
             log = self.log
         log.out('\n# Location settings:')
@@ -287,25 +287,10 @@ class GalaxyAnalysis(Analysis):
         # logical step dirs and logs            
         if len( self._steps ) > 0:
             for ix in range( len( self._steps ) ):
-                step = self._steps[ix]
-                if step._dir != None:
-                    title = step.name + ' dir:'
-                    log.out(title.ljust(tab) + step.dir )
-                if step.log.file() != None:
-                    title = step.name + ' log:'
-                    log.out(title.ljust(tab) + step.log.file() )
-                for name in sorted( step.garbageFiles.keys() ):
-                    title = "garbage[%s]:" % (name)
-                    log.out(title.ljust(tab) + step.garbageFiles[name])
-                for name in sorted( step.interimFiles.keys() ):
-                    title = "interimFile[%s]:" % (name)
-                    log.out(title.ljust(tab) + step.interimFiles[name])
-                for name in sorted( step.targetFiles.keys() ):
-                    title = "targetFile[%s]:" % (name)
-                    log.out(title.ljust(tab) + step.targetFiles[name])
+                step = self._steps[ix].printPaths(tab,log)
+
         log.out('') # add a blank line at the end
-        log.out('Variables:')
-        log.out(str( self._variables ) )
+        log.out('Variables:'.ljust(tab) + str( self._variables ) )
         log.out('') # add a blank line at the end
 
     def deliverToGalaxy(self, log=None):
@@ -416,15 +401,20 @@ class GalaxyAnalysis(Analysis):
         self.removeStep(step)
         return 0
     
-    def onFail(self, logicalStep):
+    def onFail(self, step):
         """
         Override Analysis.onFail() to include galaxy specific things
         """
-        if self.dryRun():
-            self.printPaths(log=logicalStep.log)   # For posterity
+        #if self.dryRun():
+        self.printPaths(log=step.log)   # For posterity
+        step.log.out('') # skip a lineline
+        self.runCmd('ls -l ' + step.dir, dryRun=False, log=step.log)
+        step.log.out('')
 
-        err = Analysis.onFail(self,logicalStep)
-        exit( err )
+        Analysis.onFail(self,step)
+        if step.err > 255:  # Been loosing error code!
+            step.err = 55
+        sys.exit( step.err )
     
 
 ############ command line testing ############
@@ -432,7 +422,7 @@ if __name__ == '__main__':
     """
     Test this thang
     """
-    import datetime
+    from datetime import datetime
     from src.logicalStep import LogicalStep
     
     print "======== begin '" + sys.argv[0] + "' test ========"
@@ -480,7 +470,7 @@ if __name__ == '__main__':
     step._status = 'Running'
     step.declareLogFile() # Ensures that the logical step dir and log exist
     step.log.out("--- Beginning '" + stepName + "' [" + 
-               datetime.datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
+               datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
 
     # For posterity
     e3.printPaths()

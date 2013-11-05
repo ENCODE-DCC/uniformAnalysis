@@ -243,21 +243,19 @@ class Analysis(object):
         '''
         return os.path.split( self.targetOutput(name) )[1]
         
-    def linkOrCopy(self, fromLoc, toLoc, soft=False, logOut=True, log=None):
+    def linkOrCopy(self, fromLoc, toLoc, soft=False, logOut=True, dryRun=None, log=None):
         '''
         Standard call for all cases of moving files/dirs into position.
         '''
+        if dryRun == None:
+            dryRun = self._dryRun
         if soft:
-            err = self.runCmd('ln -sf ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
+            err = self.runCmd('ln -sf '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
         else:
-            err = self.runCmd('ln -f ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
+            err = self.runCmd('ln -f ' +fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
             
         if err != 0:  # If link won't do, then we need to copy. NOTE: use -r because might be dir
-            err = self.runCmd('cp -rf ' + fromLoc + ' ' + toLoc, logOut=logOut,log=log)
-         
-        # Perhaps dryRun should create empty files, since it doesn't actually runCmd:   
-        if self.dryRun():
-            err = self.runCmd('touch ' + toLoc, logOut=False, logErr=False,dryRun=False,log=log)
+            err = self.runCmd('cp -rf '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
         
         if err != 0:
             raise Exception("Unable to ln or cp '" + fromLoc + "' to '" + toLoc + "'")
@@ -316,11 +314,11 @@ class Analysis(object):
         deliveryKeys = fullSetOfKeys
         if self._deliveryKeys != None:
             deliveryKeys = self._deliveryKeys
-        for key in deliveryKeys:
-            if key not in fullSetOfKeys:
+        for key in fullSetOfKeys:
+            if key not in deliveryKeys:
                 continue
             try:
-                step.convertFileToInterim(key, self._interimFiles[key])
+                step.deliverResultFile(key, self._interimFiles[key])
             except:
                 fails = fails + "Failed to find interim result for '"+key+"'\n"
         # copy targets
@@ -328,11 +326,11 @@ class Analysis(object):
         deliveryKeys = fullSetOfKeys
         if self._deliveryKeys != None:
             deliveryKeys = self._deliveryKeys
-        for key in deliveryKeys:
-            if key not in fullSetOfKeys:
+        for key in fullSetOfKeys:
+            if key not in deliveryKeys:
                 continue
             try:
-                step.convertFileToTarget(key, self._targetOutput[key]) 
+                step.deliverResultFile(key, self._targetOutput[key]) 
             except:
                 fails = fails + "Failed to find target result for '"+key+"'\n"
         if len(fails) > 0:
@@ -383,7 +381,7 @@ class Analysis(object):
             self.runCmd('ls -l ' + step.dir, dryRun=False)
             self.log.out('')
         self.removeStep(step)  # Do we want to do this?   
-        return step.error()
+        return step.err
         
     def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         '''
@@ -395,7 +393,10 @@ class Analysis(object):
         if log == None:
             log = self.log
         if logOut or logErr:
-            log.out('> ' + cmd)  # Always log command itself
+            if dryRun:
+                log.out('*> ' + cmd)
+            else:
+                log.out('> ' + cmd)  # Always log command itself
         if dryRun:
             return 0
         log.close()  # Ensure log is closed so that command redirect can be tacked on
