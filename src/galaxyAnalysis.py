@@ -412,7 +412,7 @@ class GalaxyAnalysis(Analysis):
         step.log.out('')
 
         Analysis.onFail(self,step)
-        if step.err > 255:  # Been loosing error code!
+        if step.err > 255:  # This case has been returning 0 !!!
             step.err = 55
         sys.exit( step.err )
     
