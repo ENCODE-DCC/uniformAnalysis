@@ -32,7 +32,7 @@ class AlignmentStep(LogicalStep):
         
     def onRun(self):
         # Outputs:
-        bam = self.declareResultFile('alignmentRep' + self.replicate+'.bam')
+        bam = self.declareTargetFile('alignmentRep' + self.replicate+'.bam')
         
         # Inputs:
         if self.ana.readType == 'single':

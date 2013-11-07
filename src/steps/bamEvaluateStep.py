@@ -4,9 +4,9 @@
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
 #
-# Outputs: 1 interim sam       file, keyed as: 'sampleRep'  + replicate + '.bam'
-#          1 target  histogram file, keyed as: 'metricRep'     + replicate + '.txt'
-#          1 target  Corr      file, keyed as: 'strandCorrRep' + replicate + '.txt'
+# Outputs: 1 interim bam sample file, keyed as: 'sampleRep'     + replicate + '.bam'
+#          1 target  histogram  file, keyed as: 'metricRep'     + replicate + '.txt'
+#          1 target  Corr       file, keyed as: 'strandCorrRep' + replicate + '.txt'
 
 import os
 from src.logicalStep import LogicalStep
@@ -43,12 +43,12 @@ class BamEvaluateStep(LogicalStep):
         bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        metricHist = self.declareResultFile( 'metricRep'    + self.replicate + '.txt')
-        strandCorr = self.declareResultFile( 'strandCorrRep'+ self.replicate + '.txt')
+        metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt')
+        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareResultFile('sampleRep' + self.replicate + '.bam', \
+        bamSample  = self.declareInterimFile('sampleRep' + self.replicate + '.bam', \
                                              name=root + '_sample.bam')
         
         bamSize = samtools.bamSize(self,bam)

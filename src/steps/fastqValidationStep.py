@@ -30,10 +30,8 @@ class FastqValidationStep(LogicalStep):
 
     def onRun(self):
         # Outputs:  
-        # NOTE: These outputs must be declared even though they don't appear to be used.
-        #       This is so that the analysis class can find them on success.
-        valDir  = self.declareResultFile('valDir'+self.suffix, name='sampleTags_fastqc', ext='dir')
-        self.declareResultFile('val'  + self.suffix + '.zip',name='sampleTags_fastqc', ext='zip')
+        valDir  = self.declareTargetFile('valDir'+self.suffix, name='sampleTags_fastqc', ext='dir')
+        self.declareTargetFile('val'  + self.suffix + '.zip',name='sampleTags_fastqc', ext='zip')
         # NOTE: valHtml resides inside valDir and only needs to be known at analysis level.
         #valHtml = self.declareResultFile('val' + self.suffix + '.html') 
         

@@ -4,7 +4,7 @@
 #
 # Inputs: 2 bam files, pre-registered in the analysis and both keyed as: 'bamRep' + replicateN + '.bam'
 #
-# Outputs: 1 merged bam keyed as: 'mergedRep' + replicate1 + 'Rep' +replcicate2 + '.bam'
+# Outputs: 1 merged bam keyed as: 'mergedRep' + replicate1 + 'Rep' +replicate2 + '.bam'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import samtools
@@ -33,7 +33,7 @@ class MergeBamStep(LogicalStep):
         bamRep2 = self.ana.getFile('bamRep' + self.replicate2 + '.bam')
         
         # Outputs:  
-        mergedBam = self.declareResultFile('mergedRep' + self.replicate1 + 'Rep' + \
+        mergedBam = self.declareTargetFile('mergedRep' + self.replicate1 + 'Rep' + \
                                                          self.replicate2+'.bam')
 
         # merge

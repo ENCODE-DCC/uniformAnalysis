@@ -57,7 +57,8 @@ class LogicalStep(Target):
         Target.__init__(self, time=0.00025, memory=ram, cpu=cpus)
         self._stepVersion = 1
         self._analysis = analysis
-        self._resultFiles = {}
+        self.interimFiles = {}
+        self.targetFiles = {}
         self._garbageFiles = {}
         self.metaFiles = {}  # ???
         self.log = Log() # Before logfile is declared, log print to stdout
@@ -119,13 +120,21 @@ class LogicalStep(Target):
         '''Creates logical step directory'''
         self._dir = self.ana.createTempDir(self.name)
        
-    def declareResultFile(self, key, name=None, ext=''):
+    def declareTargetFile(self, key, name=None, ext=''):
         '''
         Reserves name for a file we want to keep permanantly, and returns a
         fully qualified filename in the local temp dir
         '''
-        self._resultFiles[key] = self.makeFilePath(key, name, ext)
-        return self._resultFiles[key]
+        self.targetFiles[key] = self.makeFilePath(key, name, ext)
+        return self.targetFiles[key]
+        
+    def declareInterimFile(self, key, name=None, ext=''):
+        '''
+        Reserves name for a file we want to keep during the life of the analysis, and returns a
+        fully qualified filename in the local temp dir
+        '''
+        self.interimFiles[key] = self.makeFilePath(key, name, ext)
+        return self.interimFiles[key]
         
     def declareGarbageFile(self, key, name=None, ext=''):
         '''
@@ -156,22 +165,48 @@ class LogicalStep(Target):
         For each result file, will create it empty if it does not exist.
         This is used to mock up results in a dry run.
         '''
-        for key in self._resultFiles.keys():
+        for key in self.interimFiles.keys():
             try:
-                self.ana.runCmd('touch ' + self._resultFiles[key], 
+                self.ana.runCmd('touch ' + self.interimFiles[key], 
                                 logOut=False, logErr=False, dryRun=False, log=self.log)
             except:
                 pass
+        for key in self.targetFiles.keys():
+            try:
+                self.ana.runCmd('touch ' + self.targetFiles[key], 
+                                logOut=False, logErr=False, dryRun=False, log=self.log)
+            except:
+                pass
+
+    def deliverTargetFile(self, name, pathToTarget):
+        '''
+        Hard links a step 'target' file to the analysis 'target' file in
+        the analysis directory. This is expected when a logical step succeeds.
+        '''
+        # Because dryRun should mock up result files, we should set dryRun to False to actually
+        # make links to the mocked up files.
+        return self.ana.linkOrCopy(self.targetFiles[name], pathToTarget,
+                                   logOut=True,dryRun=False,log=self.log)
+
+    def deliverInterimFile(self, name, pathToInterim):
+        '''
+        Hard links a step 'target' file to the analysis 'target' file in
+        the analysis directory. This is expected when a logical step succeeds.
+        '''
+        # Because dryRun should mock up result files, we should set dryRun to False to actually
+        # make links to the mocked up files.
+        return self.ana.linkOrCopy(self.interimFiles[name], pathToInterim,
+                                   logOut=True,dryRun=False,log=self.log)
 
     def deliverResultFile(self, name, pathToTarget):
         '''
         Hard links a step 'result' file to the analysis 'interim' or 'target' file in
         the analysis directory. This is expected when a logical step succeeds.
         '''
-        # Because dryRun should mock up result files, we should set dryRun to False to actually
-        # make links to the mocked up files.
-        return self.ana.linkOrCopy(self._resultFiles[name], pathToTarget,
-                                   logOut=True,dryRun=False,log=self.log)
+        try:
+            return self.deliverTargetFile(name, pathToTarget)
+        except:
+            return self.deliverInterimFile(name, pathToTarget)
 
     def cleanup(self):
         '''
@@ -234,9 +269,12 @@ class LogicalStep(Target):
         for key in sorted( self._garbageFiles.keys() ):
             title = "garbage[%s]:" % (key)
             log.out(title.ljust(tab) + self._garbageFiles[key])
-        for key in sorted( self._resultFiles.keys() ):
-            title = "resultFile[%s]:" % (key)
-            log.out(title.ljust(tab) + self._resultFiles[key])
+        for key in sorted( self.interimFiles.keys() ):
+            title = "interimFile[%s]:" % (key)
+            log.out(title.ljust(tab) + self.interimFiles[key])
+        for key in sorted( self.targetFiles.keys() ):
+            title = "targetFile[%s]:" % (key)
+            log.out(title.ljust(tab) + self.targetFiles[key])
     
 
 
