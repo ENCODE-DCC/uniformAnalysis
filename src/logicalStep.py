@@ -1,4 +1,4 @@
-import sys, pprint, traceback
+import os, sys, pprint, traceback
 from datetime import datetime
 from jobTree.scriptTree.target import Target
 from analysis import Analysis
@@ -160,23 +160,24 @@ class LogicalStep(Target):
         self.log.empty()  # Logical step log always starts empty!
         return self.log.file()
         
+    def mockUpPath(self,path,show=False):
+        '''Touch a file or make a directory'''
+        if path.endswith('/'):
+            self.ana.runCmd('mkdir -p '+path,logOut=show,logErr=show,dryRun=False,log=self.log)
+        else:
+            dir = os.path.split( path )[0]
+            self.ana.runCmd('mkdir -p '+dir, logOut=show,logErr=show,dryRun=False,log=self.log)
+            self.ana.runCmd('touch -a '+path,logOut=show,logErr=show,dryRun=False,log=self.log)
+        
     def mockUpResults(self):
         '''
         For each result file, will create it empty if it does not exist.
         This is used to mock up results in a dry run.
         '''
-        for key in self.interimFiles.keys():
-            try:
-                self.ana.runCmd('touch ' + self.interimFiles[key], 
-                                logOut=False, logErr=False, dryRun=False, log=self.log)
-            except:
-                pass
         for key in self.targetFiles.keys():
-            try:
-                self.ana.runCmd('touch ' + self.targetFiles[key], 
-                                logOut=False, logErr=False, dryRun=False, log=self.log)
-            except:
-                pass
+            self.mockUpPath(self.targetFiles[key],True)
+        for key in self.interimFiles.keys():
+            self.mockUpPath(self.interimFiles[key],True)
 
     def deliverTargetFile(self, name, pathToTarget):
         '''

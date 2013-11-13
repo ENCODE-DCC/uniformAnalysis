@@ -2,10 +2,11 @@
 # fastqValidateStep.py module holds FastqValidateStep class which descends from LogicalStep class.
 # It performs fastq validation obviously enough.
 #
-# Inputs: 1 fastq file, pre-registered in the analysis keyed as: 'tags' + suffix + '.fastq'
+# Inputs: 1 fastq file, pre-registered in the analysis   keyed as:   'tags' + suffix + '.fastq'
 #
 # Outputs: directory of files (will include html target) keyed as: 'valDir' + suffix
-#          zipped file of that directory                 keyed as: 'val' + suffix + '.zip'
+#          zipped file of that directory                 keyed as:    'val' + suffix + '.zip'
+#          html file in that directory                   keyed as:    'val' + suffix + '.html'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import ucscUtils, fastqc
@@ -29,14 +30,14 @@ class FastqValidationStep(LogicalStep):
             fastqc.version(self)
 
     def onRun(self):
+        # Inputs:
+        fastq = self.ana.getFile('tags' + self.suffix + '.fastq')
+        
         # Outputs:  
         valDir  = self.declareTargetFile('valDir'+self.suffix, name='sampleTags_fastqc', ext='dir')
         self.declareTargetFile('val'  + self.suffix + '.zip',name='sampleTags_fastqc', ext='zip')
-        # NOTE: valHtml resides inside valDir and only needs to be known at analysis level.
-        #valHtml = self.declareResultFile('val' + self.suffix + '.html') 
-        
-        # Inputs:
-        fastq = self.ana.getFile('tags' + self.suffix + '.fastq')
+        self.declareTargetFile('val' + self.suffix + '.html', 
+                               name='sampleTags_fastqc/fastqc_report', ext='html') 
         
         sampleFastq = self.declareGarbageFile('sampleTags.fastq')
         simpleStats = self.declareGarbageFile('simpleStats.txt')
