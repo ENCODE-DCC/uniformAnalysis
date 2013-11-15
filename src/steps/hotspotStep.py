@@ -16,7 +16,7 @@ from src.wrappers import hotspot, bedops, bedtools, ucscUtils
 
 class HotspotStep(LogicalStep):
 
-    def __init__(self, analysis, suffix, tagLen):
+    def __init__(self, analysis, suffix, tagLen=36):
         self.suffix = str(suffix)
         #self.replicate = str(replicate)
         self.tagLen    = str(tagLen)

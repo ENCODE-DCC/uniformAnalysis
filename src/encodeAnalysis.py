@@ -1,4 +1,4 @@
-import os, subprocess, shutil
+import os, subprocess, shutil, json
 from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
 from ra.raFile import RaFile
@@ -12,7 +12,7 @@ class EncodeAnalysis(Analysis):
 
         manifest = Settings(manifestFile)
     
-        Analysis.__init__(self, settingsFile, manifest['expId'])
+        Analysis.__init__(self, settingsFile, manifest['expName'])
 
         self.name = manifest['expName']
         self.dataType = manifest['dataType']
@@ -76,7 +76,7 @@ class EncodeAnalysis(Analysis):
             return self.interimDir + name
         elif os.path.isfile(self.targetDir + name):
             return self.targetDir + name
-        raise Exception('file not found')
+        raise Exception('file ' + name + ' not found')
     
     def createAnalysisDir(self):
         Analysis.createAnalysisDir(self)
@@ -109,6 +109,11 @@ class EncodeAnalysis(Analysis):
         for f in step.metaFiles:
             step.metaFiles[f].write()
             os.rename(step.metaFiles[f].filename, subDir + f + '.ra')
+            
+        if step.json:
+            fp = open(subDir + step.name + '.json', 'w')
+            json.dump(step.json, fp)
+            fp.close()
     
     def onSucceed(self, step):
         self.deliverFiles(step)

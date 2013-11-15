@@ -52,6 +52,8 @@ class AlignmentStep(LogicalStep):
             bwa.aln(self, input2, sai2)
             bwa.sampe(self, sai1, input1, sai2, input2, sam)
 
+            
+        self.json['countsOfStuff'] = { 'chr1': '123', 'chr2': '234', 'chr3': '345' }
         # TODO: unique autosome mapping count:
         # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/mapping.py reads_mapping()
         # autosomeCount

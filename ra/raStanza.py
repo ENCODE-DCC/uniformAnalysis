@@ -1,6 +1,6 @@
 import sys, string
 import re
-from ucscGb.gbData.ordereddict import OrderedDict
+from ordereddict import OrderedDict
 import collections
 
 class RaStanza(OrderedDict):

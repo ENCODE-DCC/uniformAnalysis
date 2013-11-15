@@ -10,8 +10,8 @@ tmpDir /cluster/home/mmaddren/grad/uniformAnalysis/tmp/
 outputPath /cluster/home/mmaddren/grad/uniformAnalysis/output/
 toolsDir /cluster/home/mmaddren/grad/pipeline/
 
-dbAssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
-chromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
+hg19AssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+hg19ChromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
 bowtieIndexFile /cluster/home/mmaddren/grad/pipeline/data/ref.bt2
 bowtieTool /cluster/home/mmaddren/grad/pipeline/bowtie2-2.1.0/bowtie2
 macsTool /cluster/home/mmaddren/grad/pipeline/MACS-master/bin/macs2

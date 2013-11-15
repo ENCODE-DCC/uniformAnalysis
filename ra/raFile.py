@@ -1,7 +1,6 @@
 import sys, string, os, re
-from ucscGb.gbData.ordereddict import OrderedDict
-from ucscGb.gbData.ra.raStanza import RaStanza
-from ucscGb.gbData import ucscUtils
+from ordereddict import OrderedDict
+from raStanza import RaStanza
 import collections
 
 class RaFile(OrderedDict):

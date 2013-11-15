@@ -17,7 +17,7 @@ class DnasePipeline(Pipeline):
         return [
             AlignmentStep(self.analysis, replicate),
             BamEvaluateStep(self.analysis, replicate, 5000000),
-            HotspotStep(self.analysis, replicate)
+            HotspotStep(self.analysis, 'Rep' + str(replicate))
         ]
        
     def getSecondPartPipeline(self):

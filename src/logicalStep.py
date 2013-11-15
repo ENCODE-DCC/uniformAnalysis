@@ -61,6 +61,7 @@ class LogicalStep(Target):
         self.targetFiles = {}
         self._garbageFiles = {}
         self.metaFiles = {}  # ???
+        self.json = {}
         self.log = Log() # Before logfile is declared, log print to stdout
         self._stepName = stepName # descendent classes MUST fill in the _stepName
         self._err = -1 # descendent classes should set this to returns from ganular steps
