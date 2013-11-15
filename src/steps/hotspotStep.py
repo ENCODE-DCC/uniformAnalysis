@@ -2,13 +2,13 @@
 # hotspotStep.py module holds HotspotStep class which descends from LogicalStep class.
 # It takes a bam input and calls peaks using hotspot.
 #
-# Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
+# Inputs: 1 bam, pre-registered in analysis   keyed as: 'alignment' + suffix + '.bam'
 #
-# Outputs: target broadPeak hotspot file,     keyed as: 'hot'     + suffix + '.bed'
-#          target broadPeak hotspot FDR file, keyed as: 'hotFrd'  + suffix + '.bed'
-#          target narrowPeak peaks file,      keyed as: 'peaks'   + suffix + '.bed'
-#          interim density bed file,          keyed as: 'density' + suffix + '.bed.starch'
-#          target density bigWig file,        keyed as: 'density' + suffix + '.bigWig'
+# Outputs: target broadPeak hotspot file,     keyed as: 'hot'       + suffix + '.bed'
+#          target broadPeak hotspot FDR file, keyed as: 'hotFrd'    + suffix + '.bed'
+#          target narrowPeak peaks file,      keyed as: 'peaks'     + suffix + '.bed'
+#          interim density bed file,          keyed as: 'density'   + suffix + '.bed.starch'
+#          target density bigWig file,        keyed as: 'density'   + suffix + '.bigWig'
 
 import os
 from src.logicalStep import LogicalStep

@@ -8,6 +8,7 @@
 
 # imports needed for Settings class:
 import os, sys, string
+import json
 
 class Settings(dict):
     '''
@@ -34,25 +35,31 @@ class Settings(dict):
         '''
         self._filename = filePath
         file = open(filePath, 'r')
-
-        #entry = None
-        lines = list()
-        keyValue = ''
-
-        while True:
-            line = self._readLineMayContinue( file )
-            if line == None:
-                break
-                
-            line = self._stripComments(line)
-            if line == '':
-                continue
         
-            line = line.strip()
-            if (line.startswith('#') or line == ''):
-                continue
-            else:
-                self._loadLine(line)
+        # Try json, but be happly with plain old var - space - val lines
+        try:
+            jsObj = json.load(file)   #    # dump with indent=4
+            for jsonKey in jsObj.keys():
+                self[str(jsonKey)] = str(jsObj[jsonKey])
+        except:
+            lines = list()
+            keyValue = ''
+
+            file.seek(0) # reset to the beginning    
+            while True:
+                line = self._readLineMayContinue( file )
+                if line == None:
+                    break
+                    
+                line = self._stripComments(line)
+                if line == '':
+                    continue
+            
+                line = line.strip()
+                if (line.startswith('#') or line == ''):
+                    continue
+                else:
+                    self._loadLine(line)
         
         file.close()
 

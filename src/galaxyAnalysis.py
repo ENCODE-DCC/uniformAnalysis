@@ -325,8 +325,10 @@ class GalaxyAnalysis(Analysis):
                         permanentOutput = None
                 
                 # hardlink target in analysisDir to resultsDir
+                # NOTE: dryRun has created empty files below, so linkOrCopy show be dryRun=False !
                 if permanentOutput != None:
-                    err = self.linkOrCopy(self._targetOutput[key],permanentOutput,log=log)
+                    err = self.linkOrCopy(self._targetOutput[key],permanentOutput, \
+                                          dryRun=False,log=log)
                     if err != 0:
                         fails = fails + "Failure to tidy up: '" + \
                                 self._targetOutput[key]+"' to '"+permanentOutput+"'\n"
@@ -336,7 +338,8 @@ class GalaxyAnalysis(Analysis):
                 if not self._stayWithinGalaxy and key in self._galaxyOutputs:
                     galaxyOutput = self._galaxyOutputs[key]
                     # softlink so permenant location can be discovered by future steps
-                    err = self.linkOrCopy(permanentOutput,galaxyOutput,soft=True,log=log)
+                    err = self.linkOrCopy(permanentOutput,galaxyOutput,soft=True, \
+                                          dryRun=False,log=log)
                     if err != 0:
                         fails = fails + "Failure to tidy up: '" + \
                                 self._targetOutput[key]+"' to '"+galaxyOutput+"'\n"
