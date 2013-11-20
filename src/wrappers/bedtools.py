@@ -44,6 +44,7 @@ def intersectBed(step, inBed1, inBed2, outBed):
 def toBedGraph(step, tagLen, inBed, outBedGraph):
     '''Convert Bed to bedGraph.'''
     
+    # TODO: The correct bed to intersect with is ???
     intersectWith = step.ana.getDir('hotspotDir') + 'data/' + step.ana.genome + \
                                                     '.K' + tagLen + '.mappable_only.bed'
 

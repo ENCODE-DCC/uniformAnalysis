@@ -78,6 +78,7 @@ hotspotVersion      HotSpot5
 # Miscellaneous command-line params
 fastqSampleReads 100000
 fastqSampleSeed 12345 
+bamSampleSeed   12345 
 
 # Force staying within galaxy dirs (no non-Galaxy targets)
 stayWithinGalaxy False

@@ -50,4 +50,18 @@ def fragmentSize(step):
     step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log)
     step.toolEnds(toolName,step.err)
+
+def downSample(step, probability, bamIn, bamOut):
+    '''Downsamples a bam file'''
+    
+    cmd = '{java} -Xmx5g -XX:ParallelGCThreads=4 -jar {picard}DownsampleSam.jar PROBABILITY={fraction} RANDOM_SEED={seed} INPUT={input} OUTPUT={output} VALIDATION_STRINGENCY=SILENT'.format( \
+          java=step.ana.getTool('java',orInPath=True), \
+          picard=step.ana.getDir('picardToolsDir',alt='toolsDir'), \
+          fraction=probability, seed=step.ana.getSetting('bamSampleSeed', '12345'), \
+          input=bamIn, output=bamOut)
+    
+    toolName = __name__.split('.')[-1] + " java:downSample"
+    step.toolBegins(toolName)
+    step.err = step.ana.runCmd(cmd, log=step.log)
+    step.toolEnds(toolName,step.err)
     

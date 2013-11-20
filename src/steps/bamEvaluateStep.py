@@ -10,7 +10,7 @@
 
 import os
 from src.logicalStep import LogicalStep
-from src.wrappers import samtools, ucscUtils, bedtools, picardTools, census, phantomTools
+from src.wrappers import samtools, bedtools, picardTools, census, phantomTools
 
 class BamEvaluateStep(LogicalStep):
 
@@ -25,14 +25,12 @@ class BamEvaluateStep(LogicalStep):
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
             raFile.add('samtools', samtools.version(self))
-            raFile.add('ucscUtils', ucscUtils.version(self,tool='sampleBam'))
             raFile.add('bedtools', bedtools.version(self))
             raFile.add('picardTools', picardTools.version(self))
             raFile.add('census', census.version(self))
             raFile.add('phantomTools', phantomTools.version(self))
         else:
             samtools.version(self)
-            ucscUtils.version(self,tool='sampleBam')
             bedtools.version(self)
             picardTools.version(self)
             census.version(self)
@@ -52,13 +50,10 @@ class BamEvaluateStep(LogicalStep):
                                              name=root + '_sample.bam')
         
         bamSize = samtools.bamSize(self,bam)
-        
-        
+         
         if self.sampleSize < bamSize:
-            bed        = self.declareGarbageFile('sample.bed')
             bamUnsorted  = self.declareGarbageFile('bamUnsortedSample.bam')
-            ucscUtils.sampleBam(self,bam,bamSize,self.sampleSize,bed)
-            bedtools.bedToBam(self,bed,bamUnsorted)
+            picardTools.downSample(self,(self.sampleSize/float(bamSize)),bam,bamUnsorted)
         else:
             bamUnsorted = bam
             

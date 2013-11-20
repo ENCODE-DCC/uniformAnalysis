@@ -64,7 +64,8 @@ def fastqStatsAndSubsample(step, inFastq, simpleStats, sampleFastq):
 def sampleBam(step, bam, bamSize, sampleSize, samSample):
     '''Samples a bam file.'''
     
-    # TODO: Is this really a ucscUtil???
+    # BUGBUG sampleBam not working on paired reads!  Replacing with picard DownSampleSam
+    # Is this really a ucscUtil???  Yes: src/hg/encode3/encPipe/sampleBam
     cmd = '{sampler} {input} {inSize} {outSize} {output}'.format( \
           sampler=step.ana.getTool('sampleBam'), input=bam, \
           inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
