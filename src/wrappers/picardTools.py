@@ -41,10 +41,10 @@ def sortBam(step, sam, bam):
     step.err = step.ana.runCmd(cmd, log=step.log)
     step.toolEnds(toolName,step.err)
 
-def fragmentSize(step):
+def fragmentSize(step, inBam, out, pdf):
     '''Calculates the fragment size'''
     
-    cmd = '{java} -Xmx5g -XX:ParallelGCThreads={threads} -jar {picard}Frag {param[insertsize]} HISTOGRAM_FILE={output[pdf]} I={input[bam]} O={output[insert]} VALIDATION_STRINGENCY=SILENT'
+    cmd = '{java} -Xmx5g -XX:ParallelGCThreads={threads} -jar {picard}CollectInsertSizeMetrics.jar HISTOGRAM_FILE={pdf} I={inBam} O={out} VALIDATION_STRINGENCY=SILENT'.format(java=step.ana.getTool('java',orInPath=True), threads=4, picard=step.ana.getDir('picardToolsDir',alt='toolsDir'), pdf=pdf, inBam=inBam, out=out)
     
     toolName = __name__.split('.')[-1] + " java:fragmentSize"
     step.toolBegins(toolName)

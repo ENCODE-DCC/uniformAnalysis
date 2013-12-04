@@ -98,10 +98,12 @@ class EncodeAnalysis(Analysis):
             for k in step.targetFiles:
                 if not os.path.exists(step.targetFiles[k]):
                     raise Exception('file not found: ' + step.targetFiles[k])
-                os.rename(step.targetFiles[k], self.targetDir + k)
-                shutil.copy(self.targetDir + k, subDir + k)
-                md.createStanza('object', k)
-                md.add('fileName', subDir + k)
+                splits = k.split('/')
+                localName = splits[len(splits) - 1]
+                os.rename(step.targetFiles[k], self.targetDir + localName)
+                shutil.copy(self.targetDir + localName, subDir + localName)
+                md.createStanza('object', localName)
+                md.add('fileName', subDir + localName)
                 md.add('readType', self.readType)
                 md.add('expId', self.id)
                 md.add('replicate', step.replicate) # TODO: will break after single-replicate part... will need to rewrite this to be better
@@ -112,7 +114,7 @@ class EncodeAnalysis(Analysis):
             
         if step.json:
             fp = open(subDir + step.name + '.json', 'w')
-            json.dump(step.json, fp)
+            json.dump(step.json, fp, sort_keys=True, indent=4, separators=(',', ': '))
             fp.close()
     
     def onSucceed(self, step):

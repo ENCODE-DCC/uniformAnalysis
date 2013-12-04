@@ -8,33 +8,34 @@
  
 tmpDir /cluster/home/mmaddren/grad/uniformAnalysis/tmp/
 outputPath /cluster/home/mmaddren/grad/uniformAnalysis/output/
-toolsDir /cluster/home/mmaddren/grad/pipeline/
+toolsDir /hive/groups/encode/encode3/tools/
 
 hg19AssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
-hg19ChromInfoFile /cluster/home/mmaddren/grad/pipeline/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
+hg19ChromInfoFile /hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_hg19.txt 
 bowtieIndexFile /cluster/home/mmaddren/grad/pipeline/data/ref.bt2
 bowtieTool /cluster/home/mmaddren/grad/pipeline/bowtie2-2.1.0/bowtie2
 macsTool /cluster/home/mmaddren/grad/pipeline/MACS-master/bin/macs2
 #hotspotTool /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/hotspot-deploy/bin/hotspot # Not used
 starTool /cluster/home/mmaddren/grad/pipeline/STAR_2.3.0e.Linux_x86_64/STAR
-bwaTool /cluster/home/mmaddren/grad/pipeline/gcap/bin/bwa
+bwaTool /hive/groups/encode/encode3/tools/gcap/bin/bwa
 gemTool /cluster/home/mmaddren/grad/pipeline/gem/gem.jar
 pashTool /cluster/home/mmaddren/grad/pipeline/pash-3.0.6.2/bin/pash-3.0lx.exe
 peakSeqTool /cluster/home/mmaddren/grad/pipeline/peakseq-1.1/bin/PeakSeq
-samtoolsTool /cluster/home/mmaddren/grad/pipeline/samtools-0.1.19/samtools
+samtoolsTool /hive/groups/encode/encode3/tools/samtools-0.1.19/samtools
 #bedtoolsTool /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/bedtools  # Not used
-bedtoolsDir /cluster/home/mmaddren/grad/pipeline/bedtools-2.17.0/bin/
-fastqcTool /cluster/home/mmaddren/grad/pipeline/FastQC/fastqc
-picardToolsDir /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/
+bedtoolsDir /hive/groups/encode/encode3/tools/bedtools-2.17.0/bin/
+bedopsDir        /hive/groups/encode/encode3/tools/bedops/
+fastqcTool /hive/groups/encode/encode3/tools/FastQC/fastqc
+picardToolsDir /hive/groups/encode/encode3/tools/picard-tools-1.94/
 #samSortJarFile /cluster/home/mmaddren/grad/pipeline/picard-tools-1.94/SortSam.jar  # Not used
 
 pythonTool /cluster/home/mmaddren/python/bin/python
-censusDir /cluster/home/mmaddren/grad/pipeline/gcap/census-master/
+censusDir /hive/groups/encode/encode3/tools/gcap/census-master/
 RscriptTool /usr/bin/Rscript
-phantomToolsDir /cluster/home/mmaddren/grad/pipeline/gcap/phantompeakqualtools/
+phantomToolsDir /hive/groups/encode/encode3/tools/gcap/phantompeakqualtools/
 #sampleBamTool /cluster/home/mmaddren/grad/pipeline/sampleBam  # Not needed, as it is in toolsDir
 javaTool    /usr/bin/java
 
-hotspotDir /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/
+hotspotDir /hive/groups/encode/encode3/tools/hotspot-distr-v4/
 #hotspotChromInfoFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.chromInfo.bed  # Not used
 #hotspotMappableRegionsFile /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed.starch  # Not used

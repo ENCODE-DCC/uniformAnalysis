@@ -32,14 +32,16 @@ class AlignmentStep(LogicalStep):
         
     def onRun(self):
         # Outputs:
-        bam = self.declareTargetFile('alignmentRep' + self.replicate+'.bam')
+        sortedBam = self.declareTargetFile('alignmentRep' + self.replicate + '.bam')
+        bamIndex = self.declareTargetFile('alignmentRep' + self.replicate + '.bam.bai')
+        bamStats = self.declareGarbageFile('alignmentRep' + self.replicate + 'Stats.txt')
         
         # Inputs:
         if self.ana.readType == 'single':
-            input1 = self.ana.getFile('tagsRep' + self.replicate+'.fastq')
+            input1 = self.ana.getFile('tagsRep' + self.replicate + '.fastq')
         elif self.ana.readType == 'paired':
-            input1 = self.ana.getFile('tagsRd1Rep' + self.replicate+'.fastq')
-            input2 = self.ana.getFile('tagsRd2Rep' + self.replicate+'.fastq')
+            input1 = self.ana.getFile('tagsRd1Rep' + self.replicate + '.fastq')
+            input2 = self.ana.getFile('tagsRd2Rep' + self.replicate + '.fastq')
              
         sam = self.declareGarbageFile('alignment.sam')
         sai1 = self.declareGarbageFile('sai1.sai')
@@ -52,11 +54,17 @@ class AlignmentStep(LogicalStep):
             bwa.aln(self, input2, sai2)
             bwa.sampe(self, sai1, input1, sai2, input2, sam)
 
-            
-        self.json['countsOfStuff'] = { 'chr1': '123', 'chr2': '234', 'chr3': '345' }
-        # TODO: unique autosome mapping count:
-        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/mapping.py reads_mapping()
-        # autosomeCount
-            
+        bam = self.declareGarbageFile('unsortedAlignmentRep' + self.replicate + '.bam')
         samtools.samToBam(self, sam, bam)
-
+        samtools.sort(self, bam, sortedBam)
+        samtools.index(self, sortedBam)
+        samtools.idxstats(self, sortedBam, bamStats)
+        
+        self.json['readCounts'] = {}
+        with open(bamStats, 'r') as statsFile:
+            for line in statsFile:
+                chr, readlen, mapped, unmapped = line.split()
+                if chr.startswith('chr'):
+                    self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+                    
+        

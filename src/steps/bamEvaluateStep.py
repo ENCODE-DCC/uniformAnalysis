@@ -43,6 +43,8 @@ class BamEvaluateStep(LogicalStep):
         # Outputs:
         metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt')
         strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
+        fragSizeTxt = self.declareTargetFile( 'fragSize'+ self.replicate + '.txt')
+        fragSizePdf = self.declareTargetFile( 'fragSize'+ self.replicate + '.pdf')
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
@@ -60,13 +62,18 @@ class BamEvaluateStep(LogicalStep):
         picardTools.sortBam(self,bamUnsorted,bamSample)
         census.metrics(self,bamSample,metricHist)
         
-        # TODO: convert census metrics into json + document
+        # I think this is already being done in QC
+        # TODO: convert census metrics into json + document 
         # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/library_complexity.py stat_redun_census(), redundancy_doc()
         
         phantomTools.strandCorr(self,bamSample,strandCorr)
         
-        # TODO: convert strand corr into json + document
-        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/nsc_rsc.py stat_strand_cor() strand_cor_doc()
+        self.json['strandCorrelation'] = {}
+        with open(strandCorr, 'r') as strandFile:
+            for line in strandFile:
+                splits = line.split('\t')
+                self.json['strandCorrelation']['Frag'] = splits[2]
+                self.json['strandCorrelation']['RSC'] = splits[8]
+                self.json['strandCorrelation']['NSC'] = splits[9]
 
-        # TODO: calculate fragment size with picard tools (pe) or macs2 (se) create document
-        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/fragment.py fragment_size()
+        picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
