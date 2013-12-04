@@ -48,7 +48,7 @@ class BamEvaluateStep(LogicalStep):
         # because garbage bam file name is used in output, it needs a meaningful name:
         fileName = os.path.split( bam )[1]
         root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareInterimFile('sampleRep' + self.replicate + '.bam', \
+        bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '5M.bam', \
                                              name=root + '_sample.bam')
         
         bamSize = samtools.bamSize(self,bam)

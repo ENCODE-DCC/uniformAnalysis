@@ -92,7 +92,10 @@ class EncodeAnalysis(Analysis):
         for k in step.interimFiles:
             if not os.path.exists(step.interimFiles[k]):
                 raise Exception('file not found: ' + step.interimFiles[k])
-            os.rename(step.interimFiles[k], self.interimDir + k)
+            splits = k.split('/')
+            localName = splits[len(splits) - 1]
+            #os.rename(step.interimFiles[k], self.interimDir + localName)
+            err = self.runCmd('mv {old} {to}'.format(old=step.interimFiles[k], to=self.interimDir + localName), dryRun=False, log=step.log)
         if len(step.targetFiles) > 0:
             md = self.createMetadataFile(step, 'files')
             for k in step.targetFiles:
@@ -100,13 +103,17 @@ class EncodeAnalysis(Analysis):
                     raise Exception('file not found: ' + step.targetFiles[k])
                 splits = k.split('/')
                 localName = splits[len(splits) - 1]
-                os.rename(step.targetFiles[k], self.targetDir + localName)
-                shutil.copy(self.targetDir + localName, subDir + localName)
+                #os.rename(step.targetFiles[k], self.targetDir + localName)
+                err = self.runCmd('mv {old} {to}'.format(old=step.targetFiles[k], to=self.targetDir + localName), dryRun=False, log=step.log)
+                err = self.runCmd('cp {old} {to}'.format(old=self.targetDir + localName, to=subDir + localName), dryRun=False, log=step.log)
+                #shutil.copy(self.targetDir + localName, subDir + localName)
+                
+                # TODO: relevant metadata needs to be put into the steps
                 md.createStanza('object', localName)
                 md.add('fileName', subDir + localName)
                 md.add('readType', self.readType)
                 md.add('expId', self.id)
-                md.add('replicate', step.replicate) # TODO: will break after single-replicate part... will need to rewrite this to be better
+                md.add('replicate', step.replicate) # this breaks after single-replicate
                 
         for f in step.metaFiles:
             step.metaFiles[f].write()
