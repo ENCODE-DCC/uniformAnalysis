@@ -8,12 +8,14 @@ from src.pipelines.dnasePipeline import DnasePipeline
 
 class EncodeAnalysis(Analysis):
     
-    def __init__(self, settingsFile, manifestFile):
+    def __init__(self, settingsFile, manifestFile, resume=0):
 
         manifest = Settings(manifestFile)
     
         Analysis.__init__(self, settingsFile, manifest['expName'])
 
+        self.resume = resume
+        
         self.name = manifest['expName']
         self.dataType = manifest['dataType']
         self.readType = manifest['readType']
@@ -52,10 +54,13 @@ class EncodeAnalysis(Analysis):
         """
         probably need one of these in experiment
         """
-        self.createAnalysisDir()
+        if self.resume == 0:
+            self.createAnalysisDir()
         stack = Stack(self.pipeline)
         options = stack.getDefaultOptions()
         options.jobTree = self.dir + 'jobTreeRun'
+        if self.resume != 0 and os.path.exists(self.dir + 'jobTreeRun'):
+            shutil.rmtree(self.dir + 'jobTreeRun')
         options.logLevel = 'INFO'
         
         # need to set batch system, big mem/cpu batches
@@ -97,7 +102,7 @@ class EncodeAnalysis(Analysis):
             #os.rename(step.interimFiles[k], self.interimDir + localName)
             err = self.runCmd('mv {old} {to}'.format(old=step.interimFiles[k], to=self.interimDir + localName), dryRun=False, log=step.log)
         if len(step.targetFiles) > 0:
-            md = self.createMetadataFile(step, 'files')
+            #md = self.createMetadataFile(step, 'files')
             for k in step.targetFiles:
                 if not os.path.exists(step.targetFiles[k]):
                     raise Exception('file not found: ' + step.targetFiles[k])
@@ -109,11 +114,11 @@ class EncodeAnalysis(Analysis):
                 #shutil.copy(self.targetDir + localName, subDir + localName)
                 
                 # TODO: relevant metadata needs to be put into the steps
-                md.createStanza('object', localName)
-                md.add('fileName', subDir + localName)
-                md.add('readType', self.readType)
-                md.add('expId', self.id)
-                md.add('replicate', step.replicate) # this breaks after single-replicate
+                #md.createStanza('object', localName)
+                #md.add('fileName', subDir + localName)
+                #md.add('readType', self.readType)
+                #md.add('expId', self.id)
+                #md.add('replicate', step.replicate) # this breaks after single-replicate
                 
         for f in step.metaFiles:
             step.metaFiles[f].write()

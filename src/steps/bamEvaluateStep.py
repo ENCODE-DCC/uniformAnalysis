@@ -59,12 +59,14 @@ class BamEvaluateStep(LogicalStep):
         else:
             bamUnsorted = bam
             
-        picardTools.sortBam(self,bamUnsorted,bamSample)
-        census.metrics(self,bamSample,metricHist)
-        
-        # I think this is already being done in QC
-        # TODO: convert census metrics into json + document 
-        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/library_complexity.py stat_redun_census(), redundancy_doc()
+        picardTools.sortBam(self, bamUnsorted, bamSample)
+        census.metrics(self, bamSample, metricHist)
+
+        self.json['redundancy'] = {}
+        with open(metricHist, 'r') as metricsFile:
+            lines = metricsFile.readlines()
+            self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
+            self.json['redundancy']['totalReads'] = lines[3].split()[-1]
         
         phantomTools.strandCorr(self,bamSample,strandCorr)
         
@@ -77,3 +79,5 @@ class BamEvaluateStep(LogicalStep):
                 self.json['strandCorrelation']['NSC'] = splits[9]
 
         picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
+        
+        

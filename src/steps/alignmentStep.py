@@ -32,8 +32,10 @@ class AlignmentStep(LogicalStep):
         
     def onRun(self):
         # Outputs:
-        sortedBam = self.declareTargetFile('alignmentRep' + self.replicate + '.bam')
-        bamIndex = self.declareTargetFile('alignmentRep' + self.replicate + '.bam.bai')
+        bamName = 'alignmentRep' + self.replicate + '.bam'
+        sortedBam = self.declareTargetFile(bamName)
+        bamIndexName = 'alignmentRep' + self.replicate + '.bam.bai'
+        bamIndex = self.declareTargetFile(bamIndexName)
         bamStats = self.declareGarbageFile('alignmentRep' + self.replicate + 'Stats.txt')
         
         # Inputs:
@@ -67,4 +69,16 @@ class AlignmentStep(LogicalStep):
                 if chr.startswith('chr'):
                     self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
                     
+        md = self.ana.createMetadataFile(self, 'files')
         
+        md.createStanza('object', bamName)
+        md.add('fileName', bam)
+        md.add('readType', self.ana.readType)
+        md.add('expId', self.ana.id)
+        md.add('replicate', self.replicate)
+        
+        md.createStanza('object', bamIndexName)
+        md.add('fileName', bamIndex)
+        md.add('readType', self.ana.readType)
+        md.add('expId', self.ana.id)
+        md.add('replicate', self.replicate)

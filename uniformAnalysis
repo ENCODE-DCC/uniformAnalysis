@@ -7,6 +7,7 @@ def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')
     parser.add_argument('-d', '--dryrun', action='store_true', default=False, help='dry run')
+    parser.add_argument('-r', '--resume', type=int, default=0)
     parser.add_argument('settings', help='Settings file')
     parser.add_argument('manifest', help='Manifest file')
 
@@ -15,7 +16,7 @@ def main():
         return
     args = parser.parse_args(sys.argv[1:])
     
-    exp = EncodeAnalysis(args.settings, args.manifest)
+    exp = EncodeAnalysis(args.settings, args.manifest, args.resume)
     exp.start()
     
     
