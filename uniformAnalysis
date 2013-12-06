@@ -3,43 +3,11 @@
 import sys, os, shutil, argparse, urllib2, re
 from src.encodeAnalysis import EncodeAnalysis
 
-#10/30
-#Alvin: which files do we care about
-    #probably all of them
-#Alvin: would UW cooperate in modifying hotspot to work better?
-    #probably, email Bob Thurman <rthurman@uw.edu>
-#Alvin: what is "*-final/*.fdr0.01.hot.bed       FDR thresholded hotspots  ( corresponding to hotspot v3 c)" called?
-#    https://github.com/qinqian/GCAP/blob/master/gcap/funcs/peaks_calling.py line 111
-    #Additional processing step on the broadPeaks
-#Alvin: bed_duplicates.sh where is it
-    # dont care using bam
-#Alvin: do we really care about the 4 files for the 5M and combo etc? are the density peak beds targets?
-    #yes
-    #3 operations on hotspot v4 peaks calling
-    #1. z score minimal threshold, 2. fdr filter, 3. merge peaks with tag density.
-
-
-
-#11/12
-# Jim: Hotspot is being updated unofficially since major dist
-# Jim: Hotspot requires code modifications to work correctly: return codes, tmp dir, dir cleaning
-
-# Jim: what is important to collect in the JSON that isn't already being collected? They describe everything in the JSON as QC
-# Jim: Do I need to get back license plates for bam,etc so that I can create the "derivedFrom" links?
-
-# Jim: Got first-draft of chip-seq pipeline
-# Jim: ENCSR000FJH - no valid read pairs, is it actually paired end?
- 
-# Alvin: Is it ok if we delete the peaks.bed.starch?
-
-# hotspot error:
-# Error: Unable to find file: /cluster/home/mmaddren/grad/pipeline/hotspot-distr-v4/data/hg19.K36.mappable_only.bed
-# more errors in log. look to fix!
-
 def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')
     parser.add_argument('-d', '--dryrun', action='store_true', default=False, help='dry run')
+    parser.add_argument('-r', '--resume', type=int, default=0)
     parser.add_argument('config.txt', help='Configuration variables. Text file - one line per setting, first word is key.')
     parser.add_argument('var.txt', help='Run-by-run variables. Text file - one line per setting as above.')
 
@@ -48,7 +16,7 @@ def main():
         return
     args = parser.parse_args(sys.argv[1:])
     
-    exp = EncodeAnalysis(args.settings, args.manifest)
+    exp = EncodeAnalysis(args.settings, args.manifest, args.resume)
     exp.start()
     
     
