@@ -40,8 +40,8 @@ def main():
     parser = argparse.ArgumentParser(description = 'Uniform analysis pipeline for ENCODE3 data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print additional logging information')
     parser.add_argument('-d', '--dryrun', action='store_true', default=False, help='dry run')
-    parser.add_argument('settings', help='Settings file')
-    parser.add_argument('manifest', help='Manifest file')
+    parser.add_argument('config.txt', help='Configuration variables. Text file - one line per setting, first word is key.')
+    parser.add_argument('var.txt', help='Run-by-run variables. Text file - one line per setting as above.')
 
     if len(sys.argv) < 2:
         parser.print_usage() 
