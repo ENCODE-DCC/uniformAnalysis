@@ -51,6 +51,10 @@ class Pipeline(Target):
             self.addChildTarget(RunSequence(self, self.getSingleReplicatePipeline(1)))
         if 2 in self.analysis.replicates:
             self.addChildTarget(RunSequence(self, self.getSingleReplicatePipeline(2)))
+        
+        # TODO: this is not actually correct, will need to do DB lookup
+        if 1 in self.analysis.replicates and 2 in self.analysis.replicates:
+            self.setFollowOnTarget(RunSequence(self, self.getSecondPartPipeline()))
             
         
             
