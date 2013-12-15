@@ -1,0 +1,26 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 4 ];
+then echo "usage v1: eap_run_macs2_dnase_se target in.bam out.narrowPeak.bigBed out.bigWig"
+echo target is ucsc database ID - hg19 or hg38 or mm10 most commonly at time of writing.
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Run macs on $2. The macs output will be in tmp_* 
+macs2 callpeak --nomodel -t $2 -B -n tmp 
+
+# Convert macs tmp_peaks.xls output to narrowPeak.bb format in $3, checking chromosome coords vs $1
+eap_macs2_xls_to_narrowPeak tmp_peaks.xls >tmp.narrowPeak
+eap_narrowPeak_to_bigBed $1 tmp.narrowPeak $3
+#bedToBigBed -as=/data/encode3/encValData/as/narrowPeak.as -type=bed6+4 tmp.narrowPeak  /data/encode3/encValData/$1/chrom.sizes tmp.narrowPeak.bb
+#mv tmp.narrowPeak.bb $3 
+
+# Convert tmp_treat_pileup.bdg to bigWig in $4, checking chrom coords against $1
+bedGraphToBigWig tmp_treat_pileup.bdg /data/encode3/encValData/$1/chrom.sizes tmp.bigWig
+mv tmp.bigWig $4
+
+# Remove some big boring temp files
+rm tmp_*.bdg

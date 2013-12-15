@@ -1,0 +1,11 @@
+#!/bin/bash -e
+# Run bash to abort on first error.
+
+#Check command line and provide usage and version info
+if [ $# -ne 1 ];
+then echo "usage v1: $0 macs2_out.xls"
+echo input is macs2 peak caller xls, a line oriented tabular format
+echo output is ENCODE narrowPeak, another line oriented format,  to stdout
+exit -1; fi
+
+grep -v '^#' $1 | grep -v '^$' | awk 'BEGIN{OFS="\t"} NR>1 {id +=1; print $1,$2,$3, "macs2_" id,0,".", $8,$7,$9,$5;}' 
