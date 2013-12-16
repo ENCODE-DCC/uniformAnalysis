@@ -6,8 +6,9 @@
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 #
-# Outputs: a single bam target which will match and analysis target keyed as:
+# Outputs: a single bam target and an index for it which will match and analysis targets keyed as:
 #          'alignmentRep'+replicate+'.bam'
+#          'alignmentRep'+replicate+'.bam.bai'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import bwa, samtools

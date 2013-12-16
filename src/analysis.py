@@ -1,7 +1,8 @@
-import sys, os.path
+import sys, os.path, json
 import commands
 from settings import Settings
 from log import Log
+from ra.raFile import RaFile
 
 class Analysis(object):
     '''
@@ -335,6 +336,17 @@ class Analysis(object):
                 fails = fails + "Failed to find target result for '"+key+"'\n"
         if len(fails) > 0:
             raise Exception(fails)
+        # json and RA
+        for fileName in step.metaFiles:
+            step.metaFiles[fileName].write()
+            self.linkOrCopy(step.metaFiles[fileName].filename, self.dir + fileName + '.ra')
+            
+        if step.json:
+            jsonFile = step.dir + step.name + '.json'
+            fp = open(jsonFile, 'w')
+            json.dump(step.json, fp, sort_keys=True, indent=4, separators=(',', ': '))
+            fp.close()
+            self.linkOrCopy(jsonFile, self.dir + step.name + '.json')
     
     def deliveryKeys(self,justThisSet):
         '''
@@ -343,6 +355,12 @@ class Analysis(object):
         '''
         self._deliveryKeys = justThisSet
         
+    def createMetadataFile(self, step, name):
+        if name in step.metaFiles:
+            raise Exception('metadata file already exists')
+        step.metaFiles[name] = RaFile(step.dir + name + '.ra')
+        return step.metaFiles[name]
+    
     def onSucceed(self, step):
         '''
         pipeline will handle all success steps, like copying out files we care

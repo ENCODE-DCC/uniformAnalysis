@@ -135,12 +135,6 @@ class EncodeAnalysis(Analysis):
         step.log.dump( self.log.file() )
         #step.cleanup()
     
-    def createMetadataFile(self, step, name):
-        if name in step.metaFiles:
-            raise Exception('metadata file already exists')
-        step.metaFiles[name] = RaFile(step.dir + name + '.ra')
-        return step.metaFiles[name]
-    
     def onRun(self, step):
         versions = self.createMetadataFile(step, 'versions')
         versions.createStanza('pipeline', self.pipeline.version)
