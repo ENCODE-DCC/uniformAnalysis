@@ -399,6 +399,8 @@ class Analysis(object):
             self.runCmd('ls -l ' + step.dir, dryRun=False)
             self.log.out('')
         self.removeStep(step)  # Do we want to do this?   
+        if step.err == 0:
+            step.err = 1    # Must fail!
         return step.err
         
     def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):

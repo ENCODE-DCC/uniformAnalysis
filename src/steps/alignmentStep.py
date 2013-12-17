@@ -64,11 +64,14 @@ class AlignmentStep(LogicalStep):
         samtools.idxstats(self, sortedBam, bamStats)
         
         self.json['readCounts'] = {}
-        with open(bamStats, 'r') as statsFile:
-            for line in statsFile:
-                chr, readlen, mapped, unmapped = line.split()
-                if chr.startswith('chr'):
-                    self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        if not self.ana.dryRun:
+            with open(bamStats, 'r') as statsFile:
+                for line in statsFile:
+                    chr, readlen, mapped, unmapped = line.split()
+                    if chr.startswith('chr'):
+                        self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        else:
+            self.json['readCounts']['chr0'] = { 'mapped': '0', 'unmapped': '0' }
                     
         md = self.ana.createMetadataFile(self, 'files')
         

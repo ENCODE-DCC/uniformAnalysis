@@ -62,20 +62,29 @@ class BamEvaluateStep(LogicalStep):
         census.metrics(self, bamSample, metricHist)
 
         self.json['redundancy'] = {}
-        with open(metricHist, 'r') as metricsFile:
-            lines = metricsFile.readlines()
-            self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
-            self.json['redundancy']['totalReads'] = lines[3].split()[-1]
+        if not self.ana.dryRun:
+            with open(metricHist, 'r') as metricsFile:
+                lines = metricsFile.readlines()
+                self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
+                self.json['redundancy']['totalReads'] = lines[3].split()[-1]
+        else:
+            self.json['redundancy']['uniqueReads'] = 0
+            self.json['redundancy']['totalReads'] = 0
         
         phantomTools.strandCorr(self,bamSample,strandCorr)
         
         self.json['strandCorrelation'] = {}
-        with open(strandCorr, 'r') as strandFile:
-            for line in strandFile:
-                splits = line.split('\t')
-                self.json['strandCorrelation']['Frag'] = splits[2]
-                self.json['strandCorrelation']['RSC'] = splits[8]
-                self.json['strandCorrelation']['NSC'] = splits[9]
+        if not self.ana.dryRun:
+            with open(strandCorr, 'r') as strandFile:
+                for line in strandFile:
+                    splits = line.split('\t')
+                    self.json['strandCorrelation']['Frag'] = splits[2]
+                    self.json['strandCorrelation']['RSC'] = splits[8]
+                    self.json['strandCorrelation']['NSC'] = splits[9]
+        else:
+            self.json['strandCorrelation']['Frag'] = 0
+            self.json['strandCorrelation']['RSC'] = 0
+            self.json['strandCorrelation']['NSC'] = 0
 
         picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
         
