@@ -63,7 +63,10 @@ class GalaxyAnalysis(Analysis):
             self._analysisDir = self.getDir('tmpDir')
         self._analysisDir = self._analysisDir + self.id.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
-            os.makedirs(self._analysisDir)
+            try:
+                os.makedirs(self._analysisDir)
+            except:
+                pass       # Race condition!
         return self._analysisDir
         
     def fileParse(self, someFile):
@@ -441,6 +444,8 @@ class GalaxyAnalysis(Analysis):
         Analysis.onFail(self,step)
         if step.err > 255:  # This case has been returning 0 !!!
             step.err = 55
+        if step.err == 0:
+            step.err = 1    # Must fail!
         sys.exit( step.err )
     
 
