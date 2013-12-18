@@ -4,7 +4,7 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 3 ];
-then echo "usage v2: eap_run_bwa_se bwa-index reads.fq out.bam"
+then echo "usage v3: eap_run_bwa_se bwa-index reads.fq out.bam"
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
@@ -15,6 +15,6 @@ samtools view -S -b tmp.sam > tmp.bam
 samtools sort tmp.bam sorted
 mv sorted.bam $3
 
-# Remove some big boring files.  Keep bams sorted both way for now though.
-rm tmp.sai tmp.sam
+# Remove some big boring files.
+rm tmp.sai tmp.sam tmp.bam
 
