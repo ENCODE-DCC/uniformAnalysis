@@ -1,0 +1,93 @@
+<tool id="bamEvaluateE3" name="ENCODE3 bam evaluation" version="1.0">
+    <description> using census and phantom tools.</description>
+    <command interpreter="python">
+        bamValidateE3.py $__root_dir__ $__user_id__ $settingsFile $singlePaired $bamInput $size 
+        $bamSample $histoMetrics $strandCorr $repNo $name
+    </command>
+    <version_command>python ../../../../tools/encode/bamValidateE3.py --version</version_command>
+    <stdio>
+        <exit_code range="1:" level="fatal" description="Fatal error" />
+        <regex match=".*" source="stderr" level="log" />
+    </stdio>
+    <inputs>
+        <param name="bamInput" type="data" format="bam" label="Alignments file (bam)" />
+        <param name="singlePaired" type="select" label="Single or Paired Reads">
+    	    <option value="single" selected="true">Unpaired</option>
+    	    <option value="paired">Paired</option>
+        </param>
+        <param name="size" type="integer" value="5000000" min="100" max="100000000" 
+               label="Reads to randomly sample"/>
+        <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
+        </param>
+        <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
+               help="Letters and numbers only [optional]">
+            <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
+        </param>
+        <param name="settingsFile" type="text" 
+               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
+               size="256" label="ENCODE3 pipeline settings file" />
+    </inputs>
+    <outputs>
+        <data format="bam" name="bamSample"    label="${name}Rep${repNo} bam sample" />
+        <data format="txt" name="histoMetrics" label="${name}Rep${repNo} Histogram metrics" />
+        <data format="txt" name="strandCorr"   label="${name}Rep${repNo} Strand Correlation" />
+    </outputs>
+    <help>
+.. class:: infomark
+
+   Evaluates a sampling of a bam alignments file.  
+   An *ENCODE3 analysis* involves multiple steps and dataset replicates, of which this is one.
+   Use *ENCODE3 workflows* to ensure that all analysis steps are performed in the proper sequence.
+
+**Inputs:**
+    The **Alignments file** is expected to be the generated output from a previous 
+    *ENCODE3 fastQ alignment* step.  
+
+    In order to properly evaluate an alignment, it is important to specifiy 
+    whether it was generated from **Single or Paired reads**.
+
+    Please specify the **Reads to randomly sample** for evaluation.  The typical ENCODE analysis 
+    samples half a million reads.
+
+    The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
+    replicate number is not incremented then repeated steps will overwrite previous replicate 
+    results.  Merged replicates should have a 0 (zero) replicate number. 
+
+    The optional **Analysis Name** field will be used to tie multiple steps together into 
+    one analysis, ensuring related files are well named and a single log records all processing 
+    taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
+    that results from one analyis are over-written by another.  Multiple histories for a single user 
+    can share the same named analysis, but two separate users cannot.
+
+    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
+    tool locations and default parameters.
+
+**Outputs:**
+    This step is expected to produce three files:
+    
+    - **bam sample** is a randomized sample of the bam alignments file that will be evaluated.  
+      It will also be input for later processing in the ENCODE 3 pipeline.
+    - **Histogram metrics** produced by the 'census' package.
+    - **Strand-Correlation** produced by the 'phantom-tools' package.
+    
+    The **log** of this single step can be seen under *view details* stdout.
+    
+    If the outputs are delivered to a location external to galaxy, the **Analysis log** covering 
+    all steps of the analysis will be delivered to the same location.  Otherwise the log may be
+    found in the directory pointed to by 'tmpDir' as defined in the settings file.
+
++--------+------------------------------------------------------------------------------------+
+||encPng||All *ENCODE3 Analysis* steps provided through Galaxy are run via the same python    | 
+|        |scripts and third-party tools as the official *ENCODE3 Analysis Pipeline*.  Just as | 
+|        |with the official pipeline, all work is be performed in temporary directories and   |
+|        |successful results moved to well-named locations.  If the initial input datasets are| 
+|        |from a symlinked Galaxy library, results will be moved to the same directory as the |  
+|        |inputs and then symlinked back into Galaxy. If the initial inputs do not have a     | 
+|        |recognizable location outside the Galaxy database, then results will be written     |
+|        |back into the Galaxy database as well.                                              |
++--------+------------------------------------------------------------------------------------+
+
+.. |encPng| image:: http://genome.ucsc.edu/images/ENCODE_scaleup_logo.png
+   :width: 100
+    </help>
+</tool>

@@ -14,7 +14,7 @@ def version(step, logOut=True, tool=None):
     version = "unversioned"  # Sorry, this tool has no version.
     if toolName == 'bedGraphToBigWig':
         version = step.ana.getCmdOut(step.ana.getTool(toolName) + \
-                                 "  2>&1 | grep \"'+toolName+' v\" | awk '{print $3}'",
+                                 '  2>&1 | grep "'+toolName+' v"' + " | awk '{print $3}'",
                                  dryRun=False,logCmd=False)
         expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
         if step.ana.strict and version != expected:

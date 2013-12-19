@@ -1,0 +1,113 @@
+<tool id="bwaAlignE3" name="ENCODE3 fastQ alignment" version="1.0">
+    <description>using bwa</description>
+    <command interpreter="python">
+        bwaAlignE3.py $__root_dir__ $__user_id__ $settingsFile $runType.singlePaired
+        #if $runType.singlePaired == "single":
+             $fastqInput $valStats $bamUnpaired
+        #else
+             $fastqInput $valStats $fastqInput2 $valStats2 $bamPaired
+        #end if
+        $repNo $name
+    </command>
+    <version_command>python ../../../../tools/encode/bwaAlignE3.py --version</version_command>
+    <stdio>
+        <exit_code range="1:" level="fatal" description="Fatal error" />
+        <regex match=".*" source="stderr" level="log" />
+    </stdio>
+    <inputs>
+    <conditional name="runType">
+        <param name="singlePaired" type="select" label="Single or Paired Reads">
+    	    <option value="single" selected="true">Unpaired</option>
+    	    <option value="paired">Paired</option>
+        </param>
+        <when value="single">
+            <param name="fastqInput" type="data" format="fastq" label="Unpaired fastQ file" />
+            <param name="valStats" type="data" format="html" label="Validation stats (unpaired)" />
+        </when>
+        <when value="paired">
+            <param name="fastqInput" type="data" format="fastq" 
+                   label="Paired read 1 fastQ file" />
+            <param name="valStats" type="data" format="html" label="Validation stats (read 1)" />
+            <param name="fastqInput2" type="data" format="fastq" 
+                   label="Paired read 2 fastQ file" />
+            <param name="valStats2" type="data" format="html" label="Validation stats (read 1)" />
+        </when>
+    </conditional>
+        <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
+        </param>
+        <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
+               help="Letters and numbers only [optional]">
+            <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
+        </param>
+        <param name="settingsFile" type="text" 
+               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
+               size="256" label="ENCODE3 pipeline settings file" />
+    </inputs>
+    <outputs>
+        <data format="bam" name="bamUnpaired" 
+              label="${name}Rep${repNo} bam alignments (unpaired)">
+            <filter>(runType['singlePaired'] == 'single')</filter>
+        </data>
+        <data format="bam" name="bamPaired" 
+              label="${name}Rep${repNo} bam alignments (paired-end)">
+            <filter>(runType['singlePaired'] == 'paired')</filter>
+        </data>
+    </outputs>
+    <help>
+.. class:: infomark
+
+   Aligns high-throughput-sequencing reads to the GRCh37/hg19 reference genome using 'bwa'. 
+   An *ENCODE3 analysis* involves multiple steps and dataset replicates, of which this is one.
+   Use *ENCODE3 workflows* to ensure that all analysis steps are performed in the proper sequence.
+
+**Inputs:**
+    Enter **Single or Paired reads** to declare whether the reads are contained in a single 
+    'unpaired' reads fastQ or a pair of fastQs for paired reads.
+    
+    The **Unpaired fastQ** (or **Paired read 1** and **Paired read 2** fastQ files) contains the 
+    high-throughput sequencing reads upon which which further analysis will be based.  The fastQ 
+    files are expected to be contained in a Galaxy library or else uploaded by the user.
+
+    The **Validation stats** (**unpaired**, or **read 1** and **read 2**) are required to by 
+    this analysis step.  Validation stats are the generated output from a previous 
+    *ENCODE3 fastQ validation* step.
+    
+    The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
+    replicate number is not incremented then repeated steps will overwrite previous replicate 
+    results. 
+    
+    The optional **Analysis Name** field will be used to tie multiple steps together into 
+    one analysis, ensuring related files are well named and a single log records all processing 
+    taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
+    that results from one analyis are over-written by another.  Multiple histories for a single user 
+    can share the same named analysis, but two separate users cannot.
+    
+    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
+    tool locations and default parameters.
+
+**Outputs:**
+    This step is expected to produce a single file: **bam alignments** produced by the 'bwa' 
+    package and samtools.
+
+    The **log** of this single step can be seen under *view details* stdout.
+
+    If the outputs are delivered to a location external to galaxy, the **Analysis log** covering 
+    all steps of the analysis will be delivered to the same location.  Otherwise the log may be
+    found in the directory pointed to by 'tmpDir' as defined in the settings file.
+
++--------+------------------------------------------------------------------------------------+
+||encPng||All *ENCODE3 Analysis* steps provided through Galaxy are run via the same python    | 
+|        |scripts and third-party tools as the official *ENCODE3 Analysis Pipeline*.  Just as | 
+|        |with the official pipeline, all work is be performed in temporary directories and   |
+|        |successful results moved to well-named locations.  If the initial input datasets are| 
+|        |from a symlinked Galaxy library, results will be moved to the same directory as the |  
+|        |inputs and then symlinked back into Galaxy. If the initial inputs do not have a     | 
+|        |recognizable location outside the Galaxy database, then results will be written     |
+|        |back into the Galaxy database as well.                                              |
++--------+------------------------------------------------------------------------------------+
+
+.. |encPng| image:: http://genome.ucsc.edu/images/ENCODE_scaleup_logo.png
+   :width: 100
+
+    </help>
+</tool>

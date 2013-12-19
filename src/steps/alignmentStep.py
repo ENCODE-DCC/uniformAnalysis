@@ -6,8 +6,9 @@
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 #
-# Outputs: a single bam target which will match and analysis target keyed as:
+# Outputs: a single bam target and an index for it which will match and analysis targets keyed as:
 #          'alignmentRep'+replicate+'.bam'
+#          'alignmentRep'+replicate+'.bam.bai'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import bwa, samtools
@@ -63,11 +64,14 @@ class AlignmentStep(LogicalStep):
         samtools.idxstats(self, sortedBam, bamStats)
         
         self.json['readCounts'] = {}
-        with open(bamStats, 'r') as statsFile:
-            for line in statsFile:
-                chr, readlen, mapped, unmapped = line.split()
-                if chr.startswith('chr'):
-                    self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        if not self.ana.dryRun:
+            with open(bamStats, 'r') as statsFile:
+                for line in statsFile:
+                    chr, readlen, mapped, unmapped = line.split()
+                    if chr.startswith('chr'):
+                        self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        else:
+            self.json['readCounts']['chr0'] = { 'mapped': '0', 'unmapped': '0' }
                     
         md = self.ana.createMetadataFile(self, 'files')
         
