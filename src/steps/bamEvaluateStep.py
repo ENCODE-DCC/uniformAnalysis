@@ -7,6 +7,7 @@
 # Outputs: 1 target bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
 #          1 target histogram  file, keyed as: 'metricRep'     + replicate +    '.txt'
 #          1 target Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
+#          1 interim json      file, keyed as: 'bamEvaluateRep' + replicate +  '.json'
 
 import os
 from src.logicalStep import LogicalStep
@@ -17,7 +18,7 @@ class BamEvaluateStep(LogicalStep):
     def __init__(self, analysis, replicate, sampleSize):
         self.replicate = str(replicate)
         self.sampleSize = sampleSize
-        LogicalStep.__init__(self, analysis, 'bamEvaluate_Rep' + self.replicate)
+        LogicalStep.__init__(self, analysis, 'bamEvaluateRep' + self.replicate)
         
     def writeVersions(self,raFile=None,allLevels=False):
         '''Writes versions to to the log or a file.'''
@@ -45,9 +46,6 @@ class BamEvaluateStep(LogicalStep):
         strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
         fragSizeTxt = self.declareTargetFile( 'fragSize'+ self.replicate + '.txt')
         fragSizePdf = self.declareTargetFile( 'fragSize'+ self.replicate + '.pdf')
-        # because garbage bam file name is used in output, it needs a meaningful name:
-        fileName = os.path.split( bam )[1]
-        root = os.path.splitext( fileName )[0]
         bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
         
         bamSize = samtools.bamSize(self,bam)
@@ -85,6 +83,7 @@ class BamEvaluateStep(LogicalStep):
             self.json['strandCorrelation']['Frag'] = 0
             self.json['strandCorrelation']['RSC'] = 0
             self.json['strandCorrelation']['NSC'] = 0
+        self.createAndWriteJsonFile()
 
         picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
         

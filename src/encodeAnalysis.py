@@ -1,7 +1,7 @@
-import os, subprocess, shutil, json
+import os, subprocess, shutil
 from jobTree.scriptTree.target import Target
 from jobTree.scriptTree.stack import Stack
-from ra.raFile import RaFile
+#from ra.raFile import RaFile
 from src.analysis import Analysis
 from src.settings import Settings
 from src.pipelines.dnasePipeline import DnasePipeline
@@ -102,7 +102,7 @@ class EncodeAnalysis(Analysis):
             #os.rename(step.interimFiles[k], self.interimDir + localName)
             err = self.runCmd('mv {old} {to}'.format(old=step.interimFiles[k], to=self.interimDir + localName), dryRun=False, log=step.log)
         if len(step.targetFiles) > 0:
-            #md = self.createMetadataFile(step, 'files')
+            #md = step.createMetadataFile('files')
             for k in step.targetFiles:
                 if not os.path.exists(step.targetFiles[k]):
                     raise Exception('file not found: ' + step.targetFiles[k])
@@ -119,15 +119,16 @@ class EncodeAnalysis(Analysis):
                 #md.add('readType', self.readType)
                 #md.add('expId', self.id)
                 #md.add('replicate', step.replicate) # this breaks after single-replicate
-                
-        for f in step.metaFiles:
-            step.metaFiles[f].write()
-            os.rename(step.metaFiles[f].filename, subDir + f + '.ra')
+
+        ### Both ra and json files are written and delivered as interim/target files       
+        #for f in step.metaFiles:
+        #    step.metaFiles[f].write()
+        #    os.rename(step.metaFiles[f].filename, subDir + f + '.ra')
             
-        if step.json:
-            fp = open(subDir + step.name + '.json', 'w')
-            json.dump(step.json, fp, sort_keys=True, indent=4, separators=(',', ': '))
-            fp.close()
+        #if step.json:
+        #    fp = open(subDir + step.name + '.json', 'w')
+        #    json.dump(step.json, fp, sort_keys=True, indent=4, separators=(',', ': '))
+        #    fp.close()
     
     def onSucceed(self, step):
         self.deliverFiles(step)
@@ -136,7 +137,7 @@ class EncodeAnalysis(Analysis):
         #step.cleanup()
     
     def onRun(self, step):
-        versions = self.createMetadataFile(step, 'versions')
+        versions = step.createMetadataFile('versions')
         versions.createStanza('pipeline', self.pipeline.version)
         versions.add(step.name, step.version)
         step.writeVersions(versions)

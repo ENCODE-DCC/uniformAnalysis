@@ -352,7 +352,7 @@ class GalaxyAnalysis(Analysis):
                         permanentOutput = None
                 
                 # hardlink target in analysisDir to resultsDir
-                # NOTE: dryRun has created empty files below, so linkOrCopy show be dryRun=False !
+                # NOTE: dryRun has created empty files below, so linkOrCopy should be dryRun=False!
                 if permanentOutput != None:
                     err = self.linkOrCopy(self._targetOutput[key],permanentOutput, \
                                           dryRun=False,log=log)
@@ -364,7 +364,7 @@ class GalaxyAnalysis(Analysis):
                 # symlink result back into galaxy
                 if not self._stayWithinGalaxy and key in self._galaxyOutputs:
                     galaxyOutput = self._galaxyOutputs[key]
-                    # softlink so permenant location can be discovered by future steps
+                    # softlink so permanent location can be discovered by future steps
                     err = self.linkOrCopy(permanentOutput,galaxyOutput,soft=True, \
                                           dryRun=False,log=log)
                     if err != 0:
@@ -407,7 +407,7 @@ class GalaxyAnalysis(Analysis):
         Extend analysis.onSucceed to handle galaxy specific pipeline will handle all success 
         steps, like copying out files we care about and emptying the step directory
         """
-        if self.dryRun():
+        if self.dryRun:
             self.printPaths(log=step.log)   # For posterity
         
         #try:
@@ -423,7 +423,7 @@ class GalaxyAnalysis(Analysis):
         if self.log.file() != None:  # If analysisLog, then be sure to just print step log to stdout
             step.log.dump()
         ### TODO: cleanup step dir AFTER debugging phase.
-        ###if not self.dryRun():
+        ###if not self.dryRun:
         ###    step.cleanup()               # Removes logicalStep.stepDir()
         #else:
         #    self.runCmd('ls -l ' + step.dir, dryRun=False)
@@ -435,7 +435,7 @@ class GalaxyAnalysis(Analysis):
         """
         Override Analysis.onFail() to include galaxy specific things
         """
-        #if self.dryRun():
+        #if self.dryRun:
         self.printPaths(log=step.log)   # For posterity
         step.log.out('') # skip a lineline
         self.runCmd('ls -l ' + step.dir, dryRun=False, log=step.log)
@@ -446,7 +446,7 @@ class GalaxyAnalysis(Analysis):
             step.err = 55
         if step.err == 0:
             step.err = 1    # Must fail!
-        sys.exit( step.err )
+        return step.err
     
 
 ############ command line testing ############
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     galaxyPath = '/hive/users/tdreszer/galaxy/'
     
     e3 = GalaxyAnalysis(settingFile, analysisId)
-    e3.dryRun(True)
+    e3.dryRun = True
     
     # Command-line args predefined in in settings:
     reads = e3.getSetting('fastqSampleReads','100000')

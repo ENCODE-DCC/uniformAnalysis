@@ -1,8 +1,8 @@
 <tool id="bamEvaluateE3" name="ENCODE3 bam evaluation" version="1.0">
     <description> using census and phantom tools.</description>
     <command interpreter="python">
-        bamValidateE3.py $__root_dir__ $__user_id__ $settingsFile $singlePaired $bamInput $size 
-        $bamSample $histoMetrics $strandCorr $repNo $name
+        bamValidateE3.py $singlePaired $bamInput $bamSample $histoMetrics $strandCorr 
+        $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/bamValidateE3.py --version</version_command>
     <stdio>
@@ -15,17 +15,12 @@
     	    <option value="single" selected="true">Unpaired</option>
     	    <option value="paired">Paired</option>
         </param>
-        <param name="size" type="integer" value="5000000" min="100" max="100000000" 
-               label="Reads to randomly sample"/>
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
         </param>
         <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
-        <param name="settingsFile" type="text" 
-               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
-               size="256" label="ENCODE3 pipeline settings file" />
     </inputs>
     <outputs>
         <data format="bam" name="bamSample"    label="${name}Rep${repNo} bam sample" />
@@ -46,9 +41,6 @@
     In order to properly evaluate an alignment, it is important to specifiy 
     whether it was generated from **Single or Paired reads**.
 
-    Please specify the **Reads to randomly sample** for evaluation.  The typical ENCODE analysis 
-    samples half a million reads.
-
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
     replicate number is not incremented then repeated steps will overwrite previous replicate 
     results.  Merged replicates should have a 0 (zero) replicate number. 
@@ -58,9 +50,6 @@
     taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
-
-    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
-    tool locations and default parameters.
 
 **Outputs:**
     This step is expected to produce three files:

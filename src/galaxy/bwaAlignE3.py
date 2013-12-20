@@ -1,9 +1,9 @@
 #!/usr/bin/env python2.7
 # bwaAlignE3.py ENCODE3 galaxy pipeline script for fastq alignment via bwa
-
-#Usage: python(2.7) bwaAlign.py <galaxyRootDir> <historyId> <encode3SettingsFile> \
-#                               <'paired'|'unpaired'> <inFastq> <inValFile> \
-#                               [<inFastqR2> <inValFileR2>] <galaxyOutBam> <repNo> <named>
+# Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
+#
+#Usage: python(2.7) bwaAlign.py <'paired'|'unpaired'> <inFastq> <inValFile> \
+#                               [<inFastqR2> <inValFileR2>] <galaxyOutBam> <repNo> <analysisId>
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
@@ -11,14 +11,11 @@ from src.steps.alignmentStep import AlignmentStep
 
 ###############
 testOnly = False
-#python bwaAlignE3.py /hive/users/tdreszer/galaxy/galaxy-dist 47 \
-#           /hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt unpaired \
+#python bwaAlignE3.py unpaired \
 #           /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.fastq \
 #           /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1_s100000_fastqc/fastqc_report.html \
 #           /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat 1 test
-#python bwaAlignE3.py /hive/users/tdreszer/galaxy/galaxy-dist 47 \
-#           /hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt paired \
-#           /hive/users/tdreszer/galaxy/data/dnase/UwDgfRep1Rd1.fastq \
+#python bwaAlignE3.py paired /hive/users/tdreszer/galaxy/data/dnase/UwDgfRep1Rd1.fastq \
 #           /hive/users/tdreszer/galaxy/data/dnase/UwDgfRep1Rd1_s100000_fastqc/fastqc_report.html \
 #           /hive/users/tdreszer/galaxy/data/dnase/UwDgfRep1Rd2.fastq \
 #           /hive/users/tdreszer/galaxy/data/dnase/UwDgfRep1Rd2_s100000_fastqc/fastqc_report.html \
@@ -36,29 +33,28 @@ if  sys.argv[1] == '--version':
     exit(0)
 
 # Command line args:
-galaxyPath = sys.argv[1]
-userId = sys.argv[2]
-settingsFile = sys.argv[3]
-pairedOrUnpaired = sys.argv[4]
-galaxyInputFile = sys.argv[5]
-galaxyValFile = sys.argv[6]    # Only used to enforce step in galaxy!
-galaxyOutputFile = sys.argv[7]
-repNo = sys.argv[8]
-anaId = 'U' + userId
-if len( sys.argv ) > 9:
-    anaId = sys.argv[9] + anaId
+pairedOrUnpaired     = sys.argv[1]
+galaxyInputFile      = sys.argv[2]
+galaxyValFile        = sys.argv[3]    # Only used to enforce step in galaxy!
+galaxyOutputFile     = sys.argv[4]
+repNo                = sys.argv[5]
+anaId                = sys.argv[6]
 if pairedOrUnpaired == "paired":
-    galaxyInputFile2 = sys.argv[7]
-    galaxyValFile2 = sys.argv[8]    # Only used to enforce step in galaxy!
-    galaxyOutputFile = sys.argv[9]
-    repNo = sys.argv[10]
-    anaId = 'U' + userId
-    if len( sys.argv ) > 11:
-        anaId = sys.argv[11] + anaId
+    galaxyInputFile2 = sys.argv[4]
+    galaxyValFile2   = sys.argv[5]    # Only used to enforce step in galaxy!
+    galaxyOutputFile = sys.argv[6]
+    repNo            = sys.argv[7]
+    anaId            = sys.argv[8]
+
+# No longer command line parameters:
+scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
+galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])  
+settingsFile = scriptPath + '/' + "settingsE3.txt"
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
-ana.dryRun(testOnly)
+if testOnly:
+    ana.dryRun = testOnly
 ana.readType = pairedOrUnpaired
 
 # What step expects:
@@ -68,6 +64,8 @@ ana.readType = pairedOrUnpaired
 # Outputs: a single bam target and an index for it which will match and analysis targets keyed as:
 #          'alignmentRep'+replicate+'.bam'
 #          'alignmentRep'+replicate+'.bam.bai'
+#    and an interim json file, keyed as: 'alignmentRep' + replicate +  '.json'
+
 bamFileKey  = 'alignmentRep'+repNo + '.bam' # Used to tie outputs togther
 #bamIndexKey = 'alignmentRep'+repNo + '.bam.bai'  # NOTE: Galaxy provides a bam index
     
@@ -99,6 +97,6 @@ else:
 
 # Establish step and run it:
 step = AlignmentStep(ana,repNo)
-step.run()
+sys.exit( step.run() )
 
 

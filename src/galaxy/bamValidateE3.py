@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
 # bamValidateE3.py ENCODE3 galaxy pipeline script for validating bam files
-
-#  Usage: python(2.7) bamValidateE3,py <galaxyRootDir> <userId> <encode3SettingsFile> \
-#                                      <'paired'|'unpaired'> <inputBam> <sampleSize> \
+# Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
+#
+#  Usage: python(2.7) bamValidateE3,py <userId> <'paired'|'unpaired'> <inputBam> \
 #                                      <galaxyOutSampleBam> <galaxyOutHistoMetrics> \
-#                                      <galaxyOutStrandCorr> <repNo> <named>
+#                                      <galaxyOutStrandCorr> <repNo> <analysisId>
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
@@ -12,9 +12,7 @@ from src.steps.bamEvaluateStep import BamEvaluateStep
 
 ###############
 testOnly = False
-#python bamValidateE3.py /hive/users/tdreszer/galaxy/galaxy-dist 47 \
-#                 /hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt unpaired \
-#                 /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.bam 5000000 \
+#python bamValidateE3.py /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.bam \
 #                 /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat \
 #                 /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_294.dat \
 #                 /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_295.dat 1 test
@@ -29,23 +27,24 @@ if  sys.argv[1] == '--version':
         print "Can't locate " + settingsFile
     exit(0)
      
-galaxyPath = sys.argv[1]
-userId = sys.argv[2]
-settingsFile = sys.argv[3]
-singlePaired = sys.argv[4]
-galaxyInputFile = sys.argv[5]
-sampleSize = int( sys.argv[6] )
-galaxyOutSampleBam = sys.argv[7]
-galaxyOutMetric = sys.argv[8]
-galaxyOutStrandCorr = sys.argv[9]
-repNo = sys.argv[10]
-anaId = 'U' + userId
-if len( sys.argv ) > 11:
-    anaId = sys.argv[11] + anaId
+singlePaired        = sys.argv[1]
+galaxyInputFile     = sys.argv[2]
+galaxyOutSampleBam  = sys.argv[3]
+galaxyOutMetric     = sys.argv[4]
+galaxyOutStrandCorr = sys.argv[5]
+repNo               = sys.argv[6]
+anaId               = sys.argv[7]
+
+# No longer command line parameters:
+scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
+galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])  
+settingsFile = scriptPath + '/' + "settingsE3.txt"
+sampleSize = 5000000
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
-ana.dryRun(testOnly)
+if testOnly:
+    ana.dryRun = testOnly
 ana.readType = singlePaired
 
 # What step expects:
@@ -53,6 +52,7 @@ ana.readType = singlePaired
 # Outputs: 1 target bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
 #          1 target histogram  file, keyed as: 'metricRep'     + replicate +    '.txt'
 #          1 target Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
+#          1 interim json      file, keyed as: 'bamEvaluateRep' + replicate +  '.json'
     
 # set up keys that join inputs through various file forwardings:
 bamInputKey   = 'alignmentRep'  + repNo +    '.bam'
@@ -75,5 +75,5 @@ ana.createOutFile(bamSampleKey, 'nonGalaxyOutput','%s_sample',ext='bam' )
 
 # Establish step and run it:
 step = BamEvaluateStep(ana,repNo,sampleSize=sampleSize)
-step.run()
+sys.exit( step.run() )
 
