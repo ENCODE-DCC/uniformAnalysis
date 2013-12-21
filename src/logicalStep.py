@@ -102,6 +102,8 @@ class LogicalStep(Target):
         self._status = 'Success'
         if self.ana.dryRun:
             self.mockUpResults()
+        for fileName in self.metaFiles:
+            self.metaFiles[fileName].write()
         self._err = 0 # by definition
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
         self.ana.onSucceed(self)
