@@ -3,19 +3,30 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 5 ];
-then echo "usage: eap_run_hotspot input.bam genome dataType readLength outDir"
+if [ $# -ne 6 ];
+then echo "usage: eap_run_hotspot genome input.bam readLength out.narrowPeak out.broadPeak out.bigWig"
 echo version: 1; 
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
-python /cluster/home/mmaddren/grad/uniformAnalysis/standalone/hotspot.py /hive/groups/encode/encode3/tools/hotspot-distr-v4/ /hive/groups/encode/encode3/tools/bedtools-2.17.0/ /hive/groups/encode/encode3/tools/bedops/ $1 $2 $3 $4 `pwd` `pwd`
+# Set paths with ones we depend on first.  Call helper python module to manage hotspot.
+export PATH=/hive/groups/encode/encode3/tools/hotspot-distr-v4/hotspot-deploy/bin/:/hive/groups/encode/encode3/tools/bedops/:/hive/groups/encode/encode3/tools/bedtools-2.17.0/bin:$PATH
+#hotspot.py /hive/groups/encode/encode3/tools/hotspot-distr-v4/ /hive/groups/encode/encode3/tools/bedtools-2.17.0/ /hive/groups/encode/encode3/tools/bedops/ $2 $1 DNase-seq $3 . out
 
-unstarch density.bed.starch > density.bed
-intersectBed -a density.bed -b "/hive/groups/encode/encode3/tools/hotspot-distr-v4/data/"$2".K"$4".mappable_only.bed" -f 1.00 | cut -f 1,2,3,5> density.bedGraph
-bedGraphToBigWig density.bedGraph "/hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_"$2".txt" density.bigWig
+# Convert output into ENCODE formats, 
+# Convert narrowPeaks.bed and several stray columns to narrowPeaks.bigBed in $4
+paste out/narrowPeaks.bed out/narrowPeaks.dens out/narrowPeaks.pval | awk 'BEGIN {OFS="\t"} {print $1, $2, $3, "p" NR, 0, ".", $4, $5, -1, -1}' > tmp.narrowPeak
+eap_narrowPeak_to_bigBed $1 tmp.narrowPeak $4
 
-mv density.bigWig $5"/density.bigWig"
-mv broadPeaks.bed $5"/broadPeaks.bed"
-mv broadPeaksFdr.bed $5"/broadPeaksFdr.bed"
-mv narrowPeaks.bed $5"/narrowPeaks.bed"		
+# Convert broadPeaks.bed and broadPeaks.pVal to broadPeaks.bigBed in $5
+paste out/broadPeaks.bed out/broadPeaks.pval | awk 'BEGIN {OFS="\t"} {print $1, $2, $3, "hot" NR, 0, ".", $5, $6, -1}' > tmp.broadPeak
+eap_broadPeak_to_bigBed $1 tmp.broadPeak $5
+
+# Convert starched bedGraph to mappable-only bigWig in $6
+unstarch out/density.bed.starch > tmp.bed
+intersectBed -a tmp.bed -b "/hive/groups/encode/encode3/tools/hotspot-distr-v4/data/"$1".K"$3".mappable_only.bed" -f 1.00 | cut -f 1,2,3,5 | bedGraphPack stdin tmp.bedGraph
+bedGraphToBigWig tmp.bedGraph "/hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_"$1".txt" tmp.bigWig
+mv tmp.bigWig $6
+
+# Clean up big boring temporary files
+rm tmp.bed tmp.bedGraph 
