@@ -11,7 +11,7 @@ exit -1; fi
 
 # Set paths with ones we depend on first.  Call helper python module to manage hotspot.
 export PATH=/hive/groups/encode/encode3/tools/hotspot-distr-v4/hotspot-deploy/bin/:/hive/groups/encode/encode3/tools/bedops/:/hive/groups/encode/encode3/tools/bedtools-2.17.0/bin:$PATH
-#hotspot.py /hive/groups/encode/encode3/tools/hotspot-distr-v4/ /hive/groups/encode/encode3/tools/bedtools-2.17.0/ /hive/groups/encode/encode3/tools/bedops/ $2 $1 DNase-seq $3 . out
+hotspot.py /hive/groups/encode/encode3/tools/hotspot-distr-v4/ $2 $1 DNase-seq $3 . out
 
 # Convert output into ENCODE formats, 
 # Convert narrowPeaks.bed and several stray columns to narrowPeaks.bigBed in $4
@@ -29,4 +29,4 @@ bedGraphToBigWig tmp.bedGraph "/hive/groups/encode/encode3/tools/gcap/GCAP-maste
 mv tmp.bigWig $6
 
 # Clean up big boring temporary files
-rm tmp.bed tmp.bedGraph 
+rm -r tmp* *-ran* 
