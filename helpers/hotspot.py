@@ -7,11 +7,10 @@ def main():
     genomes = ['hg19', 'mm9']
     dataTypes = ['DNase-seq', 'ChIP-seq']
 
-    parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline')
+    parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline. Version 2')
     parser.add_argument('hotspotLocation', help='The directory to the hotspot installation, for instance "/hive/groups/encode/encode3/tools/hotspot-distr-v4/"')
     parser.add_argument('bedtoolsLocation', help='The directory to bedtools (used by hotspot), for instance "/hive/groups/encode/encode3/tools/bedtools-2.17.0/"')
     parser.add_argument('bedopsLocation', help='The directory to bedops (used by hotspot), for instance "/hive/groups/encode/encode3/tools/bedops/"')
-    #parser.add_argument('configFile', help='Configuration file containing additional parameters')
     parser.add_argument('inputBam', help='Alignment file (in BAM format) to run hotspot on')
     parser.add_argument('genome', help='Which genome to use, the following are supported: ' + ','.join(genomes))
     parser.add_argument('dataType', help='Which datatype to use, the following are supported: ' + ','.join(dataTypes))
@@ -27,13 +26,6 @@ def main():
         return
     args = parser.parse_args(sys.argv[1:])
     
-    #if not os.path.isfile(args.configFile):
-    #    raise ValueError('configFile: %s is not a valid file' % args.configFile)
-    #config = json.load(args.configFile)
-    #args.hotspotLocation = config['hotspotLocation']
-    #args.bedtoolsLocation = config['bedtoolsLocation']
-    #args.bedopsLocation = config['bedopsLocation']
-    
     # ensure all inputs are valid directories/files/arguments
     if not os.path.isdir(args.hotspotLocation):
         raise ValueError('hotspotLocation: %s is not a valid directory' % args.hotspotLocation)
@@ -47,8 +39,6 @@ def main():
         raise ValueError('genome: ' + args.genome + ' is not a valid genome, must be one of: ' + ','.join(genomes))
     if args.readLength not in readLengths:
         raise ValueError('readLength: ' + args.readLength + ' is not a supported read length, must be one of: ' + ','.join(readLengths))
-    #if os.path.isdir(args.tmpDir):
-    #    raise ValueError('tmpDir: %s should not already exist' % args.tmpDir)
       
     # checking dataType constraints
     if args.dataType == 'DNase-seq':
@@ -104,10 +94,13 @@ def main():
     
     # mapping from files hotspot creates to what we want to name them as
     outputs = {
+        args.tmpDir + runName + '-peaks/' + runName + '.tagdensity.bed.starch': args.outputDir + 'density.bed.starch',
         args.tmpDir + runName + '-final/' + runName + '.hot.bed': args.outputDir + 'broadPeaks.bed',
-        args.tmpDir + runName + '-final/' + runName + '.fdr0.01.hot.bed': args.outputDir + 'broadPeaksFdr.bed',
+        args.tmpDir + runName + '-final/' + runName + '.hot.pval.txt': args.outputDir + 'broadPeaks.pval',
         args.tmpDir + runName + '-final/' + runName + '.fdr0.01.pks.bed': args.outputDir + 'narrowPeaks.bed',
-        args.tmpDir + runName + '-peaks/' + runName + '.tagdensity.bed.starch': args.outputDir + 'density.bed.starch' #this needs to be turned into a bigWig
+        args.tmpDir + runName + '-final/' + runName + '.fdr0.01.pks.dens.txt': args.outputDir + 'narrowPeaks.dens',
+        args.tmpDir + runName + '-final/' + runName + '.fdr0.01.pks.pval.txt': args.outputDir + 'narrowPeaks.pval',
+        args.tmpDir + runName + '-final/' + runName + '.fdr0.01.pks.zscore.txt': args.outputDir + 'narrowPeaks.zscore',
     }
         
     if not os.path.isdir(args.tmpDir):
@@ -164,11 +157,6 @@ def main():
         tokens.write('_BACKGRD_WIN_ = 50000\n')
         tokens.write('_MERGE_DIST_ = 150\n')
         tokens.write('_MINSIZE_ = 10\n')
-    
-    # Extend PATH because various tools are run without qualification within hotspot, so prepend bedops, bedtools, and hotspot
-    envPath = os.getenv('PATH')
-    envPath = args.hotspotLocation + 'hotspot-deploy/bin/' + ':' + args.bedopsLocation + ':' + args.bedtoolsLocation + ':' + envPath
-    os.putenv('PATH', envPath)
     
     # generate runhotspot file
     runhotspotName = args.tmpDir + 'runhotspot.sh'
