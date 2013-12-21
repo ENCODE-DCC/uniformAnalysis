@@ -9,8 +9,6 @@ def main():
 
     parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline. Version 2')
     parser.add_argument('hotspotLocation', help='The directory to the hotspot installation, for instance "/hive/groups/encode/encode3/tools/hotspot-distr-v4/"')
-    parser.add_argument('bedtoolsLocation', help='The directory to bedtools (used by hotspot), for instance "/hive/groups/encode/encode3/tools/bedtools-2.17.0/"')
-    parser.add_argument('bedopsLocation', help='The directory to bedops (used by hotspot), for instance "/hive/groups/encode/encode3/tools/bedops/"')
     parser.add_argument('inputBam', help='Alignment file (in BAM format) to run hotspot on')
     parser.add_argument('genome', help='Which genome to use, the following are supported: ' + ','.join(genomes))
     parser.add_argument('dataType', help='Which datatype to use, the following are supported: ' + ','.join(dataTypes))
@@ -29,10 +27,6 @@ def main():
     # ensure all inputs are valid directories/files/arguments
     if not os.path.isdir(args.hotspotLocation):
         raise ValueError('hotspotLocation: %s is not a valid directory' % args.hotspotLocation)
-    if not os.path.isdir(args.bedtoolsLocation):
-        raise ValueError('bedtoolsLocation: %s is not a valid directory' % args.bedtoolsLocation)       
-    if not os.path.isdir(args.bedopsLocation):
-        raise ValueError('bedopsLocation: %s is not a valid directory' % args.bedopsLocation)       
     if not os.path.isfile(args.inputBam):
         raise ValueError('inputBam: %s is not a valid file' % args.inputBam)
     if args.genome not in genomes:
@@ -53,8 +47,6 @@ def main():
         raise ValueError('unrecognized dataType %s' % args.dataType)
     
     args.hotspotLocation = os.path.abspath(args.hotspotLocation)
-    args.bedtoolsLocation = os.path.abspath(args.bedtoolsLocation)
-    args.bedopsLocation = os.path.abspath(args.bedopsLocation)
     args.inputBam = os.path.abspath(args.inputBam)
     args.tmpDir = os.path.abspath(args.tmpDir)
     args.outputDir = os.path.abspath(args.outputDir)
@@ -64,11 +56,6 @@ def main():
     # make all directory names end with a slash
     if not args.hotspotLocation.endswith('/'):
         args.hotspotLocation += '/'
-    if not args.bedtoolsLocation.endswith('/'):
-        args.bedtoolsLocation += '/'
-    if not args.bedopsLocation.endswith('/'):
-        args.bedopsLocation += '/'
-    args.bedopsLocation += 'bin/'
     if not args.tmpDir.endswith('/'):
         args.tmpDir += '/'
     if not args.outputDir.endswith('/'):
