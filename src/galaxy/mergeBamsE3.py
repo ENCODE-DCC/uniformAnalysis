@@ -1,8 +1,9 @@
 #!/usr/bin/env python2.7
 # mergeBamsE3.py ENCODE3 galaxy pipeline script for merging 2 bam replicates
-
-#  Usage: python(2.7) mergeBamsE3,py <galaxyRootDir> <userId> <encode3SettingsFile> \
-#                                <inputBamA> <repA> <inputBamB> <repB> <galaxyOutMergedBam> <named>
+# Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
+#
+#  Usage: python(2.7) mergeBamsE3,py <inputBamA> <repA> <inputBamB> <repB> <galaxyOutMergedBam> \
+#                                    <analysisId>
 
 # TODO: Do we really need to track replicate numbers?
 
@@ -12,11 +13,9 @@ from src.steps.mergeBamStep import MergeBamStep
 
 ###############
 testOnly = False
-#python bamValidateE3.py /hive/users/tdreszer/galaxy/galaxy-dist 47 \
-#                       /hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt \
-#                      /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.bam 1 \
-#                     /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep2.bam 2 \
-#                    /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat test
+#python bamValidateE3.py /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.bam 1 \
+#                        /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep2.bam 2 \
+#                  /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat test
 ###############
 
 if  sys.argv[1] == '--version':
@@ -28,25 +27,22 @@ if  sys.argv[1] == '--version':
         print "Can't locate " + settingsFile
     exit(0)
      
-galaxyPath = sys.argv[1]
-userId = sys.argv[2]
-settingsFile = sys.argv[3]
-galaxyInputBamA = sys.argv[4]
-repA = sys.argv[5]
-galaxyInputBamB = sys.argv[6]
-repB = sys.argv[7]
-galaxyOutMergedBam = sys.argv[8]
-anaId = 'U' + userId
-if len( sys.argv ) > 9:
-    anaId = sys.argv[9] + anaId
+galaxyInputBamA    = sys.argv[1]
+repA               = sys.argv[2]
+galaxyInputBamB    = sys.argv[3]
+repB               = sys.argv[4]
+galaxyOutMergedBam = sys.argv[5]
+anaId              = sys.argv[6]
 
-script = os.path.abspath( sys.argv[0] )
-directory = os.path.split( script )[0]
-settingsFile = directory + '/' + "settingsE3.txt"
+# No longer command line parameters:
+scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
+galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])  
+settingsFile = scriptPath + '/' + "settingsE3.txt"
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
-ana.dryRun(testOnly)
+if testOnly:
+    ana.dryRun = testOnly
 
 # What step expects:
 # Inputs: 2 bam files, pre-registered in the analysis and both keyed as: 'bamRep' + replicateN + '.bam'
@@ -71,5 +67,5 @@ ana.createOutFile(mergedBamKey,'nonGalaxyOutput','%s_%s_merged',ext='bam', \
 
 # Establish step and run it:
 step = MergeBamStep(ana,repA,repB)
-step.run()
+sys.exit( step.run() )
 

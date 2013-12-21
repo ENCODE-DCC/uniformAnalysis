@@ -1,13 +1,13 @@
 <tool id="bwaAlignE3" name="ENCODE3 fastQ alignment" version="1.0">
     <description>using bwa</description>
     <command interpreter="python">
-        bwaAlignE3.py $__root_dir__ $__user_id__ $settingsFile $runType.singlePaired
+        bwaAlignE3.py $runType.singlePaired
         #if $runType.singlePaired == "single":
              $fastqInput $valStats $bamUnpaired
         #else
              $fastqInput $valStats $fastqInput2 $valStats2 $bamPaired
         #end if
-        $repNo $name
+        $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/bwaAlignE3.py --version</version_command>
     <stdio>
@@ -22,15 +22,15 @@
         </param>
         <when value="single">
             <param name="fastqInput" type="data" format="fastq" label="Unpaired fastQ file" />
-            <param name="valStats" type="data" format="html" label="Validation stats (unpaired)" />
+            <param name="valStats" type="data" format="json" label="Validation summary (unpaired)" />
         </when>
         <when value="paired">
             <param name="fastqInput" type="data" format="fastq" 
                    label="Paired read 1 fastQ file" />
-            <param name="valStats" type="data" format="html" label="Validation stats (read 1)" />
+            <param name="valStats" type="data" format="json" label="Validation summary (read 1)" />
             <param name="fastqInput2" type="data" format="fastq" 
                    label="Paired read 2 fastQ file" />
-            <param name="valStats2" type="data" format="html" label="Validation stats (read 1)" />
+            <param name="valStats2" type="data" format="json" label="Validation summary (read 2)" />
         </when>
     </conditional>
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
@@ -39,9 +39,6 @@
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
-        <param name="settingsFile" type="text" 
-               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
-               size="256" label="ENCODE3 pipeline settings file" />
     </inputs>
     <outputs>
         <data format="bam" name="bamUnpaired" 
@@ -68,8 +65,8 @@
     high-throughput sequencing reads upon which which further analysis will be based.  The fastQ 
     files are expected to be contained in a Galaxy library or else uploaded by the user.
 
-    The **Validation stats** (**unpaired**, or **read 1** and **read 2**) are required to by 
-    this analysis step.  Validation stats are the generated output from a previous 
+    The **Validation summary** (**unpaired**, or **read 1** and **read 2**) are required to by 
+    this analysis step.  Validation summary is a json file generated from a previous 
     *ENCODE3 fastQ validation* step.
     
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
@@ -82,9 +79,6 @@
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
     
-    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
-    tool locations and default parameters.
-
 **Outputs:**
     This step is expected to produce a single file: **bam alignments** produced by the 'bwa' 
     package and samtools.

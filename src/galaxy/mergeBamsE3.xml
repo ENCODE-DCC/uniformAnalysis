@@ -1,8 +1,7 @@
 <tool id="mergeBamsE3" name="ENCODE3 merge bam" version="1.0">
     <description> alignment files.</description>
     <command interpreter="python">
-        mergeBamsE3.py $__root_dir__ $__user_id__ $settingsFile 
-        $bamInputA $repNoA $bamInputB $repNoB $mergedBam $name
+        mergeBamsE3.py $bamInputA $repNoA $bamInputB $repNoB $mergedBam ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/mergeBamsE3.py --version</version_command>
     <stdio>
@@ -20,9 +19,6 @@
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
-        <param name="settingsFile" type="text" 
-               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
-               size="256" label="ENCODE3 pipeline settings file" />
     </inputs>
     <outputs>
         <data format="bam" name="mergedBam"    label="${name}MergedRep${repNoA}Rep${repNoB} bam" />
@@ -48,9 +44,6 @@
     taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
-
-    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
-    tool locations and default parameters.
 
 **Outputs:**
     This step is expected to produce a single **Merged bam** alignments file from the inputs.

@@ -1,8 +1,8 @@
 <tool id="hotspotE3" name="ENCODE3 hotspot regions" version="1.0">
     <description> and peaks calling.</description>
     <command interpreter="python">
-        hotspotE3.py $__root_dir__ $__user_id__ $settingsFile $bamInput $tagLen
-        $bamMetric $hotOutput $peaksOutput $densityOutput $sample $repNo $name
+        hotspotE3.py $bamInput $tagLen $bamMetric $hotOutput $peaksOutput $densityOutput $sample 
+        $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/hotspotE3.py --version</version_command>
     <stdio>
@@ -32,9 +32,6 @@
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
-        <param name="settingsFile" type="text" 
-               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
-               size="256" label="ENCODE3 pipeline settings file" />
     </inputs>
     <outputs>
         <data format="bed" name="hotOutput"     label="${name}Rep${repNo} ${sample} Hotspots" />
@@ -77,9 +74,6 @@
     taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
-
-    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
-    tool locations and default parameters.
 
 **Outputs:**
     This step is expected to produce three files:

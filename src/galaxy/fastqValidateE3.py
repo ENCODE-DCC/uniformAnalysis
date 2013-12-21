@@ -1,11 +1,9 @@
 #!/usr/bin/env python2.7
 # fastqValidateE3.py ENCODE3 galaxy pipeline script for fastq validation
-
-#Usage: python(2.7) fastqValidateE3.py <galaxyRootDir> <userId> <encode3SettingsFile> \
-#                                      <inFastq> <galaxyOutHtml> <repNo> <named>
-#      The command line tools that will be run:
-#      fastqStatsAndSubsample -sampleSize=<sampleSize> -seed=<randomSeed>  <inFile> stats.out sampleOf.fastq
-#      fastqc sampleOf.fastq --extract -t 4 -q -o outputDir/
+# Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
+#
+#Usage: python(2.7) fastqValidateE3.py <inFastq> <galaxyOutHtml> <galaxyOutDir> <galaxyOutSummary> \
+#                                      <repNo> <analysisId>
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
@@ -13,9 +11,7 @@ from src.steps.fastqValidationStep import FastqValidationStep
 
 ###############
 testOnly = False
-#python fastqValidateE3.py /hive/users/tdreszer/galaxy/galaxy-dist 47 \
-#               /hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt 
-#               /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.fastq \
+#python fastqValidateE3.py /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.fastq \
 #               /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat  \
 #               /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293/files 1 test
 ###############
@@ -30,38 +26,42 @@ if  sys.argv[1] == '--version':
     exit(0)
 
 # Command line args:
-galaxyPath = sys.argv[1]
-userId = sys.argv[2]
-settingsFile = sys.argv[3]
-galaxyInputFile = sys.argv[4]
-galaxyOutputHtml = sys.argv[5]
-galaxyOutputDir  = sys.argv[6]
+galaxyInputFile  = sys.argv[1]
+galaxyOutputHtml = sys.argv[2]
+galaxyOutputDir  = sys.argv[3]
 if not galaxyOutputDir.endswith('/'):
     galaxyOutputDir = galaxyOutputDir + '/'
-repNo = sys.argv[7]
-anaId = 'U' + userId
-if len( sys.argv ) > 8:
-    anaId = sys.argv[8] + anaId
+galaxyOutSummary = sys.argv[4]
+repNo            = sys.argv[5]
+anaId            = sys.argv[6]
     
+# No longer command line parameters:
+scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
+galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])  
+settingsFile = scriptPath + '/' + "settingsE3.txt"
+
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
-ana.dryRun(testOnly)
+if testOnly:
+    ana.dryRun = testOnly
     
 # What step expects:
 #
 # Inputs: 1 fastq file, pre-registered in the analysis   keyed as:   'tags' + suffix + '.fastq'
-# Outputs: directory of files (will include html target) keyed as: 'valDir' + suffix
-#          zipped file of that directory                 keyed as:    'val' + suffix + '.zip'
-#          html file in that directory                   keyed as:    'val' + suffix + '.html'
+# Outputs: directory of files (will include html target) keyed as: 'fastqValDir' + suffix
+#          zipped file of that directory                 keyed as: 'fastqVal'   + suffix + '.zip'
+#          html file in that directory                   keyed as: 'fastqVal'  + suffix + '.html'
+#          json file                                     keyed as: 'fastqVal' + suffix + '.json'
 
 # set up keys that join inputs through various file forwardings:
 suffix = ana.galaxyFileId(galaxyInputFile) # suffix needs to be based on the input file
 if suffix == '-1':
     suffix = ana.fileGetPart(galaxyInputFile,'root')
-inputKey   = 'tags'   + suffix + '.fastq'
-valDirKey  = 'valDir' + suffix
-valZipKey  = 'val'    + suffix + '.zip'
-valHtmlKey = 'val'    + suffix + '.html'
+inputKey   = 'tags'         + suffix + '.fastq'
+valDirKey  = 'fastqValDir' + suffix
+valZipKey  = 'fastqVal'   + suffix + '.zip'
+valHtmlKey = 'fastqVal'  + suffix + '.html'
+valJsonKey = 'fastqVal' + suffix + '.json'
 
 # Establish Inputs for galaxy and nonGalaxy alike
 ana.registerFile(inputKey,'galaxyInput', galaxyInputFile)
@@ -69,9 +69,9 @@ nonGalaxyInput  = ana.nonGalaxyInput(inputKey)  # Registers and returns the outs
 
 # Output is complete dir
 ana.registerFile(valDirKey,'galaxyOutput',galaxyOutputDir)
-nonGalaxyOutDir = ana.createOutFile(valDirKey,'nonGalaxyOutput', '%s_sample_fastqc', ext='dir' )
-#ana.registerFile(valZipKey,'galaxyOutput',galaxyOutputZip)
-nonGalaxyOutZip = ana.createOutFile(valZipKey,'nonGalaxyOutput', '%s_sample_fastqc', ext='zip' )
+ana.createOutFile(valDirKey,'nonGalaxyOutput', '%s_sample_fastqc', ext='dir' )
+ana.createOutFile(valZipKey,'nonGalaxyOutput', '%s_sample_fastqc', ext='zip' )
+ana.createOutFile(valJsonKey,'nonGalaxyOutput','%s_validate',      ext='json' )
 
 # Galaxy needs to know about a single file within the dir.  While it is moved to the analysisDir
 # as part of the htmlDir, It must be manually moved for galaxy.  Thus, the standard
@@ -79,15 +79,27 @@ nonGalaxyOutZip = ana.createOutFile(valZipKey,'nonGalaxyOutput', '%s_sample_fast
 ana.registerFile(valHtmlKey,'galaxyOutput',galaxyOutputHtml)
 nonGalaxyOutput = ana.createOutFile(valHtmlKey,'nonGalaxyOutput', \
                                    '%s_sample_fastqc/fastqc_report', ext='html' )
+#ana.registerFile(valZipKey,'galaxyOutput',galaxyOutputZip) # No need: galaxy zips it anyway
+jsonOut = ana.registerFile(valJsonKey,'galaxyOutput',galaxyOutSummary)
 
 # This step needs closer control of how files are delivered:
-ana.deliveryKeys([valDirKey,valZipKey]) # Restrict file delivery to just these
-ana.deliverToGalaxyKeys([valDirKey,valZipKey,valHtmlKey]) # Restrict delivery to these and in order
+ana.deliveryKeys([valDirKey,valZipKey,valJsonKey]) # Restrict file delivery to just these
+ana.deliverToGalaxyKeys([valDirKey,valZipKey,valHtmlKey,valJsonKey]) # Restrict delivery to these and in order
+
+## TODO: methods for delivering json
 
 # Establish step and run it:
 step = FastqValidationStep(ana,suffix)
-step.run()
+err = step.run()
 
-# NOTE: would be nice to copy nonGalaxyOutZip to galaxyOutputDir, but galaxy will zip it up anyway
+# Determine success or failure by reading json output
+# NOTE: if this test were in FastqValidationStep(), the results would not be delivered to galaxy!
+if err == 0:
+   failures = ana.getCmdOut('grep "FAIL" '+jsonOut+" | wc -l",logCmd=False)
+if failures != "0":
+    print "Failed " + failures + " validation tests!"
+    # sys.exit(1)  # TODO: should we fail here????
+
+sys.exit(err)
 
 

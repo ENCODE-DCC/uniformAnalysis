@@ -1,8 +1,8 @@
-import sys, os.path, json
+import sys, os.path
 import commands
 from settings import Settings
 from log import Log
-from ra.raFile import RaFile
+#from ra.raFile import RaFile
 
 class Analysis(object):
     '''
@@ -42,24 +42,29 @@ class Analysis(object):
         self._inputFiles      = {}
         self._interimFiles    = {}
         self._targetOutput    = {}
-        self._dryRun          = False
         self.strict           = False
         self._deliveryKeys    = None
-        
+
         self._settingsFile = os.path.abspath( settingsFile )
         self._settings = Settings(self._settingsFile)
+
+        self._dryRun          = self._settings.getBoolean('dryRun',default=False)
+
 
 
     def onRun(self, step):
         step.writeVersions()
         
-    def dryRun(self,setTo=None):
-        '''
-        Sets or returns the dryRun variable.
-        '''
-        if setTo != None:
-            self._dryRun = setTo
+    @property
+    def dryRun(self):
         return self._dryRun
+    
+    @dryRun.setter
+    def dryRun(self,value):
+        '''
+        Sets the dryRun variable.
+        '''
+        self._dryRun = value
 
     @property
     def readType(self):
@@ -336,17 +341,6 @@ class Analysis(object):
                 fails = fails + "Failed to find target result for '"+key+"'\n"
         if len(fails) > 0:
             raise Exception(fails)
-        # json and RA
-        for fileName in step.metaFiles:
-            step.metaFiles[fileName].write()
-            self.linkOrCopy(step.metaFiles[fileName].filename, self.dir + fileName + '.ra')
-            
-        if step.json:
-            jsonFile = step.dir + step.name + '.json'
-            fp = open(jsonFile, 'w')
-            json.dump(step.json, fp, sort_keys=True, indent=4, separators=(',', ': '))
-            fp.close()
-            self.linkOrCopy(jsonFile, self.dir + step.name + '.json')
     
     def deliveryKeys(self,justThisSet):
         '''
@@ -355,12 +349,6 @@ class Analysis(object):
         '''
         self._deliveryKeys = justThisSet
         
-    def createMetadataFile(self, step, name):
-        if name in step.metaFiles:
-            raise Exception('metadata file already exists')
-        step.metaFiles[name] = RaFile(step.dir + name + '.ra')
-        return step.metaFiles[name]
-    
     def onSucceed(self, step):
         '''
         pipeline will handle all success steps, like copying out files we care
@@ -377,7 +365,7 @@ class Analysis(object):
         # Morgan, do you want the step log going to stdout even if there is an analysis log?
         #if self.log.file() != None:  # If analysis log, be sure to just print step log to stdout
         #    step.log.dump()
-        if not self.dryRun():
+        if not self._dryRun:
             step.cleanup()               # Removes step.stepDir()
         else:
             self.log.out('') # skip a lineline
@@ -394,7 +382,7 @@ class Analysis(object):
         step.log.dump(self.log.file()) # to stdout if no runningLog  
         if self.log.file() != None:  # If analysis log, be sure to just print step log to stdout
             step.log.dump()
-        if self.dryRun():
+        if self._dryRun:
             self.log.out('') # skip a lineline
             self.runCmd('ls -l ' + step.dir, dryRun=False)
             self.log.out('')

@@ -1,6 +1,7 @@
-import os, sys, pprint, traceback
+import os, sys, pprint, traceback, json
 from datetime import datetime
 from jobTree.scriptTree.target import Target
+from ra.raFile import RaFile
 from analysis import Analysis
 from log import Log
 
@@ -99,8 +100,10 @@ class LogicalStep(Target):
         
     def success(self):
         self._status = 'Success'
-        if self.ana.dryRun():
+        if self.ana.dryRun:
             self.mockUpResults()
+        for fileName in self.metaFiles:
+            self.metaFiles[fileName].write()
         self._err = 0 # by definition
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
         self.ana.onSucceed(self)
@@ -258,6 +261,36 @@ class LogicalStep(Target):
             self.log.out("# ENCODE Analysis pipeline [version: "+self.ana.version+"]")
             self.log.out("# "+self.name+"_Step [version: "+self.version+ "]")
             
+    def createAndWriteJsonFile(self, name=None, target=False, jsonObj=None):
+        '''
+        Creates and writes the json object as an interim file keyed as {name}.ra.
+        '''
+        if name == None:
+            name = self.name
+        if target:
+            filePath = self.declareTargetFile(name + '.json')
+        else:
+            filePath = self.declareInterimFile(name + '.json')
+        if jsonObj == None:
+            jsonObj = self.json
+        if jsonObj:
+            fp = open(filePath, 'w')
+            json.dump(jsonObj, fp, sort_keys=True, indent=4, separators=(',', ': '))
+            fp.close()
+
+    def createMetadataFile(self, name, target=False):
+        '''
+        Creates a metadata file as an interim file keyed as {name}.ra.
+        '''
+        if name in self.metaFiles:
+            raise Exception('metadata file already exists')
+        if target:
+            filePath = self.declareTargetFile(name + '.ra')
+        else:
+            filePath = self.declareInterimFile(name + '.ra')
+        self.metaFiles[name] = RaFile(filePath)
+        return self.metaFiles[name]
+    
     def printPaths(self, tab, log=None):
         '''Used in debugging; prints step's paths, etc.'''
         if log == None:

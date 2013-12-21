@@ -1,8 +1,8 @@
 <tool id="fastqValidateE3" name="ENCODE3 fastQ validation" version="1.0">
     <description> using FastQC</description>
     <command interpreter="python">
-        fastqValidateE3.py $__root_dir__ $__user_id__ $settingsFile $in_fastq 
-        $statsHtml $statsHtml.files_path $repNo $name
+        fastqValidateE3.py $in_fastq $statsHtml $statsHtml.files_path $statsJson 
+        $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/fastqValidateE3.py --version</version_command>
     <stdio>
@@ -17,13 +17,12 @@
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
-        <param name="settingsFile" type="text"
-               value="/hive/users/tdreszer/galaxy/uniformAnalysis/test/settingsE3.txt" 
-               size="256" label="ENCODE3 pipeline settings file" />
     </inputs>
     <outputs>
         <data format="html" name="statsHtml" 
               label="${name}Rep${repNo} fastQ Stats from $in_fastq.name" />
+        <data format="json" name="statsJson" 
+              label="${name}Rep${repNo} Summary (json) from $in_fastq.name" />
     </outputs>
     <help>
 .. class:: infomark
@@ -49,9 +48,6 @@
     taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
-
-    The **ENCODE3 pipeline settings file** is not expected to change.  It contains a definition of 
-    tool locations and default parameters.
 
 **Outputs:**
     This step is expected to produce a directory of files with a single **fastQ Stats** HTML 
