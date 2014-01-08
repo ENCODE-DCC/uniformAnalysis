@@ -8,13 +8,17 @@ then echo "usage v3: eap_run_bwa_se bwa-index reads.fq out.bam"
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
-# Using $1 as an index, align reads from $2 putting output in $3
-bwa aln -t 4 $1 $2 > tmp.sai
-bwa samse $1 tmp.sai $2 > tmp.sam
-samtools view -S -b tmp.sam > tmp.bam
-samtools sort tmp.bam sorted
-mv sorted.bam $3
+# Copy reads to local tmp file since will be making several passes
+cp $2 tmp.fq.gz
 
-# Remove some big boring files.
-rm tmp.sai tmp.sam tmp.bam
+# Using $1 as an index, align reads from $2 putting output in $3
+# We remove temp files ASAP to conserve space on temp device
+bwa aln -t 4 $1 tmp.fq.gz > tmp.sai
+bwa samse $1 tmp.sai tmp.fq.gz > tmp.sam
+rm tmp.sai tmp.fq.gz
+samtools view -S -b tmp.sam > tmp.bam
+rm tmp.sam
+samtools sort tmp.bam sorted
+rm tmp.bam
+mv sorted.bam $3
 
