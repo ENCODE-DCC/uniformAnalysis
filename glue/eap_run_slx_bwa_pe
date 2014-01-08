@@ -1,0 +1,25 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 4 ];
+then echo "usage v3: eap_run_slx_bwa_pe bwa-index solexa1.fq solexa2.fq out.bam"
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Covert fastqs in $2 and $3 to sanger format quality scores
+edwSolexaToSangerFastq $2 tmp1.fq
+edwSolexaToSangerFastq $3 tmp2.fq
+
+# Using $1 as an index, align paired reads from tmp1.fq and tmp2.fq to output in $4
+bwa aln -t 4 $1 tmp1.fq > tmp1.sai
+bwa aln -t 4 $1 tmp2.fq > tmp2.sai
+bwa sampe $1 tmp1.sai tmp2.sai tmp1.fq tmp2.fq > tmp.sam
+samtools view -S -b tmp.sam > tmp.bam
+samtools sort tmp.bam sorted
+mv sorted.bam $4
+
+# Remove some big boring files.
+rm tmp1.fq tmp2.fq tmp1.sai tmp2.sai tmp.sam tmp.bam
+
