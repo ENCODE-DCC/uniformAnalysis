@@ -71,7 +71,11 @@ def merge(step, inList, outBam):
         
 def sort(step, inBam, outBam):
     '''Sorts the bam file so that it can be indexed'''
-    cmd = '{samtools} sort -f {inBam} {outBam}'.format(samtools=step.ana.getTool('samtools'), inBam=inBam, outBam=outBam)
+    #
+    # KLUDGE: -f would be the correct option to not have to cut off the filetype, but it does not work correctly in samtools 1.19
+    #    and a new version has not been released yet. When the new version of samtools is accepted, we can change this
+    #
+    cmd = '{samtools} sort {inBam} {outBam}'.format(samtools=step.ana.getTool('samtools'), inBam=inBam, outBam=outBam.replace('.bam', ''))
     toolName = __name__.split('.')[-1] + ' sort'
     step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, log=step.log)
