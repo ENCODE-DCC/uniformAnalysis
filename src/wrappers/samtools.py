@@ -44,7 +44,7 @@ def bamSize(step, bam):
     # no err code returned.  Generate one if return not an integer
     bamSize = 0
     step.err = 0
-    if step.ana.dryRun():
+    if step.ana.dryRun:
         bamSize = 42850405
     else:
         try:
@@ -71,14 +71,19 @@ def merge(step, inList, outBam):
         
 def sort(step, inBam, outBam):
     '''Sorts the bam file so that it can be indexed'''
+<<<<<<< HEAD
     #
     # KLUDGE: -f would be the correct option to not have to cut off the filetype, but it does not work correctly in samtools 1.19
     #    and a new version has not been released yet. When the new version of samtools is accepted, we can change this
     #
     cmd = '{samtools} sort {inBam} {outBam}'.format(samtools=step.ana.getTool('samtools'), inBam=inBam, outBam=outBam.replace('.bam', ''))
+=======
+    cmd = '{samtools} sort -o {inBam} tmp > {outBam}'.format(samtools=step.ana.getTool('samtools'), \
+                                                             inBam=inBam, outBam=outBam)
+>>>>>>> 3b835f9b1a57dad5b2eea7a52ad15068ceedd6a5
     toolName = __name__.split('.')[-1] + ' sort'
     step.toolBegins(toolName)
-    step.err = step.ana.runCmd(cmd, log=step.log)
+    step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
     step.toolEnds(toolName, step.err)
     
 def index(step, inBam):
@@ -91,7 +96,8 @@ def index(step, inBam):
     
 def idxstats(step, inBam, outStats):
     '''Calculates stats for each chromosome in a sorted and indexed bam'''
-    cmd = '{samtools} idxstats {inBam} > {outStats}'.format(samtools=step.ana.getTool('samtools'), inBam=inBam, outStats=outStats)
+    cmd = '{samtools} idxstats {inBam} > {outStats}'.format(samtools=step.ana.getTool('samtools'), \
+                                                            inBam=inBam, outStats=outStats)
     toolName = __name__.split('.')[-1] + ' idxstats'
     step.toolBegins(toolName)
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)

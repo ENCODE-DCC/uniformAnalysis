@@ -1,0 +1,71 @@
+<tool id="mergeBamsE3" name="ENCODE3 merge bam" version="1.0">
+    <description> alignment files.</description>
+    <command interpreter="python">
+        mergeBamsE3.py $bamInputA $repNoA $bamInputB $repNoB $mergedBam ${name}U${__user_id__}
+    </command>
+    <version_command>python ../../../../tools/encode/mergeBamsE3.py --version</version_command>
+    <stdio>
+        <exit_code range="1:" level="fatal" description="Fatal error" />
+        <regex match=".*" source="stderr" level="log" />
+    </stdio>
+    <inputs>
+        <param name="bamInputA" type="data" format="bam" label="First alignments file (bam)" />
+        <param name="repNoA" type="integer" value="1" label="First replicate" min="0" 
+               help="Numbers only"></param>
+        <param name="bamInputB" type="data" format="bam" label="Second alignments file (bam)" />
+        <param name="repNoB" type="integer" value="2" label="Second replicate" min="0" 
+               help="Numbers only"></param>
+        <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
+               help="Letters and numbers only [optional]">
+            <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
+        </param>
+    </inputs>
+    <outputs>
+        <data format="bam" name="mergedBam"    label="${name}MergedRep${repNoA}Rep${repNoB} bam" />
+    </outputs>
+    <help>
+.. class:: infomark
+
+   Merges alignment (bam) files from two replicates.  
+   An *ENCODE3 analysis* involves multiple steps and dataset replicates, of which this one step
+   merges the alignments of replciates into a single dataset.
+   Use *ENCODE3 workflows* to ensure that all analysis steps are performed in the proper sequence.
+
+**Inputs:**
+    The first and second **Alignments files** are expected to be the generated output from a 
+    previous *ENCODE3 fastQ alignment* step.  
+
+    The **Replicate** numbers are used to keep track of multiple replicates for a single analysis.  
+    If the replicate numbers are not specified then it may be hard to track the source of 
+    the datasets or ensure that future results do not overwrite previous results. 
+
+    The optional **Analysis Name** field will be used to tie multiple steps together into 
+    one analysis, ensuring related files are well named and a single log records all processing 
+    taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
+    that results from one analyis are over-written by another.  Multiple histories for a single user 
+    can share the same named analysis, but two separate users cannot.
+
+**Outputs:**
+    This step is expected to produce a single **Merged bam** alignments file from the inputs.
+    
+    The **log** of this single step can be seen under *view details* stdout.
+    
+    If the outputs are delivered to a location external to galaxy, the **Analysis log** covering 
+    all steps of the analysis will be delivered to the same location.  Otherwise the log may be
+    found in the directory pointed to by 'tmpDir' as defined in the settings file.
+
++--------+------------------------------------------------------------------------------------+
+||encPng||All *ENCODE3 Analysis* steps provided through Galaxy are run via the same python    | 
+|        |scripts and third-party tools as the official *ENCODE3 Analysis Pipeline*.  Just as | 
+|        |with the official pipeline, all work is be performed in temporary directories and   |
+|        |successful results moved to well-named locations.  If the initial input datasets are| 
+|        |from a symlinked Galaxy library, results will be moved to the same directory as the |  
+|        |inputs and then symlinked back into Galaxy. If the initial inputs do not have a     | 
+|        |recognizable location outside the Galaxy database, then results will be written     |
+|        |back into the Galaxy database as well.                                              |
++--------+------------------------------------------------------------------------------------+
+
+.. |encPng| image:: http://genome.ucsc.edu/images/ENCODE_scaleup_logo.png
+   :width: 100
+    </help>
+</tool>

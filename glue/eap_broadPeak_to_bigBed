@@ -1,0 +1,13 @@
+#!/bin/bash -e
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+
+# Check command line and provide usage and version information
+if [ $# -ne 3 ];
+then echo "usage v1:  eap_broadPeak_to_bigBed target  in.broadPeak  out.broadPeak.bigBed"
+echo target is ucsc database ID - hg19 or hg38 or mm10 most commonly at time of writing.
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Convert bed broadPeak in $2 to bigBed broadPeak format in $3, checking chromosome coords vs $1
+bedToBigBed -as=/data/encode3/encValData/as/broadPeak.as -type=bed6+3 $2  /data/encode3/encValData/$1/chrom.sizes tmp.broadPeak.bb
+mv tmp.broadPeak.bb $3 

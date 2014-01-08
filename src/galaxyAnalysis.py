@@ -63,7 +63,10 @@ class GalaxyAnalysis(Analysis):
             self._analysisDir = self.getDir('tmpDir')
         self._analysisDir = self._analysisDir + self.id.replace(' ','_') + '/'
         if not os.path.isdir(self._analysisDir):
-            os.makedirs(self._analysisDir)
+            try:
+                os.makedirs(self._analysisDir)
+            except:
+                pass       # Race condition!
         return self._analysisDir
         
     def fileParse(self, someFile):
@@ -100,7 +103,7 @@ class GalaxyAnalysis(Analysis):
         except:
             return None
 
-    def registerFile(self, name, io, someFile ):
+    def registerFile(self, key, io, someFile ):
         '''
         Registers one file of a given io type in the set of all files that are being tracked.
         '''
@@ -110,37 +113,37 @@ class GalaxyAnalysis(Analysis):
             
         fullPath =  os.path.abspath( someFile )  # Always work with absolute paths
         if io == 'nonGalaxyInput':
-            self.registerInputFile(name, fullPath)
+            self.registerInputFile(key, fullPath)
         elif io == 'nonGalaxyOutput': # 2 files: one in analysisDir, second in resultsDir
-            self._fileSets[ io ][ name ] = fullPath   
-            self.registerTargetOutput(name, self.fileGetPart(fullPath,'fileName'))
+            self._fileSets[ io ][ key ] = fullPath   
+            self.registerTargetOutput(key, self.fileGetPart(fullPath,'fileName'))
         elif io == 'intermediate':
-            self.registerInterimOutput(name, self.fileGetPart(fullPath,'fileName'))
+            self.registerInterimOutput(key, self.fileGetPart(fullPath,'fileName'))
         else:
             # TODO: make galaxy register routines
-            self._fileSets[ io ][ name ] = fullPath   
-        return self._fileSets[ io ][ name ]
+            self._fileSets[ io ][ key ] = fullPath   
+        return self._fileSets[ io ][ key ]
         
-    def nonGalaxyInput(self, name):
+    def nonGalaxyInput(self, key):
         '''
         Registers and returns a nonGalaxyInput filePath based upon a named galaxyInput.
         Since galaxyInput could be a symlink to an outside location, this function
         resolves the symlink and prefers the outside location.
         '''
         try:
-            galaxyInput = self._fileSets['galaxyInput'][name]
+            galaxyInput = self._fileSets['galaxyInput'][key]
         except:
-            raise Exception('Galaxy input file ' + name + 
+            raise Exception('Galaxy input file ' + key + 
                             ' must be registered before Non-Galaxy input name can be resolved.')
         if not self._stayWithinGalaxy:
             galaxyInputPath = self.fileGetPart( galaxyInput, 'fullPath')
             if os.path.islink( galaxyInputPath ):
                 nonGalaxyInput = os.path.abspath( os.readlink( galaxyInputPath ) )
-                self.registerFile(name,'nonGalaxyInput',nonGalaxyInput )
-                return self._fileSets['nonGalaxyInput'][name]
+                self.registerFile(key,'nonGalaxyInput',nonGalaxyInput )
+                return self._fileSets['nonGalaxyInput'][key]
           
-        self.registerFile(name,'nonGalaxyInput',galaxyInput )
-        return self._fileSets['nonGalaxyInput'][name]
+        self.registerFile(key,'nonGalaxyInput',galaxyInput )
+        return self._fileSets['nonGalaxyInput'][key]
         
     def resultsDir(self, galaxyPath=None):
         '''
@@ -156,7 +159,7 @@ class GalaxyAnalysis(Analysis):
                 raise Exception("Output file must be registered before 'resultsDir' can be " + \
                                 "determined.")
             self._resultsDir = self.fileGetPart( self._fileSets['galaxyOutput'][key], 'dir')
-            if galaxyPath != None:  # overkill but be thourough 
+            if galaxyPath != None:  # overkill but be thorough 
                 galaxyPath = os.path.abspath( galaxyPath )
                 if not self._resultsDir.startswith( galaxyPath ):
                     raise Exception("Requested to stay within Galaxy but '" + \
@@ -209,31 +212,34 @@ class GalaxyAnalysis(Analysis):
         there is not exactly 1 non-galaxy input.  If no inputs are desired, then set input=None.
         If template is omitted it will default to '%s' or '%s_%s' if 2 inputs. 
         '''
-        root = root2 = ''
-        if input1 == '':
-            input1 = self.anyKey('nonGalaxyInput')
-        try:
-            if input1 != None and input1 != '':
-                root  = self.fileGetPart( self._fileSets['nonGalaxyInput'][input1], 'root')
-            if input2 != None and input2 != '':
-                root2 = self.fileGetPart( self._fileSets['nonGalaxyInput'][input2],'root')
-        except:
-            raise Exception('One or more inputs needed to generate output file name!')
-            
-        fileName = rootTemplate
-        if root != '' and root2 != '':
-            for ix in range( len(root) ):   # 2nd name should be shortened by common portion
-                if root[ix] != root2[ix]:
-                    if ix > 2:
-                        root2 = root2[ ix: ]
-                    break
-            if rootTemplate == None or rootTemplate == '':
-                rootTemplate = '%s_%s'
-            fileName = rootTemplate % (root,root2)
-        elif root != '':
-            if rootTemplate == None or rootTemplate == '':
-                rootTemplate = '%s'
-            fileName = rootTemplate % (root)
+        if rootTemplate != None and rootTemplate.find('%s') == -1:
+            fileName = rootTemplate
+        else:
+            root = root2 = ''
+            if input1 == '':
+                input1 = self.anyKey('nonGalaxyInput')
+            try:
+                if input1 != None and input1 != '':
+                    root  = self.fileGetPart( self._fileSets['nonGalaxyInput'][input1], 'root')
+                if input2 != None and input2 != '':
+                    root2 = self.fileGetPart( self._fileSets['nonGalaxyInput'][input2],'root')
+            except:
+                raise Exception('One or more inputs needed to generate output file name!')
+                
+            fileName = rootTemplate
+            if root != '' and root2 != '':
+                for ix in range( len(root) ):   # 2nd name should be shortened by common portion
+                    if root[ix] != root2[ix]:
+                        if ix > 2:
+                            root2 = root2[ ix: ]
+                        break
+                if rootTemplate == None or rootTemplate == '':
+                    rootTemplate = '%s_%s'
+                fileName = rootTemplate % (root,root2)
+            elif root != '':
+                if rootTemplate == None or rootTemplate == '':
+                    rootTemplate = '%s'
+                fileName = rootTemplate % (root)
         if ext != None:
             if ext == 'dir':
                 if not fileName.endswith('/'):
@@ -242,19 +248,40 @@ class GalaxyAnalysis(Analysis):
                 fileName = fileName + '.' + ext
         return fileName    
     
-    def createOutFile(self, name, io, rootTemplate=None, ext=None, input1='', input2=None ):
+    def createOutFile(self, key, io, rootTemplate=None, ext=None, input1='', input2=None ):
         '''
         Creates, registers and returns an output file name based upon input file(s).
         Note that ext='dir' will create a directory.
         '''
         fileName = self._makeNameWithTemplate(rootTemplate, ext, input1, input2 )
         if io == 'nonGalaxyOutput':
-            self.registerTargetOutput(name, fileName)
-            self._fileSets[ io ][ name ] = self.resultsDir() + fileName   
-            return self._fileSets[ io ][ name ] 
+            self.registerTargetOutput(key, fileName)
+            self._fileSets[ io ][ key ] = self.resultsDir() + fileName   
+            return self._fileSets[ io ][ key ] 
         elif io == 'intermediate':
-            return self.registerInterimOutput(name, fileName)
+            return self.registerInterimOutput(key, fileName)
         else:
+            raise ValueError("Unknown file type '" + io + "' when creating file!")
+    
+    def createCompanionOutFile(self, firstKey, companionKey, ext, io='nonGalaxyOutput'):
+        '''
+        Creates, registers and returns an output file name based a previously registered out file
+        of the same io type.  The new output will have the previous output name minus the
+        extension, plus the new extension.  Example is a '.bam' outfile has a companion '.bam.bai'.
+        '''
+        firstFile =  self._fileSets[ io ][ firstKey ]
+        fileName = self.fileGetPart(firstFile,'root')
+        if ext == 'dir':
+            fileName = fileName + '/'
+        else:
+            fileName = fileName + '.' + ext
+        if io == 'nonGalaxyOutput':
+            self.registerTargetOutput(companionKey, fileName)
+            self._fileSets[ io ][ companionKey ] = self.resultsDir() + fileName   
+            return self._fileSets[ io ][ companionKey ] 
+        elif io == 'intermediate':
+            return self.registerInterimOutput(companionKey, fileName)
+        else:  # Should not get here since first line tests io
             raise ValueError("Unknown file type '" + io + "' when creating file!")
     
     def printPaths(self, log=None):
@@ -325,7 +352,7 @@ class GalaxyAnalysis(Analysis):
                         permanentOutput = None
                 
                 # hardlink target in analysisDir to resultsDir
-                # NOTE: dryRun has created empty files below, so linkOrCopy show be dryRun=False !
+                # NOTE: dryRun has created empty files below, so linkOrCopy should be dryRun=False!
                 if permanentOutput != None:
                     err = self.linkOrCopy(self._targetOutput[key],permanentOutput, \
                                           dryRun=False,log=log)
@@ -337,7 +364,7 @@ class GalaxyAnalysis(Analysis):
                 # symlink result back into galaxy
                 if not self._stayWithinGalaxy and key in self._galaxyOutputs:
                     galaxyOutput = self._galaxyOutputs[key]
-                    # softlink so permenant location can be discovered by future steps
+                    # softlink so permanent location can be discovered by future steps
                     err = self.linkOrCopy(permanentOutput,galaxyOutput,soft=True, \
                                           dryRun=False,log=log)
                     if err != 0:
@@ -380,7 +407,7 @@ class GalaxyAnalysis(Analysis):
         Extend analysis.onSucceed to handle galaxy specific pipeline will handle all success 
         steps, like copying out files we care about and emptying the step directory
         """
-        if self.dryRun():
+        if self.dryRun:
             self.printPaths(log=step.log)   # For posterity
         
         #try:
@@ -396,7 +423,7 @@ class GalaxyAnalysis(Analysis):
         if self.log.file() != None:  # If analysisLog, then be sure to just print step log to stdout
             step.log.dump()
         ### TODO: cleanup step dir AFTER debugging phase.
-        ###if not self.dryRun():
+        ###if not self.dryRun:
         ###    step.cleanup()               # Removes logicalStep.stepDir()
         #else:
         #    self.runCmd('ls -l ' + step.dir, dryRun=False)
@@ -408,7 +435,7 @@ class GalaxyAnalysis(Analysis):
         """
         Override Analysis.onFail() to include galaxy specific things
         """
-        #if self.dryRun():
+        #if self.dryRun:
         self.printPaths(log=step.log)   # For posterity
         step.log.out('') # skip a lineline
         self.runCmd('ls -l ' + step.dir, dryRun=False, log=step.log)
@@ -417,7 +444,9 @@ class GalaxyAnalysis(Analysis):
         Analysis.onFail(self,step)
         if step.err > 255:  # This case has been returning 0 !!!
             step.err = 55
-        sys.exit( step.err )
+        if step.err == 0:
+            step.err = 1    # Must fail!
+        return step.err
     
 
 ############ command line testing ############
@@ -440,7 +469,7 @@ if __name__ == '__main__':
     galaxyPath = '/hive/users/tdreszer/galaxy/'
     
     e3 = GalaxyAnalysis(settingFile, analysisId)
-    e3.dryRun(True)
+    e3.dryRun = True
     
     # Command-line args predefined in in settings:
     reads = e3.getSetting('fastqSampleReads','100000')

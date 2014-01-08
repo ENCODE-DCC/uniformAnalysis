@@ -6,8 +6,10 @@
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 #
-# Outputs: a single bam target which will match and analysis target keyed as:
+# Outputs: a single bam target and an index for it which will match and analysis targets keyed as:
 #          'alignmentRep'+replicate+'.bam'
+#          'alignmentRep'+replicate+'.bam.bai'
+#    and an interim json file, keyed as: 'alignmentRep' + replicate +  '.json'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import bwa, samtools
@@ -16,7 +18,7 @@ class AlignmentStep(LogicalStep):
 
     def __init__(self, analysis, replicate):
         self.replicate = str(replicate)
-        LogicalStep.__init__(self, analysis, analysis.readType + 'Alignment_Rep' + self.replicate)
+        LogicalStep.__init__(self, analysis, analysis.readType + 'alignmentRep' + self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
     def writeVersions(self,raFile=None,allLevels=False):
@@ -63,13 +65,17 @@ class AlignmentStep(LogicalStep):
         samtools.idxstats(self, sortedBam, bamStats)
         
         self.json['readCounts'] = {}
-        with open(bamStats, 'r') as statsFile:
-            for line in statsFile:
-                chr, readlen, mapped, unmapped = line.split()
-                if chr.startswith('chr'):
-                    self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        if not self.ana.dryRun:
+            with open(bamStats, 'r') as statsFile:
+                for line in statsFile:
+                    chr, readlen, mapped, unmapped = line.split()
+                    if chr.startswith('chr'):
+                        self.json['readCounts'][chr] = { 'mapped': mapped, 'unmapped': unmapped }
+        else:
+            self.json['readCounts']['chr0'] = { 'mapped': '0', 'unmapped': '0' }
+        self.createAndWriteJsonFile()
                     
-        md = self.ana.createMetadataFile(self, 'files')
+        md = self.createMetadataFile('files')
         
         md.createStanza('object', bamName)
         md.add('fileName', bam)

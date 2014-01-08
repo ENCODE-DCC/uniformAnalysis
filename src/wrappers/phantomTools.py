@@ -8,9 +8,8 @@
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     toolName = __name__.split('.')[-1]
-    rVersion = step.ana.getCmdOut(step.ana.getTool('Rscript',orInPath=True) + \
-                                  "Rscript --version 2>&1 | awk '{print $5}'", \
-                                  dryRun=False,logCmd=False)
+    rVersion = step.ana.getCmdOut(step.ana.getTool('Rscript') + \
+                                  " --version 2>&1 | awk '{print $5}'", dryRun=False,logCmd=False)
     expected = step.ana.getSetting('RscriptVersion',rVersion) # Not in settings then not enforced!
     if step.ana.strict and rVersion != expected:
         raise Exception("Expecting Rscript [version: "+expected+"], " + \
@@ -31,7 +30,7 @@ def strandCorr(step, bam, strandCor):
     '''Generates strand correlations for bam.'''
     
     cmd = '{rscript} {phantomTools}run_spp.R -c={input} -out={output}'.format( \
-          rscript=step.ana.getTool('Rscript',orInPath=True), \
+          rscript=step.ana.getTool('Rscript'), \
           phantomTools=step.ana.getDir('phantomToolsDir',alt='toolsDir'), \
           input=bam, output=strandCor)
 

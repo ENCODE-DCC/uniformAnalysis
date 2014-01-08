@@ -4,9 +4,10 @@
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
 #
-# Outputs: 1 interim bam sample file, keyed as: 'sampleRep'     + replicate + '.bam'
-#          1 target  histogram  file, keyed as: 'metricRep'     + replicate + '.txt'
-#          1 target  Corr       file, keyed as: 'strandCorrRep' + replicate + '.txt'
+# Outputs: 1 target bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
+#          1 target histogram  file, keyed as: 'metricRep'     + replicate +    '.txt'
+#          1 target Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
+#          1 interim json      file, keyed as: 'bamEvaluateRep' + replicate +  '.json'
 
 import os
 from src.logicalStep import LogicalStep
@@ -17,7 +18,7 @@ class BamEvaluateStep(LogicalStep):
     def __init__(self, analysis, replicate, sampleSize):
         self.replicate = str(replicate)
         self.sampleSize = sampleSize
-        LogicalStep.__init__(self, analysis, 'bamEvaluate_Rep' + self.replicate)
+        LogicalStep.__init__(self, analysis, 'bamEvaluateRep' + self.replicate)
         
     def writeVersions(self,raFile=None,allLevels=False):
         '''Writes versions to to the log or a file.'''
@@ -43,6 +44,7 @@ class BamEvaluateStep(LogicalStep):
         # Outputs:
         metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt')
         strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
+<<<<<<< HEAD
         
         # BUG: this should not be a garbage file, however picardTools fragSize is failing on the single-end input
         fragSizeTxt = self.declareGarbageFile( 'fragSize'+ self.replicate + '.txt')
@@ -53,6 +55,11 @@ class BamEvaluateStep(LogicalStep):
         root = os.path.splitext( fileName )[0]
         bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '5M.bam', \
                                              name=root + '_sample.bam')
+=======
+        fragSizeTxt = self.declareTargetFile( 'fragSize'+ self.replicate + '.txt')
+        fragSizePdf = self.declareTargetFile( 'fragSize'+ self.replicate + '.pdf')
+        bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
+>>>>>>> 3b835f9b1a57dad5b2eea7a52ad15068ceedd6a5
         
         bamSize = samtools.bamSize(self,bam)
          
@@ -66,20 +73,30 @@ class BamEvaluateStep(LogicalStep):
         census.metrics(self, bamSample, metricHist)
 
         self.json['redundancy'] = {}
-        with open(metricHist, 'r') as metricsFile:
-            lines = metricsFile.readlines()
-            self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
-            self.json['redundancy']['totalReads'] = lines[3].split()[-1]
+        if not self.ana.dryRun:
+            with open(metricHist, 'r') as metricsFile:
+                lines = metricsFile.readlines()
+                self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
+                self.json['redundancy']['totalReads'] = lines[3].split()[-1]
+        else:
+            self.json['redundancy']['uniqueReads'] = 0
+            self.json['redundancy']['totalReads'] = 0
         
         phantomTools.strandCorr(self,bamSample,strandCorr)
         
         self.json['strandCorrelation'] = {}
-        with open(strandCorr, 'r') as strandFile:
-            for line in strandFile:
-                splits = line.split('\t')
-                self.json['strandCorrelation']['Frag'] = splits[2]
-                self.json['strandCorrelation']['RSC'] = splits[8]
-                self.json['strandCorrelation']['NSC'] = splits[9]
+        if not self.ana.dryRun:
+            with open(strandCorr, 'r') as strandFile:
+                for line in strandFile:
+                    splits = line.split('\t')
+                    self.json['strandCorrelation']['Frag'] = splits[2]
+                    self.json['strandCorrelation']['RSC'] = splits[8]
+                    self.json['strandCorrelation']['NSC'] = splits[9]
+        else:
+            self.json['strandCorrelation']['Frag'] = 0
+            self.json['strandCorrelation']['RSC'] = 0
+            self.json['strandCorrelation']['NSC'] = 0
+        self.createAndWriteJsonFile()
 
         picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
         

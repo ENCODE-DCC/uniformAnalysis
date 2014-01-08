@@ -1,0 +1,21 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 4 ];
+then echo "usage v3: eap_run_bwa_pe bwa-index read1.fq read2.fq out.bam"
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Using $1 as an index, align paired reads from $2 and $3 to output in $4
+bwa aln -t 4 $1 $2 > tmp1.sai
+bwa aln -t 4 $1 $3 > tmp2.sai
+bwa sampe $1 tmp1.sai tmp2.sai $2 $3 > tmp.sam
+samtools view -S -b tmp.sam > tmp.bam
+samtools sort tmp.bam sorted
+mv sorted.bam $4
+
+# Remove some big boring files.
+rm tmp1.sai tmp2.sai tmp.sam tmp.bam
+
