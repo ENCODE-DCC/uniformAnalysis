@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/cluster/software/bin/python2.7
 
 import sys, os, argparse, subprocess, json
 
