@@ -15,8 +15,6 @@ macs2 callpeak --nomodel -t $2 -c $3 -B -n tmp
 # Convert macs tmp_peaks.xls output to narrowPeak.bb format in $4, checking chromosome coords vs $1
 eap_macs2_xls_to_narrowPeak tmp_peaks.xls >tmp.narrowPeak
 eap_narrowPeak_to_bigBed $1 tmp.narrowPeak $4
-#bedToBigBed -as=/hive/groups/encode/encode3/encValData/as/narrowPeak.as -type=bed6+4 tmp.narrowPeak  /hive/groups/encode/encode3/encValData/$1/chrom.sizes tmp.narrowPeak.bb
-#mv tmp.narrowPeak.bb $4 
 
 # Convert tmp_treat_pileup.bdg to bigWig in $5, checking chrom coords against $1
 bedGraphToBigWig tmp_treat_pileup.bdg /hive/groups/encode/encode3/encValData/$1/chrom.sizes tmp.bigWig
