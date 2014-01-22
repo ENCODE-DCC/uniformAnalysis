@@ -9,11 +9,11 @@ echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
 # Grab eventual output and save for later
-outName = $1
+outName=$1
 shift
 
 # Create a chrom.sizes file in current directory
-bigWigInfo -chroms $1 > tmp.sizes
+bigWigInfo -chroms $1 | awk 'NF==3 {print $1,$3}' > tmp.sizes
 
 # Use bigWigMerge to produce bedGraph that is result of summing all bigWigs, and pack it.
 bigWigMerge $* stdout | bedGraphPack stdin tmp.bedGraph
