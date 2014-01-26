@@ -3,7 +3,7 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 3 ];
+if [ $# -lt 4 ];
 then echo "usage v2: eap_sum_bigWig out.bigWig assembly in1.bigWig in2.bigWig ... inN.bigWig"
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
