@@ -4,22 +4,21 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 3 ];
-then echo "usage v1: eap_sum_bigWig out.bigWig in1.bigWig in2.bigWig ... inN.bigWig"
+then echo "usage v2: eap_sum_bigWig out.bigWig assembly in1.bigWig in2.bigWig ... inN.bigWig"
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
 # Grab eventual output and save for later
 outName=$1
 shift
-
-# Create a chrom.sizes file in current directory
-bigWigInfo -chroms $1 | awk 'NF==3 {print $1,$3}' > tmp.sizes
+g=$1
+shift
 
 # Use bigWigMerge to produce bedGraph that is result of summing all bigWigs, and pack it.
 bigWigMerge $* stdout | bedGraphPack stdin tmp.bedGraph
 
 # Convert back to bigWig and clean up big boring temp file
-bedGraphToBigWig tmp.bedGraph tmp.sizes tmp.bigWig
+bedGraphToBigWig tmp.bedGraph /hive/groups/encode/encode3/encValData/$g/chrom.sizes tmp.bigWig
 rm tmp.bedGraph
 
 # Move output to final destination
