@@ -1,0 +1,25 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -lt 4 ];
+then echo "usage v2: eap_sum_bigWig out.bigWig assembly in1.bigWig in2.bigWig ... inN.bigWig"
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Grab eventual output and save for later
+outName=$1
+shift
+g=$1
+shift
+
+# Use bigWigMerge to produce bedGraph that is result of summing all bigWigs, and pack it.
+bigWigMerge $* stdout | bedGraphPack stdin tmp.bedGraph
+
+# Convert back to bigWig and clean up big boring temp file
+bedGraphToBigWig tmp.bedGraph /hive/groups/encode/encode3/encValData/$g/chrom.sizes tmp.bigWig
+rm tmp.bedGraph
+
+# Move output to final destination
+mv tmp.bigWig $outName
