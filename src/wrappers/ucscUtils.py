@@ -5,22 +5,17 @@
 # Settings required: fastqStatsAndSubsampleTool (or toolsDir), fastqSampleReads, fastqSampleSeed,
 #                    bedGraphToBigWigTool (or toolsDir), hg19ChromInfoFile
 #                    sampleBamTool (or toolsDir), hg19ChromInfoFile
+# Runs from (in path) tools dir symlinks
+# NOTE: fastqStatsAndSubsample needs to be added to ucscUtils package and symlinked!!!
+# NOTE: sampleBam NOT WORKING and is probably obsolete.
 
 def version(step, logOut=True, tool=None):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    toolName = __name__.split('.')[-1]
     if tool != None:
         toolName = tool
+        return step.getToolVersion(toolName, logOut)
+    toolName = __name__.split('.')[-1]
     version = "unversioned"  # Sorry, this tool has no version.
-    if toolName == 'bedGraphToBigWig':
-        version = step.ana.getCmdOut(step.ana.getTool(toolName) + \
-                                 '  2>&1 | grep "'+toolName+' v"' + " | awk '{print $3}'",
-                                 dryRun=False,logCmd=False)
-        expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
-        if step.ana.strict and version != expected:
-            raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
-                            "but found [version: "+version+"]")
-
     if logOut:
         step.log.out("# "+toolName+" [version: " + version + "]")
     return version
@@ -29,21 +24,21 @@ def bedGraphToBigWig(step, inBedGraph, outBigWig):
     '''Converts a bedGraph to a bigWig.'''
     
         # "bedGraphToBigWig input.tmp chromLengths output.bigWig"
-    cmd = '{tool} {bedGraph} {chromInfo} {bigWig}'.format( \
-          tool=step.ana.getTool('bedGraphToBigWig'), bedGraph=inBedGraph, \
+    cmd = 'bedGraphToBigWig {bedGraph} {chromInfo} {bigWig}'.format( bedGraph=inBedGraph, \
           chromInfo=step.ana.getSetting(step.ana.genome+'ChromInfoFile'), \
           bigWig=outBigWig)
           
     toolName = __name__.split('.')[-1] + " bedGraphToBigWig"
     step.toolBegins(toolName)
+    step.getToolVersion('bedGraphToBigWig', logOut=True)
+
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
     step.toolEnds(toolName,step.err)
 
 def fastqStatsAndSubsample(step, inFastq, simpleStats, sampleFastq):
     '''Sample a fastq.'''
     
-    cmd = '{tool} -sampleSize={reads} -seed={seed} {input} {outStats} {outSample}'.format( \
-          tool=step.ana.getTool('fastqStatsAndSubsample'), \
+    cmd = 'fastqStatsAndSubsample -sampleSize={reads} -seed={seed} {input} {outStats} {outSample}'.format( \
           reads='{sample}',seed=step.ana.getSetting('fastqSampleSeed', '12345'), \
           input=inFastq, outStats=simpleStats, outSample=sampleFastq)
     
@@ -51,7 +46,8 @@ def fastqStatsAndSubsample(step, inFastq, simpleStats, sampleFastq):
       
     toolName = __name__.split('.')[-1] + ' fastqStatsAndSubsample'
     step.toolBegins(toolName)
-    
+    step.getToolVersion('fastqStatsAndSubsample', logOut=True)
+
     #step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     while sampleSize >= 40000:
         step.err = step.ana.runCmd(cmd.format(sample=sampleSize), log=step.log)
@@ -66,11 +62,12 @@ def sampleBam(step, bam, bamSize, sampleSize, samSample):
     
     # BUGBUG sampleBam not working on paired reads!  Replacing with picard DownSampleSam
     # Is this really a ucscUtil???  Yes: src/hg/encode3/encPipe/sampleBam
-    cmd = '{sampler} {input} {inSize} {outSize} {output}'.format( \
-          sampler=step.ana.getTool('sampleBam'), input=bam, \
+    cmd = 'sampleBam {input} {inSize} {outSize} {output}'.format( input=bam, \
           inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
           
     toolName = __name__.split('.')[-1] + ' sampleBam'
     step.toolBegins(toolName)
+    step.getToolVersion('sampleBam', logOut=True)
+
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     step.toolEnds(toolName,step.err)

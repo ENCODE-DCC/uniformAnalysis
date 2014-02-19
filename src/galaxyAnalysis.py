@@ -441,18 +441,18 @@ class GalaxyAnalysis(Analysis):
         self.runCmd('ls -l ' + step.dir, dryRun=False, log=step.log)
         step.log.out('')
 
-        Analysis.onFail(self,step)
-        if step.err > 255:  # This case has been returning 0 !!!
-            step.err = 55
-        if step.err == 0:
-            step.err = 1    # Must fail!
-        return step.err
+        retVal = Analysis.onFail(self,step)
+        if retVal > 255:  # This case has been returning 0 !!!
+            retVal = 55
+        if retVal == 0:
+            retVal = 1    # Must fail!
+        return retVal
     
 
 ############ command line testing ############
 if __name__ == '__main__':
     """
-    Test this thang
+    Test this thang - WARNING: out of date
     """
     from datetime import datetime
     from src.logicalStep import LogicalStep

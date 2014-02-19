@@ -2,7 +2,9 @@
 # hotspot.py module holds methods for running hotspot from 
 # a LogicalStep.  It is used to call peaks form a bam.
 #
+# toolsDir must be in path and 'eap' bash scripts must be in toolsDir. 
 # Settings required: hotspotDir
+# NOTE: Must run from hotspot-dist/hotspot-deploy/bin dir !!!
 
 # SELECTED notes copied from hotspot README:
 # This distribution includes scripts for computing minimally thresholded (z-score = 2) hotspots; 
@@ -51,23 +53,50 @@ from src.logicalStep import StepError
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
-    toolName = __name__.split('.')[-1]
-    version = step.ana.getCmdOut(step.ana.getDir(toolName+'Dir') + 'hotspot-deploy/bin/hotspot' + \
-                                 " 2>&1 | grep HotSpot | awk '{print $1}'", \
-                                 dryRun=False,logCmd=False)
-    expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
-    if step.ana.strict and version != expected:
-        raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
-                        "but found [version: "+version+"]")
-    if logOut:
-        step.log.out("# "+toolName+" [version: " + version + "]")
-    return version
+    return step.getToolVersion(step.ana.toolsDir+'hotspot-distr/hotspot-deploy/bin/hotspot', logOut)
+
+def eap_hotspot(step, genome, inBam, tagLen, outNarrowPeak, outBroadPeak, outBigWig):
+    '''Hostspot peak calling'''
+    
+    # Currently sets path internally, but we should make sure hotspot-disty/hotspot-deploy/bin
+    # and bedtools/bin are in path.  Ideally this is done via toolsDir then relative path.
+    
+    # usage v1: eap_run_hotspot genome input.bam readLength out.narrowPeak out.broadPeak out.bigWig
+    cmd = "eap_run_hotspot {db} {bam} {readLen} {narrowOut} {broadOut} {bwOut}".format( \
+          db=genome, bam=inBam, readLen=tagLen, \
+          narrowOut=outNarrowPeak, broadOut=outBroadPeak, bwOut=outBigWig)
+          
+    toolName = 'eap_run_hotspot'
+    step.toolBegins(toolName)
+    fromDir = os.getcwd()
+    os.chdir(step.dir)
+    #step.ana.runCmd("pushd "+step.dir, dryRun=False,logCmd=False)
+    step.getToolVersion(toolName, logOut=True)
+    step.getToolVersion(step.ana.toolsDir+'hotspot-distr/hotspot-deploy/bin/hotspot', logOut=True)
+    #step.getToolVersion(step.ana.toolsDir+'hotspot-distr/hotspot-deploy/bin/wavePeaks', logOut=True) # TODO?
+    #step.getToolVersion(step.ana.toolsDir+'hotspot-distr/ScriptTokenizer/src/script-tokenizer.py', logOut=True) # TODO?
+    step.getToolVersion('python2.7', logOut=True)
+    step.getToolVersion('hotspot.py', logOut=True)
+    step.getToolVersion('bedToBigBed', logOut=True)
+    step.getToolVersion('bedmap', logOut=True)
+    step.getToolVersion('sort-bed', logOut=True)
+    step.getToolVersion('starchcat', logOut=True)
+    step.getToolVersion('unstarch', logOut=True)
+    step.getToolVersion(step.ana.toolsDir+'bedtools/bin/intersectBed', logOut=True)
+    step.getToolVersion('bedGraphPack', logOut=True)
+    step.getToolVersion('bedGraphToBigWig', logOut=True)
+
+    step.err = step.ana.runCmd(cmd, log=step.log)
+    os.chdir(fromDir)
+    #step.ana.runCmd("popd", dryRun=False,logCmd=False)
+    step.toolEnds(toolName,step.err)
 
 def runHotspot(step, tokensFile, runhotspotScript, bam, tagLen):
     '''Hostspot peak calling tool'''
     
     toolName = __name__.split('.')[-1] + " peak calling"
     step.toolBegins(toolName)
+    step.getToolVersion(step.ana.toolsDir+'hotspot-deploy/bin/hotspot', logOut=True)
 
     # raise this exception where tagLength is actually used.
     if tagLen not in ['32','36','40','50','58','72','76','100']:

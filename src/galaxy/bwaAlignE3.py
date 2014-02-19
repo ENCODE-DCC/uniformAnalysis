@@ -7,7 +7,7 @@
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
-from src.steps.alignmentStep import AlignmentStep
+from src.steps.bwaAlignmentStep import BwaAlignmentStep
 
 ###############
 testOnly = False
@@ -27,7 +27,7 @@ if  sys.argv[1] == '--version':
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
         ana.readType = 'paired'
-        AlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        BwaAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)
@@ -96,7 +96,5 @@ else:
     #ana.createCompanionOutFile(bamFileKey.bamIndexKey,ext='bam.bai')
 
 # Establish step and run it:
-step = AlignmentStep(ana,repNo)
+step = BwaAlignmentStep(ana,repNo)
 sys.exit( step.run() )
-
-

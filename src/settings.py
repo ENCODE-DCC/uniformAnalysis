@@ -36,7 +36,7 @@ class Settings(dict):
         self._filename = filePath
         file = open(filePath, 'r')
         
-        # Try json, but be happly with plain old var - space - val lines
+        # Try json, but be happy with plain old var - space - val lines
         try:
             jsObj = json.load(file)   #    # dump with indent=4
             for jsonKey in jsObj.keys():
@@ -88,44 +88,58 @@ class Settings(dict):
 
         return val
 
+    def asBoolean(self, value):
+        '''
+        Returns the boolean of a value.
+        Returns False for case-insensitive 'False','F','No','N' or '0', all others return True
+        '''
+        if value == False or value == "0" or value.lower() == 'no'    or value.lower() == 'n' or \
+                                             value.lower() == 'false' or value.lower() == 'f':
+            return False
+        return True
+        
     def getBoolean(self, key, default=None, alt=None):
         '''
         Returns the boolean value for given a key.
         Returns False for case-insensitive 'False','F','No','N' or '0', all others return True
         Not found, without a default is an exception.
         '''
-        val = self.get(key, default, alt)
-        if val == False or val == "0" or val.lower() == 'no'    or val.lower() == 'n' or \
-                                         val.lower() == 'false' or val.lower() == 'f':
-            return False
-        return True
+        return self.asBoolean(self.get(key, default, alt))
         
+    def asDir(self, value):
+        '''
+        Returns an absolute path to a directory (always ending in '/') of a value.
+        '''
+        if value != None and len(value) > 0:
+            value = os.path.abspath( value )
+            if not value.endswith('/'):
+                value = value + '/'
+        return value
+
     def getDir(self, key, default=None, alt=None):
         '''
         Returns an absolute path to a directory (always ending in '/').
         '''
-        val = self.get(key, default, alt)
-        if val != None and len(val) > 0:
-            val = os.path.abspath( val )
-            if not val.endswith('/'):
-                val = val + '/'
-        return val
+        return self.asDir(self.get(key, default, alt))
 
-    def _loadLine(self, line):
+    def _loadLine(self, line, set=None):
         '''
         Reads a single line extracting the key-value pair.  Returns key
         '''
+        if set == None:
+            set = self
+            
         if line.startswith('#') or line == '':
             return None
         else:
             pair = line.split(None, 1) # None means separate on whitespace
             key = pair[0]
-            if key in self:
+            if key in set:
                 raise KeyError('Duplicate Key ' + key)
             val = ''
             if (len(pair) == 2):
                 val = pair[1]
-            self[key] = val
+            set[key] = val
             
         return key
         

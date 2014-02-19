@@ -34,9 +34,12 @@
         </param>
     </inputs>
     <outputs>
-        <data format="bed" name="hotOutput"     label="${name}Rep${repNo} ${sample} Hotspots" />
-        <data format="bed" name="peaksOutput"   label="${name}Rep${repNo} ${sample} Called Peaks" />
-        <data format="bigWig" name="densityOutput" label="${name}Rep${repNo} ${sample} Density Signal" />
+        <data name="hotOutput" format="bigBed"
+                                        label="${name}Rep${repNo} ${sample} Hotspots" />
+        <data name="peaksOutput" format="bigBed"
+                                        label="${name}Rep${repNo} ${sample} Called Peaks" />
+        <data name="densityOutput" format="bigWig"
+                                        label="${name}Rep${repNo} ${sample} Density Signal" />
     </outputs>
     <help>
 .. class:: warningmark

@@ -57,18 +57,14 @@ ana.setVar('tagLen',tagLen)
 
 # What step expects:
 # Inputs: 1 bam, pre-registered in analysis   keyed as: 'alignment' + suffix + '.bam'
-# Outputs: target broadPeak hotspot file,     keyed as: 'hot'       + suffix + '.bed'
-#          target broadPeak hotspot FDR file, keyed as: 'hotFrd'    + suffix + '.bed'
-#          target narrowPeak peaks file,      keyed as: 'peaks'     + suffix + '.bed'
-#          interim density bed file,          keyed as: 'density'   + suffix + '.bed.starch'
+# Outputs: target broadPeak hotspot file,     keyed as: 'hot'       + suffix + '.bigBed'
+#          target narrowPeak peaks file,      keyed as: 'peaks'     + suffix + '.bigBed'
 #          target density bigWig file,        keyed as: 'density'   + suffix + '.bigWig'
     
 # set up keys that join inputs through various file forwardings:
 bamInputKey   = 'alignment' + suffix + '.bam'
-hotKey        = 'hot'       + suffix + '.bed'
-#hotFdrKey     = 'hotFdr'    + suffix + '.bed'   # Don't even bother with unwanted interims!
-peakKey       = 'peaks'     + suffix + '.bed'
-#starchedKey   = 'density'   + suffix + '.bed.starch'
+hotKey        = 'hot'       + suffix + '.bigBed'
+peakKey       = 'peaks'     + suffix + '.bigBed'
 densityKey    = 'density'   + suffix + '.bigWig'
 
 # Establish Inputs for galaxy and nonGalaxy alike
@@ -80,10 +76,8 @@ ana.registerFile( hotKey,     'galaxyOutput',galaxyOutputHot    )
 ana.registerFile( peakKey,    'galaxyOutput',galaxyOutputPeaks  )
 ana.registerFile( densityKey, 'galaxyOutput',galaxyOutputDensity)
 resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-ana.createOutFile(hotKey,     'nonGalaxyOutput',ext='bed')
-#ana.createOutFile(hotFdrKey,  'intermediate',   ext='bed')
-ana.createOutFile(peakKey,    'nonGalaxyOutput',ext='bed')
-#ana.createOutFile(starchedKey,'intermediate',   ext='bed.starch' )
+ana.createOutFile(hotKey,     'nonGalaxyOutput',ext='bigBed')
+ana.createOutFile(peakKey,    'nonGalaxyOutput',ext='bigBed')
 ana.createOutFile(densityKey, 'nonGalaxyOutput',ext='bigWig')
 
 # Establish step and run it:

@@ -44,22 +44,9 @@ class BamEvaluateStep(LogicalStep):
         # Outputs:
         metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt')
         strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
-<<<<<<< HEAD
-        
-        # BUG: this should not be a garbage file, however picardTools fragSize is failing on the single-end input
-        fragSizeTxt = self.declareGarbageFile( 'fragSize'+ self.replicate + '.txt')
-        
-        fragSizePdf = self.declareGarbageFile( 'fragSize'+ self.replicate + '.pdf')
-        # because garbage bam file name is used in output, it needs a meaningful name:
-        fileName = os.path.split( bam )[1]
-        root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '5M.bam', \
-                                             name=root + '_sample.bam')
-=======
         fragSizeTxt = self.declareTargetFile( 'fragSize'+ self.replicate + '.txt')
         fragSizePdf = self.declareTargetFile( 'fragSize'+ self.replicate + '.pdf')
         bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
->>>>>>> 3b835f9b1a57dad5b2eea7a52ad15068ceedd6a5
         
         bamSize = samtools.bamSize(self,bam)
          

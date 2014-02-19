@@ -4,10 +4,8 @@
 #
 # Inputs: 1 bam, pre-registered in analysis   keyed as: 'alignment' + suffix + '.bam'
 #
-# Outputs: target broadPeak hotspot file,     keyed as: 'hot'       + suffix + '.bed'
-#          target broadPeak hotspot FDR file, keyed as: 'hotFrd'    + suffix + '.bed'
-#          target narrowPeak peaks file,      keyed as: 'peaks'     + suffix + '.bed'
-#          interim density bed file,          keyed as: 'density'   + suffix + '.bed.starch'
+# Outputs: target broadPeak hotspot file,     keyed as: 'hot'       + suffix + '.bigBed'
+#          target narrowPeak peaks file,      keyed as: 'peaks'     + suffix + '.bigBed'
 #          target density bigWig file,        keyed as: 'density'   + suffix + '.bigWig'
 
 import os
@@ -41,38 +39,13 @@ class HotspotStep(LogicalStep):
     def onRun(self):
         # Inputs:
         bam = self.ana.getFile('alignment' + self.suffix + '.bam')
-        
+
         # Outputs:
-        fileName = os.path.split( bam )[1]
-        root = os.path.splitext( fileName )[0]
-        # broad peaks:
-        self.declareTargetFile('hot' + self.suffix + '.bed', \
-                               name=root + '-final/' + root + '.hot.bed')
-        self.declareTargetFile('hotFdr' + self.suffix + '.bed', \
-                               name=root + '-final/' + root + '.fdr0.01.hot.bed')
-        # narrow peaks:
-        self.declareTargetFile('peaks' + self.suffix + '.bed', \
-                               name=root + '-final/' + root + '.fdr0.01.pks.bed')
-        # densityBed to be turned into a bigWig
-        starched = self.declareInterimFile('density' + self.suffix + '.bed.starch', \
-                                name=root + '-peaks/' + root + '.tagdensity.bed.starch')
-        bigWig = self.declareTargetFile('density' + self.suffix + '.bigWig')
-        
-        # run hotspot pipeline (many scripts)
-        tokensName = self.declareGarbageFile('tokens.txt')
-        runhotspotName = self.declareGarbageFile('runhotspot.sh')
-        hotspot.runHotspot(self, tokensName, runhotspotName, bam, self.tagLen)
+        broadPeaks  = self.declareTargetFile('hot'     + self.suffix + '.bigBed')
+        narrowPeaks = self.declareTargetFile('peaks'   + self.suffix + '.bigBed')
+        bigWig      = self.declareTargetFile('density' + self.suffix + '.bigWig')
 
-        # "unstarch input.bed.starch > output.bed"
-        unstarched  = self.declareGarbageFile('unstarched.bed')
-        bedops.unstarch(self, starched, unstarched)
-
-        # convert to bedGraph
-        bedGraph = self.declareGarbageFile('density' + self.suffix + '.bedGraph')
-        bedtools.toBedGraph(self, self.tagLen, unstarched, bedGraph)
-
-        # And finally convert density bedGraph to bigWig
-        ucscUtils.bedGraphToBigWig(self, bedGraph, bigWig)
- 
-        # TODO: Union DHS overlap on the peaks with hotspot
-        # https://github.com/qinqian/GCAP/blob/master/gcap/funcs/union_dhs_overlap.py union_DHS_overlap()
+        # usage v1: 
+        #     eap_run_hotspot genome input.bam readLength out.narrowPeak out.broadPeak out.bigWig
+        hotspot.eap_hotspot(self, self.ana.genome, bam, self.tagLen, \
+                            narrowPeaks, broadPeaks, bigWig)
