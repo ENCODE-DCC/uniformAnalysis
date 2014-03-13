@@ -2,12 +2,8 @@
 # ucscUtils.py module holds methods for running various utilities from the kent/src tree in
 # a LogicalStep.
 #
-# Settings required: fastqStatsAndSubsampleTool (or toolsDir), fastqSampleReads, fastqSampleSeed,
-#                    bedGraphToBigWigTool (or toolsDir), hg19ChromInfoFile
-#                    sampleBamTool (or toolsDir), hg19ChromInfoFile
 # Runs from (in path) tools dir symlinks
 # NOTE: fastqStatsAndSubsample needs to be added to ucscUtils package and symlinked!!!
-# NOTE: sampleBam NOT WORKING and is probably obsolete.
 
 def version(step, logOut=True, tool=None):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
@@ -56,18 +52,16 @@ def fastqStatsAndSubsample(step, inFastq, simpleStats, sampleFastq):
         sampleSize = sampleSize - 15000
         
     step.toolEnds(toolName,step.err)
-
-def sampleBam(step, bam, bamSize, sampleSize, samSample):
-    '''Samples a bam file.'''
     
-    # BUGBUG sampleBam not working on paired reads!  Replacing with picard DownSampleSam
-    # Is this really a ucscUtil???  Yes: src/hg/encode3/encPipe/sampleBam
-    cmd = 'sampleBam {input} {inSize} {outSize} {output}'.format( input=bam, \
-          inSize=str(bamSize), outSize=str(sampleSize), output=samSample)
-          
-    toolName = __name__.split('.')[-1] + ' sampleBam'
+def edwBamStats(step, inBam, statsRa, outSample, sampleSize):
+    '''Bam evaluation statistics.'''
+    
+    cmd = 'edwBamStats {bamIn} {raOut} -sampleBed={outBed} -sampleBedSize={size}'.format( \
+          bamIn=inBam, raOut=statsRa, outBed=outSample, size=sampleSize)
+      
+    toolName = __name__.split('.')[-1] + ' edwBamStats'
     step.toolBegins(toolName)
-    step.getToolVersion('sampleBam', logOut=True)
+    step.getToolVersion('edwBamStats', logOut=True)
 
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     step.toolEnds(toolName,step.err)

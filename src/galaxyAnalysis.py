@@ -27,8 +27,10 @@ class GalaxyAnalysis(Analysis):
     Functions are for resolving names/paths and logging
     '''
 
-    def __init__(self, settingsFile,analysisId,genome=None):
+    def __init__(self, settingsFile,analysisId,genome=None,expType=None):
         Analysis.__init__(self, settingsFile, analysisId=analysisId, genome=genome)
+        if expType != None:
+            self.type = expType
         self._resultsDir = None  # Outside of galaxy and tmpDir struct. Same as inputFile location
         self._stayWithinGalaxy = self._settings.getBoolean('stayWithinGalaxy', False)
         self._galaxyInputs = {}      # May be in galaxy-dist/database/files or else symlinked lib
@@ -80,6 +82,12 @@ class GalaxyAnalysis(Analysis):
         root, ext = os.path.splitext( fileName )
         if ext == None or ext == '':
             ext = 'dir'
+        # Special for gzipped files
+        if ext == '.gz' or ext == '.gzip':
+            rootReal, extReal = os.path.splitext( root )
+            if extReal != None and extReal != '':
+                root = rootReal
+                ext = extReal + ext
         return { 'fullPath': fullPath, 'dir': directory + '/',  # normalize dirs to end in '/'
                  'fileName': fileName, 'root': root, 'ext': ext}
                  
@@ -200,10 +208,22 @@ class GalaxyAnalysis(Analysis):
         galaxyRoot = self.fileGetPart(fileName,'root')
         if galaxyRoot == None or len(galaxyRoot) == 0:
             return "0"
+        if not galaxyRoot.startswith('dataset_'):
+            return "-1"
         piecesOfRoot = galaxyRoot.split('_')
         if piecesOfRoot == None or len(piecesOfRoot) < 2:
             return "-1"
-        return piecesOfRoot[1] 
+        return piecesOfRoot[1]
+    
+    def isGzipped(self, filePath):
+        '''Returns true if file is gziped'''
+        if filePath.endswith('.gz') or filePath.endswith('.gzip'):
+            return True
+        err = os.system("gzip -lq " + filePath + ' > /dev/null 2>&1')
+        if err == 0:
+            return True
+        return False
+         
     
     def _makeNameWithTemplate(self, rootTemplate=None, ext=None, input1='', input2=None ):
         '''

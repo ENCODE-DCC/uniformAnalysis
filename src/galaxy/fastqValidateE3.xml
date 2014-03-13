@@ -1,8 +1,8 @@
-<tool id="fastqValidateE3" name="ENCODE3 fastQ validation" version="1.0">
-    <description> using FastQC</description>
+<tool id="fastqValidateE3" name="EAP fastQ evaluation" version="1.0">
+    <description>using FastQC</description>
     <command interpreter="python">
-        fastqValidateE3.py $in_fastq $statsHtml $statsHtml.files_path $statsJson 
-        $repNo ${name}U${__user_id__}
+        fastqValidateE3.py $in_fastq $statsHtml $statsHtml.files_path $fastqEval 
+        $genome $expType $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/fastqValidateE3.py --version</version_command>
     <stdio>
@@ -10,6 +10,14 @@
         <regex match=".*" source="stderr" level="log" />
     </stdio>
     <inputs>
+        <param name="genome" type="select" label="Genome Assembly">
+            <option value="hg19" selected="true">GRCh37/hg19 Human reference</option>
+        </param>
+        <param name="expType" type="select" label="Experiment Type">
+            <option value="ChIPseq">ChIP-seq</option>
+            <option value="DNase" selected="true">DNase</option>
+            <option value="RNAseq-long">long RNA-seq</option>
+        </param>
         <param name="in_fastq" type="data" format="fastq" label="FastQ file" />
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
         </param>
@@ -21,17 +29,22 @@
     <outputs>
         <data format="html" name="statsHtml" 
               label="${name}Rep${repNo} fastQ Stats from $in_fastq.name" />
-        <data format="json" name="statsJson" 
-              label="${name}Rep${repNo} Summary (json) from $in_fastq.name" />
+        <data format="txt" name="fastqEval" 
+              label="${name}Rep${repNo} fastQ Evaluation (json) from $in_fastq.name" />
     </outputs>
     <help>
 .. class:: infomark
 
-   Validates a single fastQ file of reads using FastQC, before further analysis may be performed. 
-   An *ENCODE3 analysis* involves multiple steps and dataset replicates, of which this is one.
-   Use *ENCODE3 workflows* to ensure that all analysis steps are performed in the proper sequence.
+   Evaluates a single fastQ file of reads using FastQC, before further analysis may be performed. 
+   An *ENCODE3 Analysis Pipeline* involves multiple steps and dataset replicates, of which this
+   is one. Use *EAP workflows* to ensure that all analysis steps are performed in the proper
+   sequence.
 
 **Inputs:**
+    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  Currently
+    only the GRCh37/hg19 reference is supported.  Note that some steps are only appropriate
+    for some experiment types.
+    
     Enter **Single or Paired reads** to declare whether the reads are contained in a single
     'unpaired' reads fastQ or a pair of fastQs for paired reads.
 
@@ -50,8 +63,11 @@
     can share the same named analysis, but two separate users cannot.
 
 **Outputs:**
-    This step is expected to produce a directory of files with a single **fastQ Stats** HTML 
-    file linking to validation results.
+    This step is expected to produce the following output:
+    
+    - A directory of files produced by FastQC.
+    - A **fastQ Stats** HTML file linking to these FastQC evaluation results.
+    - A **fastQ Evaluation** file in json format is produced and used as input for later ENCODE3 Analysis Pipeline steps.
 
     The **log** of this single step can be seen under *view details* stdout.
 
@@ -60,8 +76,8 @@
     found in the directory pointed to by 'tmpDir' as defined in the settings file.
 
 +--------+------------------------------------------------------------------------------------+
-||encPng||All *ENCODE3 Analysis* steps provided through Galaxy are run via the same python    | 
-|        |scripts and third-party tools as the official *ENCODE3 Analysis Pipeline*.  Just as | 
+||encPng||All *ENCODE3 Analysis Pipeline* steps provided through Galaxy are run via the same  | 
+|        |UCSC scripts and third-party tools as the official *Analysis Pipeline*.  Just as    | 
 |        |with the official pipeline, all work is be performed in temporary directories and   |
 |        |successful results moved to well-named locations.  If the initial input datasets are| 
 |        |from a symlinked Galaxy library, results will be moved to the same directory as the |  

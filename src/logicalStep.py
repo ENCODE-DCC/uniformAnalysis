@@ -79,6 +79,9 @@ class LogicalStep(Target):
         self.declareLogFile() # Ensures that the logical step dir and log exist
         self.log.out("--- Beginning '" + self._stepName + "' [version: "+self.version+"] [" + 
                      datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
+        self._prevDir = os.getcwd()
+        os.chdir(self.dir)
+        self.log.out("> cd "+self.dir)
         try:
             self.ana.onRun(self)
             self.onRun() #now this calls child onRun directly
@@ -103,6 +106,8 @@ class LogicalStep(Target):
         for fileName in self.metaFiles:
             self.metaFiles[fileName].write()
         self._err = 0 # by definition
+        os.chdir(self._prevDir)
+        #self.log.out("> cd "+self._prevDir)
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
         self.ana.onSucceed(self)
         
@@ -121,6 +126,13 @@ class LogicalStep(Target):
     def createDir(self):
         '''Creates logical step directory'''
         self._dir = self.ana.createTempDir(self.name, clean=True)
+        
+    def fileNameOrFullPath(self, filePath):
+        '''Returns just the file name or the full path as appropriate'''
+        if filePath.endswith('/') or not filePath.startswith(self.dir):
+            return filePath
+        else:   # Since file is in step dir, and so is execution, just return name
+            return os.path.split(filePath)[1]
        
     def declareTargetFile(self, key, name=None, ext=''):
         '''
@@ -128,7 +140,7 @@ class LogicalStep(Target):
         fully qualified filename in the local temp dir
         '''
         self.targetFiles[key] = self.makeFilePath(key, name, ext)
-        return self.targetFiles[key]
+        return self.fileNameOrFullPath(self.targetFiles[key])
         
     def declareInterimFile(self, key, name=None, ext=''):
         '''
@@ -136,7 +148,8 @@ class LogicalStep(Target):
         fully qualified filename in the local temp dir
         '''
         self.interimFiles[key] = self.makeFilePath(key, name, ext)
-        return self.interimFiles[key]
+        return self.fileNameOrFullPath(self.interimFiles[key])
+
         
     def declareGarbageFile(self, key, name=None, ext=''):
         '''
@@ -144,7 +157,7 @@ class LogicalStep(Target):
         qualified filename in the local temp dir
         '''
         self._garbageFiles[key] = self.makeFilePath(key, name, ext)
-        return self._garbageFiles[key]
+        return self.fileNameOrFullPath(self._garbageFiles[key])
         
     def declareLogFile(self, name=None):
         '''

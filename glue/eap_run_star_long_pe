@@ -1,0 +1,53 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 4 ]; then 
+echo "usage v1: eap_run_star_long_pe star-genomeDir read1.fq read2.fq out.bam"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Copy reads to local tmp file since will be making several passes
+cp $2 tmp1.fq.gz
+cp $3 tmp2.fq.gz
+
+# Using $1 as an reference genome, align reads
+STAR --genomeDir $1 --readFilesIn tmp1.fq.gz tmp2.fq.gz                       \
+     --readFilesCommand zcat --runThreadN 6 --genomeLoad LoadAndRemove         \
+     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 \
+     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04               \
+     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000      \
+     --outSAMunmapped Within --outFilterType BySJout --outStd SAM |                \
+     samtools view -S -b -u - | samtools sort -m 20000000000 - sorted
+#rm Log.out
+    
+# Building a new header
+HD="@HD\tVN:1.4\tSO:coordinate" 
+stCommand="samtools view -S -b -u - | samtools sort -m 20000000000 - sorted" 
+newPG="@PG\tID:Samtools\tPN:Samtools\tCL:$stCommand\tPP:STAR\tVN:0.1.18" 
+
+samtools view -H -S sorted.bam | \
+gawk -v HD="$HD" -v newPG="$newPG" -v headDone=0 \
+   '{     if ($0 ~ /^@PG/) {PG=$0} 
+     else if ($0 ~ /^@HD/) {} 
+     else {if(!headDone) {print HD; 
+                          print newPG"\n"PG; 
+                          print $0; headDone = 1} 
+           else {print $0}}}' > newHeader.sam
+           
+# Add reference genome specific accessions to header
+cat $1/COfile.txt >> newHeader.sam
+
+### TODO: Find appropriate accession for library.  Perhaps it is beyond scope.
+### echo "@CO LIBID:ENCLB175ZZZ" >> newHeader.sam 
+
+samtools reheader newHeader.sam sorted.bam > reheaded.bam
+
+#rm tmp1.fq.gz tmp2.fq.gz sorted.bam
+
+mv reheaded.bam $4
+
+# make sure star log is recorded.
+cat Log.final.out
+

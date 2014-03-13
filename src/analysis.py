@@ -47,6 +47,7 @@ class Analysis(object):
         self._deliveryKeys    = None
         self._toolsDb         = None
         self._toolsDir        = None
+        self._refDir          = None
 
         self._settingsFile = os.path.abspath( settingsFile )
         self._settings = Settings(self._settingsFile)
@@ -93,10 +94,10 @@ class Analysis(object):
         '''
         Sets the analysis type variable.
         '''
-        if value == 'DNase' or value == 'ChIPseq':
+        if value == 'DNase' or value == 'ChIPseq' or value == 'RNAseq-long':
             self._variables['analysisType'] = value
         else:
-            raise ValueError("Analysis type must be one of 'DNase' or 'ChIPseq'")
+            raise ValueError("Analysis type must be one of 'ChIPseq', 'DNase' or 'RNAseq'")
 
     @property
     def id(self):
@@ -124,10 +125,29 @@ class Analysis(object):
         if 'genome' in self._variables:
             raise ValueError("Genome already set to '"+self._variables['genome']+"'")
         
-        if value not in ['hg19']:  # Add mm10, etc. when those are supported
+        if value not in ['hg19']:  # Add hg38, mm10, etc. when those are supported
             raise ValueError("Unsupported genome '" + value + "'")
 
         self._variables['genome'] = value
+
+    @property
+    def gender(self):
+        if 'gender' not in self._variables:
+            return 'unspecified'
+        return self._variables['gender']
+        
+    @gender.setter
+    def gender(self,value):
+        '''
+        Sets the gender variable.
+        '''
+        if 'gender' in self._variables:
+            raise ValueError("Gender already set to '"+self._variables['gender']+"'")
+        
+        if value not in ['unspecified','female','male']:
+            raise ValueError("Unsupported gender '" + value + "'")
+
+        self._variables['gender'] = value
 
     @property
     def toolsDir(self):
@@ -142,6 +162,20 @@ class Analysis(object):
         else:
             self._toolsDir = self._toolsDir + '/' # normalize dirs to always end in /
         return self._toolsDir
+    
+    @property
+    def refDir(self):
+        '''
+        Retrieves the EAP_REF_DIR environment variable.  If not found, fall back to settings.
+        '''
+        if self._refDir != None:
+            return self._refDir
+        self._refDir = self.getCmdOut(self,"echo $EAP_REF_DIR | tr -d ' '",logCmd=False)
+        if self._refDir == "":
+            self._refDir = self.getDir('refDir')
+        else:
+            self._refDir = self._refDir + '/' # normalize dirs to always end in /
+        return self._refDir
     
     def setupEnv(self):
         '''
