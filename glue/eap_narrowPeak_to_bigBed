@@ -3,7 +3,7 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 3 ];
-then echo "usage v2:  eap_narrowPeak_to_bigWig target  in.narrowPeak  out.narrowPeak.bigBed"
+then echo "usage v2:  eap_narrowPeak_to_bigBed target  in.narrowPeak  out.narrowPeak.bigBed"
 echo target is ucsc database ID - hg19 or hg38 or mm10 most commonly at time of writing.
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
