@@ -3,27 +3,21 @@
 # It creates an HTML report of fastq validation info.
 #
 # Settings required: fastqcTool (or toolsDir)
+# Runs from (in path) tools dir symlink
 
 def version(step, logOut=True):
     '''Returns tool version.  Will log to stepLog unless requested not to.'''
     toolName = __name__.split('.')[-1]
-    version = step.ana.getCmdOut(step.ana.getTool(toolName) + " -version | awk '{print $2}'", \
-                                 dryRun=False,logCmd=False)
-    expected = step.ana.getSetting(toolName+'Version',version) # Not in settings: not enforced!
-    if step.ana.strict and version != expected:
-        raise Exception("Expecting "+toolName+" [version: "+expected+"], " + \
-                        "but found [version: "+version+"]")
-    if logOut:
-        step.log.out("# "+toolName+" validation [version: " + version + "]")
-    return version
+    return step.getToolVersion(toolName, logOut)
 
 def validate(step, inFastq, outDir):
     '''Validation'''
     
-    cmd = '{fastqc} {fastq} --extract -q'.format( \
-          fastqc=step.ana.getTool('fastqc'), fastq=inFastq)
+    cmd = 'fastqc {fastq} --extract -q'.format( fastq=inFastq )
 
     toolName = __name__.split('.')[-1] + " validate"
     step.toolBegins(toolName)
+    step.getToolVersion('fastqc', logOut=True)
+
     step.err = step.ana.runCmd(cmd, log=step.log) # stdout goes to file
     step.toolEnds(toolName,step.err)

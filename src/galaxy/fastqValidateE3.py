@@ -3,7 +3,7 @@
 # Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
 #
 #Usage: python(2.7) fastqValidateE3.py <inFastq> <galaxyOutHtml> <galaxyOutDir> <galaxyOutSummary> \
-#                                      <repNo> <analysisId>
+#                                      <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
@@ -11,9 +11,6 @@ from src.steps.fastqValidationStep import FastqValidationStep
 
 ###############
 testOnly = False
-#python fastqValidateE3.py /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.fastq \
-#               /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat  \
-#               /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293/files 1 test
 ###############
 
 if  sys.argv[1] == '--version':
@@ -29,11 +26,13 @@ if  sys.argv[1] == '--version':
 galaxyInputFile  = sys.argv[1]
 galaxyOutputHtml = sys.argv[2]
 galaxyOutputDir  = sys.argv[3]
+galaxyOutSummary = sys.argv[4]
+genome           = sys.argv[5]
+expType          = sys.argv[6]
+repNo            = sys.argv[7]
+anaId            = sys.argv[8]
 if not galaxyOutputDir.endswith('/'):
     galaxyOutputDir = galaxyOutputDir + '/'
-galaxyOutSummary = sys.argv[4]
-repNo            = sys.argv[5]
-anaId            = sys.argv[6]
     
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -41,7 +40,7 @@ galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])
 settingsFile = scriptPath + '/' + "settingsE3.txt"
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
-ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
+ana = GalaxyAnalysis(settingsFile, anaId, genome, expType)
 if testOnly:
     ana.dryRun = testOnly
     

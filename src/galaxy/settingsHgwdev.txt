@@ -1,0 +1,61 @@
+# ENCODE 3 pipeline/galaxy settings file: for defining important locations and settings
+encodeSettingsVersion 1.0
+
+# Setting with File and Dir suffixes:
+# suffix 'File' is a full path to a resource file of some kind
+#               Example: 'chromInfoFile' is the full path to the chromInfo file
+# suffix 'Dir' is a ful path to a directory, expected to end in '/'
+#               Example: toolsDir is the default tool bin directory
+ 
+# Location outside of galaxy to put important results.  If results are needed inside galaxy
+# for further steps, they will be symlinked into galaxy.
+# NOTE: Only needed or used if input files are located inside galaxy database.
+#       Input files from symlinked library will be considered outside of galaxy.
+# must end in '/'. or be undeclared
+#resultsDir /hive/users/tdreszer/galaxy/out/
+
+# Location outside of galaxy to put temporary, intermediate results
+# NOTE: files written to tmpDir are considered expendable as soon as the step that writes thm ends.
+# must end in '/'. Undeclared means temp files are written into galaxy execution directory
+tmpDir	/hive/users/tdreszer/galaxy/tmp/
+
+# Default location of tools.  If full {exe}Tool path not defined then the tool is looked for here
+# If toolBinPath is not defined then all tools without explicit paths defined are expected
+# to be found in the environment PATH
+toolsDir /hive/groups/encode/encode3/tools/
+
+# tools database RA file (for version look-up).
+toolDbFile /hive/groups/encode/encode3/tools/tools.ra
+
+# Default location of reference files.  
+# Beneath this the dir structure should be as: 
+# [gender.]{genome}/chrom.sizes           (e.g. female.hg19/chrom.sizes)
+# {genome}/[{gender}.]{genome}.[2bit|fa]  (e.g. hg19/female.hg19.2bit)
+# [gender.]{genome}/{tool}Data/*          (e.g. hg19/bwaData/hg19.fa.bwt)
+refDir /hive/groups/encode/encode3/encValData/
+
+# Location of assembly files for alignments
+### TODO: hg19AssemblyFile /hive/groups/encode/encode3/encValData/hg19/hg19.fa  # Not there yet! Why?
+hg19AssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+
+# Location of chromosome information for different reference genomes.
+### TODO: move to encValData ???
+hg19ChromInfoFile /hive/groups/encode/encode3/tools/chromInfo_hg19.txt  ## WAS /hive/groups/encode/encode3/tools/gcap/GCAP-master/gcap/chromInfo_hg19.txt
+
+# Miscellaneous command-line params
+fastqSampleReads 100000
+fastqSampleSeed 12345 
+
+# Force staying within galaxy dirs (no non-Galaxy targets)
+stayWithinGalaxy False
+
+## # This is just a bunch of test settings for debugging the "Settings" class in settingsE3.py
+##  testBeginSpace            Beginning spaces?
+##   # testComment1 with spaces?
+## testContinuation  test continuation first line \         
+## withSecond line here!
+## testCont2  test contuation first line \
+##            second line
+## testComment  test comment # at end
+## testComment2  test comment \# escaped
+

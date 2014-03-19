@@ -1,6 +1,7 @@
 import sys, os.path
 import commands
 from settings import Settings
+from stanzas import Stanzas
 from log import Log
 #from ra.raFile import RaFile
 
@@ -44,16 +45,20 @@ class Analysis(object):
         self._targetOutput    = {}
         self.strict           = False
         self._deliveryKeys    = None
+        self._toolsDb         = None
+        self._toolsDir        = None
+        self._refDir          = None
 
         self._settingsFile = os.path.abspath( settingsFile )
         self._settings = Settings(self._settingsFile)
+        self.setupEnv()
 
         self._dryRun          = self._settings.getBoolean('dryRun',default=False)
 
 
 
     def onRun(self, step):
-        step.writeVersions()
+        pass
         
     @property
     def dryRun(self):
@@ -89,10 +94,10 @@ class Analysis(object):
         '''
         Sets the analysis type variable.
         '''
-        if value == 'DNase' or value == 'ChIPseq':
+        if value == 'DNase' or value == 'ChIPseq' or value == 'RNAseq-long':
             self._variables['analysisType'] = value
         else:
-            raise ValueError("Analysis type must be one of 'DNase' or 'ChIPseq'")
+            raise ValueError("Analysis type must be one of 'ChIPseq', 'DNase' or 'RNAseq'")
 
     @property
     def id(self):
@@ -120,11 +125,68 @@ class Analysis(object):
         if 'genome' in self._variables:
             raise ValueError("Genome already set to '"+self._variables['genome']+"'")
         
-        if value not in ['hg19']:  # Add mm10, etc. when those are supported
+        if value not in ['hg19']:  # Add hg38, mm10, etc. when those are supported
             raise ValueError("Unsupported genome '" + value + "'")
 
         self._variables['genome'] = value
 
+    @property
+    def gender(self):
+        if 'gender' not in self._variables:
+            return 'unspecified'
+        return self._variables['gender']
+        
+    @gender.setter
+    def gender(self,value):
+        '''
+        Sets the gender variable.
+        '''
+        if 'gender' in self._variables:
+            raise ValueError("Gender already set to '"+self._variables['gender']+"'")
+        
+        if value not in ['unspecified','female','male']:
+            raise ValueError("Unsupported gender '" + value + "'")
+
+        self._variables['gender'] = value
+
+    @property
+    def toolsDir(self):
+        '''
+        Retrieves the EAP_TOOLS_DIR environment variable.  If not found, fall back to settings.
+        '''
+        if self._toolsDir != None:
+            return self._toolsDir
+        self._toolsDir = self.getCmdOut(self,"echo $EAP_TOOLS_DIR | tr -d ' '",logCmd=False)
+        if self._toolsDir == "":
+            self._toolsDir = self.getDir('toolsDir')
+        else:
+            self._toolsDir = self._toolsDir + '/' # normalize dirs to always end in /
+        return self._toolsDir
+    
+    @property
+    def refDir(self):
+        '''
+        Retrieves the EAP_REF_DIR environment variable.  If not found, fall back to settings.
+        '''
+        if self._refDir != None:
+            return self._refDir
+        self._refDir = self.getCmdOut(self,"echo $EAP_REF_DIR | tr -d ' '",logCmd=False)
+        if self._refDir == "":
+            self._refDir = self.getDir('refDir')
+        else:
+            self._refDir = self._refDir + '/' # normalize dirs to always end in /
+        return self._refDir
+    
+    def setupEnv(self):
+        '''
+        Ensures the toolsDir is in the path.
+        '''
+        path = os.environ.get('PATH')
+        if path != None and path.find(self.toolsDir) == -1:
+            newPath = self.toolsDir + os.pathsep + path
+            #os.putenv('PATH',newPath)
+            os.environ['PATH'] = newPath
+        
     def getVar(self, varName, default=None):
         '''
         Retrieves variable for the Analysis variables.
@@ -178,6 +240,32 @@ class Analysis(object):
             # is missing, then exception will already have the correct message.
             return self.getDir(toolName + 'Dir',alt='toolsDir') + toolName
         
+    def getToolData(self, toolId, name=None):
+        '''
+        Retrieves tool data as a dictionary from the toolDb.
+        '''
+        if self._toolsDb == None:
+            toolDbFile = self.getSetting('toolDbFile',None)
+            if toolDbFile == None:
+                return None
+            self._toolsDb = Stanzas(toolDbFile)
+            if self._toolsDb == None:
+                return None
+       
+        toolData = self._toolsDb.getStanza(toolId)
+
+        # If tool not found by id, see if it can be found by name
+        if toolData == None and name != None:
+            self._toolsDb.altIndex('name',unique=False)
+            self._toolsDb.setSortOrder(['name','version','toolId'])
+            stanza = None
+            while True: # With sort order, the last shall have the latest version
+                stanza = self._toolsDb.getStanzaFromAlt(name,stanza)
+                if stanza == None:
+                    break
+                toolData = stanza
+        return toolData
+
     def createAnalysisDir(self):
         '''creates analysis level directory'''
         if self.id == None:
@@ -190,7 +278,7 @@ class Analysis(object):
             os.makedirs(self._analysisDir)
         return self._analysisDir
         
-    def createTempDir(self, name):
+    def createTempDir(self, name, clean=False):
         '''
         Returns a named temporary directory, creating it if necessary
         '''
@@ -199,7 +287,10 @@ class Analysis(object):
             raise Exception(name + ' already exists as a temporary directory in this analysis')
             
         tmpdir = self.dir + name.replace(' ','_') + '/'
-        if not os.path.isdir(tmpdir):
+        if clean and os.path.isdir(tmpdir):
+            err = os.system("rm -rf "+tmpdir)
+            os.mkdir(tmpdir)
+        elif not os.path.isdir(tmpdir):
             os.mkdir(tmpdir)
         self._tmpDirs[name] = tmpdir
         return tmpdir
@@ -260,8 +351,12 @@ class Analysis(object):
         else:
             err = self.runCmd('ln -f ' +fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
             
-        if err != 0:  # If link won't do, then we need to copy. NOTE: use -r because might be dir
-            err = self.runCmd('cp -rf '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
+        if err != 0:  
+            if os.path.isdir(fromLoc): # If dir then remove old and then copy contents recursively
+                self.runCmd('rm -rf '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
+                err = self.runCmd('cp -rf '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
+            else:
+                err = self.runCmd('cp -f '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
         
         if err != 0:
             raise Exception("Unable to ln or cp '" + fromLoc + "' to '" + toLoc + "'")
@@ -386,10 +481,11 @@ class Analysis(object):
             self.log.out('') # skip a lineline
             self.runCmd('ls -l ' + step.dir, dryRun=False)
             self.log.out('')
+        retVal = step.err
         self.removeStep(step)  # Do we want to do this?   
-        if step.err == 0:
-            step.err = 1    # Must fail!
-        return step.err
+        if retVal == 0:
+            retVal = 1    # Must fail!
+        return retVal
         
     def runCmd(self, cmd, logOut=True, logErr=True, dryRun=None, log=None):
         '''
@@ -443,7 +539,7 @@ class Analysis(object):
 ############ command line testing ############
 if __name__ == '__main__':
     '''
-    Command-line testing
+    Command-line testing - WARNING: out of date
     '''
     print "======== begin '" + sys.argv[0] + "' test ========"
     e3 = Analysis('/hive/users/tdreszer/galaxy/uniformAnalysis/src/test/settingsE3.txt') 

@@ -1,17 +1,16 @@
 #!/usr/bin/env python2.7
 # bamEvaluateStep.py module holds BamEvaluateStep class which descends from LogicalStep class.
-# It takes a sample of a bam and characterizes the library completity
+# It takes a sample of a bam and characterizes the library complexity
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
-#
-# Outputs: 1 target bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
-#          1 target histogram  file, keyed as: 'metricRep'     + replicate +    '.txt'
-#          1 target Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
-#          1 interim json      file, keyed as: 'bamEvaluateRep' + replicate +  '.json'
+# Outputs: 1 interim bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
+#          1 interim Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
+#          1 target json        file, keyed as: 'bamEvaluateRep' + replicate +   '.json'
 
 import os
 from src.logicalStep import LogicalStep
-from src.wrappers import samtools, bedtools, picardTools, census, phantomTools
+from src.settings import Settings
+from src.wrappers import samtools, bedtools, phantomTools, ucscUtils
 
 class BamEvaluateStep(LogicalStep):
 
@@ -27,62 +26,77 @@ class BamEvaluateStep(LogicalStep):
         if raFile != None:
             raFile.add('samtools', samtools.version(self))
             raFile.add('bedtools', bedtools.version(self))
-            raFile.add('picardTools', picardTools.version(self))
-            raFile.add('census', census.version(self))
             raFile.add('phantomTools', phantomTools.version(self))
+            raFile.add('ucscUtils', ucscUtils.version(self))
         else:
             samtools.version(self)
             bedtools.version(self)
-            picardTools.version(self)
-            census.version(self)
             phantomTools.version(self)
+            ucscUtils.version(self)
 
-    def onRun(self):      
+    def onRun(self):
         # Inputs:
         bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        metricHist = self.declareTargetFile( 'metricRep'    + self.replicate + '.txt')
-        strandCorr = self.declareTargetFile( 'strandCorrRep'+ self.replicate + '.txt')
-<<<<<<< HEAD
-        
-        # BUG: this should not be a garbage file, however picardTools fragSize is failing on the single-end input
-        fragSizeTxt = self.declareGarbageFile( 'fragSize'+ self.replicate + '.txt')
-        
-        fragSizePdf = self.declareGarbageFile( 'fragSize'+ self.replicate + '.pdf')
-        # because garbage bam file name is used in output, it needs a meaningful name:
-        fileName = os.path.split( bam )[1]
-        root = os.path.splitext( fileName )[0]
-        bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '5M.bam', \
-                                             name=root + '_sample.bam')
-=======
-        fragSizeTxt = self.declareTargetFile( 'fragSize'+ self.replicate + '.txt')
-        fragSizePdf = self.declareTargetFile( 'fragSize'+ self.replicate + '.pdf')
+        strandCorr = self.declareInterimFile( 'strandCorrRep'+ self.replicate + '.txt')
         bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
->>>>>>> 3b835f9b1a57dad5b2eea7a52ad15068ceedd6a5
-        
-        bamSize = samtools.bamSize(self,bam)
-         
-        if self.sampleSize < bamSize:
-            bamUnsorted  = self.declareGarbageFile('bamUnsortedSample.bam')
-            picardTools.downSample(self,(self.sampleSize/float(bamSize)),bam,bamUnsorted)
-        else:
-            bamUnsorted = bam
-            
-        picardTools.sortBam(self, bamUnsorted, bamSample)
-        census.metrics(self, bamSample, metricHist)
 
-        self.json['redundancy'] = {}
-        if not self.ana.dryRun:
-            with open(metricHist, 'r') as metricsFile:
-                lines = metricsFile.readlines()
-                self.json['redundancy']['uniqueReads'] = lines[4].split(':')[-1].split()[0]
-                self.json['redundancy']['totalReads'] = lines[3].split()[-1]
-        else:
-            self.json['redundancy']['uniqueReads'] = 0
-            self.json['redundancy']['totalReads'] = 0
+        # Do UCSCs bam stats first  
+        statsRa  = self.declareGarbageFile('stats.ra')
+        tagAlignSample  = self.declareGarbageFile('sample.tagAlign')
+        ucscUtils.edwBamStats(self, bam, statsRa, tagAlignSample, self.sampleSize)
         
-        phantomTools.strandCorr(self,bamSample,strandCorr)
+        # json summary:
+        if not self.ana.dryRun:
+            stats = Settings(statsRa)
+            if stats.getBoolean('isPaired'):
+                self.ana.readType = "paired"
+                self.json['isPaired'] = True 
+            else:
+                self.ana.readType = "single"
+                self.json['isPaired'] = False 
+            self.json['isSortedByTarget' ] = stats.getBoolean('isSortedByTarget' )
+            self.json['readCount'        ] = long( stats.get( 'readCount'        ))
+            self.json['readBaseCount'    ] = long( stats.get( 'readBaseCount'    ))
+            self.json['mappedCount'      ] = long( stats.get( 'mappedCount'      ))
+            self.json['uniqueMappedCount'] = long( stats.get( 'uniqueMappedCount'))
+            self.json['readSizeMean'     ] = int(  stats.get( 'readSizeMean'     ))
+            self.json['readSizeStd'      ] = int(  stats.get( 'readSizeStd'      ))
+            self.json['readSizeMin'      ] = int(  stats.get( 'readSizeMin'      ))
+            self.json['readSizeMax'      ] = int(  stats.get( 'readSizeMax'      ))
+            self.json['u4mReadCount'     ] = long( stats.get( 'u4mReadCount'     ))
+            self.json['u4mUniquePos'     ] = long( stats.get( 'u4mUniquePos'     ))
+            self.json['u4mUniqueRatio'   ] = float(stats.get( 'u4mUniqueRatio'   ))
+            self.json['targetSeqCount'   ] = int(  stats.get( 'targetSeqCount'   ))
+            self.json['targetBaseCount'  ] = long( stats.get( 'targetBaseCount'  ))
+        else:
+            self.ana.readType = "single"
+            self.json['isPaired'         ] = False
+            self.json['isSortedByTarget' ] = True
+            self.json['readCount'        ] = 0
+            self.json['readBaseCount'    ] = 0
+            self.json['mappedCount'      ] = 0
+            self.json['uniqueMappedCount'] = 0
+            self.json['readSizeMean'     ] = 50
+            self.json['readSizeStd'      ] = 0
+            self.json['readSizeMin'      ] = 0
+            self.json['readSizeMax'      ] = 0
+            self.json['u4mReadCount'     ] = 0
+            self.json['u4mUniquePos'     ] = 0
+            self.json['u4mUniqueRatio'   ] = 0
+            self.json['targetSeqCount'   ] = 0
+            self.json['targetBaseCount'  ] = 0
+        
+        # Strand correlation 
+        phantomTools.strandCorr(self,tagAlignSample,strandCorr)
+        
+        if stats.getBoolean('isSortedByTarget' ):
+            bedtools.bedToBam(self,tagAlignSample,bamSample)
+        else:
+            bamUnsorted  = self.declareGarbageFile('sampleUnsorted.bam')
+            bedtools.bedToBam(self,tagAlignSample,bamUnsorted)
+            samtools.sort(self,bamUnsorted,bamSample)
         
         self.json['strandCorrelation'] = {}
         if not self.ana.dryRun:
@@ -96,8 +110,5 @@ class BamEvaluateStep(LogicalStep):
             self.json['strandCorrelation']['Frag'] = 0
             self.json['strandCorrelation']['RSC'] = 0
             self.json['strandCorrelation']['NSC'] = 0
-        self.createAndWriteJsonFile()
 
-        picardTools.fragmentSize(self, bamSample, fragSizeTxt, fragSizePdf)
-        
-        
+        self.createAndWriteJsonFile( 'bamEvaluateRep'+ self.replicate, target=True )

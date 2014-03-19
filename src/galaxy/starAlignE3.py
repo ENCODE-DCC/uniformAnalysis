@@ -1,15 +1,15 @@
 #!/usr/bin/env python2.7
-# bwaAlignE3.py ENCODE3 galaxy pipeline script for fastq alignment via bwa
+# starAlignE3.py ENCODE3 galaxy pipeline script for fastq alignment via STAR
 # Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
 #
-#Usage: python(2.7) bwaAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
+#Usage: python(2.7) starAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
 #                               [<inFastqR2> <inFastqEvalR2>] <galaxyOutBam> \
-#                               <gender> <genome> <expType> <repNo> <analysisId>
+#                               <spikeIn> <gender> <genome> <expType> <repNo> <analysisId>
 
-import os, sys, string
+import os, sys
 import json
 from src.galaxyAnalysis import GalaxyAnalysis
-from src.steps.bwaAlignmentStep import BwaAlignmentStep
+from src.steps.starAlignmentStep import StarAlignmentStep
 
 ###############
 testOnly = False
@@ -20,7 +20,7 @@ if  sys.argv[1] == '--version':
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
         ana.readType = 'paired'
-        BwaAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        StarAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)
@@ -30,20 +30,22 @@ pairedOrUnpaired     = sys.argv[1]
 galaxyInputFile      = sys.argv[2]
 galaxyEvalFile       = sys.argv[3]    # Look up tagLength and encoding
 galaxyOutputFile     = sys.argv[4]
-gender               = sys.argv[5]
-genome               = sys.argv[6]
-expType              = sys.argv[7]
-repNo                = sys.argv[8]
-anaId                = sys.argv[9]
+spikeIn              = sys.argv[5]
+gender               = sys.argv[6]
+genome               = sys.argv[7]
+expType              = sys.argv[8]
+repNo                = sys.argv[9]
+anaId                = sys.argv[10]
 if pairedOrUnpaired == "paired":
     galaxyInputFile2 = sys.argv[4]
     galaxyEvalFile2  = sys.argv[5]
     galaxyOutputFile = sys.argv[6]
-    gender           = sys.argv[7]
-    genome           = sys.argv[8]
-    expType          = sys.argv[9]
-    repNo            = sys.argv[10]
-    anaId            = sys.argv[11]
+    spikeIn          = sys.argv[7]
+    gender           = sys.argv[8]
+    genome           = sys.argv[9]
+    expType          = sys.argv[10]
+    repNo            = sys.argv[11]
+    anaId            = sys.argv[12]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -52,7 +54,7 @@ settingsFile = scriptPath + '/' + "settingsE3.txt"
 
 # read the fastq Evaluation json for tag length, encoding
 encoding = 'sanger'
-tagLength = 50
+tagLength = 100
 try:
     fp = open(galaxyEvalFile, 'r')
     valJson = json.load(fp)
@@ -91,14 +93,14 @@ ana.readType = pairedOrUnpaired
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 # Outputs: a single bam target keyed as:
-#          'alignmentRep'+replicate+'.bam'
+#          'alignmentStarRep'+replicate+'.bam'
 
-bamFileKey  = 'alignmentRep'+repNo + '.bam' # Used to tie outputs togther
+bamFileKey  = 'alignmentStarRep'+repNo + '.bam' # Used to tie outputs together
     
 # Establish Inputs for galaxy and nonGalaxy alike
 if pairedOrUnpaired == "paired":
-    fastqRd1Key='tagsRd1Rep'+repNo + '.fastq' # Used to tie inputs togther
-    fastqRd2Key='tagsRd2Rep'+repNo + '.fastq' # Used to tie inputs togther
+    fastqRd1Key='tagsRd1Rep'+repNo + '.fastq' # Used to tie inputs together
+    fastqRd2Key='tagsRd2Rep'+repNo + '.fastq' # Used to tie inputs together
     ana.registerFile(fastqRd1Key,'galaxyInput', galaxyInputFile)
     ana.registerFile(fastqRd2Key,'galaxyInput', galaxyInputFile2)
     nonGalaxyInput  = ana.nonGalaxyInput(fastqRd1Key)  # Registers and returns the outside location
@@ -106,7 +108,7 @@ if pairedOrUnpaired == "paired":
     # outputs:
     ana.registerFile(bamFileKey,'galaxyOutput',galaxyOutputFile)
     resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-    ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_%s', ext='bam', \
+    ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_%s_star', ext='bam', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
 else:
     fastqKey='tagsRep'+repNo + '.fastq' # Used to tie inputs togther
@@ -115,8 +117,8 @@ else:
     # outputs:
     ana.registerFile(bamFileKey,'galaxyOutput',galaxyOutputFile)
     resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-    ana.createOutFile(bamFileKey,'nonGalaxyOutput',ext='bam' )
+    ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_star',ext='bam' )
 
 # Establish step and run it:
-step = BwaAlignmentStep(ana,repNo,encoding)
+step = StarAlignmentStep(ana,repNo, spikeIn, encoding, tagLength)
 sys.exit( step.run() )

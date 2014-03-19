@@ -1,15 +1,15 @@
-<tool id="bwaAlignE3" name="EAP alignment by bwa" version="1.0">
-    <description>(fastQ to bam)</description>
+<tool id="macsE3" name="EAP peak calling by MACS" version="1.0">
+    <description> (bam to bigBed and bigWig)</description>
     <command interpreter="python">
-        bwaAlignE3.py $runType.singlePaired
-        #if $runType.singlePaired == "single":
-             $fastqInput $fastqEval $bamUnpaired
+        macsE3.py $bamInput $runType.expType
+        #if $runType.expType == "DNase":
+             $bamInput jsonBamEval $dnasePeaksOutput $dnaseDensityOutput 
         #else
-             $fastqInput $fastqEval $fastqInput2 $fastqEval2 $bamPaired
+             $bamInput jsonBamEval $bamControl jsonControlEval $chipPeaksOutput $chipDensityOutput
         #end if
-        $gender $genome $expType $repNo ${name}U${__user_id__}
+         $genome $runType.expType $repNo ${name}U${__user_id__}
     </command>
-    <version_command>python ../../../../tools/encode/bwaAlignE3.py --version</version_command>
+    <version_command>python ../../../../tools/encode/macsE3.py --version</version_command>
     <stdio>
         <exit_code range="1:" level="fatal" description="Fatal error" />
         <regex match=".*" source="stderr" level="log" />
@@ -18,30 +18,23 @@
         <param name="genome" type="select" label="Genome Assembly">
             <option value="hg19" selected="true">GRCh37/hg19 Human reference</option>
         </param>
-        <param name="gender" type="select" label="Gender">
-            <option value="unspecified" selected="true">Unspecified/NA</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-        </param>
+        <conditional name="runType">
         <param name="expType" type="select" label="Experiment Type">
-            <option value="DNase" selected="true">DNase</option>
+            <option value="ChIPseq">ChIP-seq</option>
+            <option value="DNase" >DNase</option>
         </param>
-    <conditional name="runType">
-        <param name="singlePaired" type="select" label="Single or Paired Reads">
-    	    <option value="single" selected="true">Unpaired</option>
-    	    <option value="paired">Paired</option>
-        </param>
-        <when value="single">
-            <param name="fastqInput" type="data" format="fastq" label="Unpaired fastQ file" />
-            <param name="fastqEval" type="data" format="txt" label="fastq Evaluation (unpaired)" />
+        <when value="DNase">
+            <param name="bamInput" type="data" label="Alignments file (bam)" format="bam" />
+            <param name="bamEval" type="data" label="Alignments Evaluation file (json)"
+                   format="txt" />
         </when>
-        <when value="paired">
-            <param name="fastqInput" type="data" format="fastq" 
-                   label="Paired read 1 fastQ file" />
-            <param name="fastqEval" type="data" format="txt" label="fastq Evaluation (read 1)" />
-            <param name="fastqInput2" type="data" format="fastq" 
-                   label="Paired read 2 fastQ file" />
-            <param name="fastqEval2" type="data" format="txt" label="fastq Evaluation (read 2)" />
+        <when value="ChIPseq">
+            <param name="bamInput" type="data" label="Alignments file (bam)" format="bam" />
+            <param name="jsonBamEval" type="data" label="Alignments Evaluation file (json)" 
+                   format="txt" />
+            <param name="bamControl" type="data" label="Control file (bam)" format="bam" />
+            <param name="jsonControlEval" type="data" label="Control Evaluation file (json)"
+                   format="txt" />
         </when>
     </conditional>
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
@@ -60,48 +53,62 @@
               label="${name}Rep${repNo} bam alignments (paired-end)">
             <filter>(runType['singlePaired'] == 'paired')</filter>
         </data>
+    
+        <data name="chipPeaksOutput" label="${name}Rep${repNo} ChIP-seq Called Peaks"
+              format="bigBed" />
+        <data name="chipDensityOutput" label="${name}Rep${repNo} ChIP-seq Density Signal"
+              format="bigWig" />
+        <data name="dnasePeaksOutput" label="${name}Rep${repNo} DNase Called Peaks"
+              format="bigBed" />
+        <data name="dnaseDensityOutput" label="${name}Rep${repNo} DNase Density Signal"
+              format="bigWig" />
     </outputs>
     <help>
+.. class:: warningmark
+
+   Need to make dependency on "bam evaluation" output
+   
 .. class:: infomark
 
-   Aligns high-throughput-sequencing reads to the reference genome using 'bwa'. 
+   Calls peaks of elevated alignment from a bam file on the reference genome.  
    An *ENCODE3 Analysis Pipeline* involves multiple steps and dataset replicates, of which this
    is one. Use *EAP workflows* to ensure that all analysis steps are performed in the proper
    sequence.
 
 **Inputs:**
-    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
-    Additionally, alignment steps should may also specify a **Gender**.  Currently only
-    the GRCh37/hg19 reference genome is supported. Note that some steps are only appropriate
+    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  Currently
+    only the GRCh37/hg19 reference is supported.  Note that some steps are only appropriate
     for some experiment types.
     
-    Enter **Single or Paired reads** to declare whether the reads are contained in a single 
-    'unpaired' reads fastQ or a pair of fastQs for paired reads.
-    
-    The **Unpaired fastQ** (or **Paired read 1** and **Paired read 2** fastQ files) contains the 
-    high-throughput sequencing reads upon which which further analysis will be based.  The fastQ 
-    files are expected to be contained in a Galaxy library or else uploaded by the user.
+    The **Alignments file** in 'bam' format is expected to be the generated output from a previous 
+    *EAP fastQ alignment* step.  
 
-    The **fastq Evaluation** (**unpaired**, or **read 1** and **read 2**) are required to by 
-    this analysis step.  This evaluation file is in json format generated from a previous 
-    *EAP fastQ validation* step.
-    
+    The **Alignments Evaluation** file in json format is expected to be the generated output from
+    a previous *EAP bam evaluation* step.  
+
+    The **Experiment Type** must be either 'ChIP-seq' or DNase.  If ChIP-seq, **Control Alignments**
+    and a **Control Evaluation** files must also be provided.  DNase experiments do not require a 
+    control dataset.
+
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
     replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results. 
-    
+    results.  Merged replicates should have a 0 (zero) replicate number. 
+
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 
     taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
     that results from one analyis are over-written by another.  Multiple histories for a single user 
     can share the same named analysis, but two separate users cannot.
-    
+
 **Outputs:**
-    This step is expected to produce a single file: **bam alignments** produced by the 'bwa' 
-    package and samtools.
-
+    This step is expected to produce three files:
+    
+    - **Hotspots** or broad regions of high alignment.
+    - **Called Peaks** or narrow regions of extremely high alignment threshholded at FDR 0.01.
+    - **Density Signal** or the signal of alignment density used to call hotspots and peaks.
+    
     The **log** of this single step can be seen under *view details* stdout.
-
+    
     If the outputs are delivered to a location external to galaxy, the **Analysis log** covering 
     all steps of the analysis will be delivered to the same location.  Otherwise the log may be
     found in the directory pointed to by 'tmpDir' as defined in the settings file.
@@ -119,6 +126,5 @@
 
 .. |encPng| image:: http://genome.ucsc.edu/images/ENCODE_scaleup_logo.png
    :width: 100
-
     </help>
 </tool>

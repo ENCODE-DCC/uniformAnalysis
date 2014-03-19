@@ -79,15 +79,16 @@ class LogicalStep(Target):
         self.declareLogFile() # Ensures that the logical step dir and log exist
         self.log.out("--- Beginning '" + self._stepName + "' [version: "+self.version+"] [" + 
                      datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
+        self._prevDir = os.getcwd()
+        os.chdir(self.dir)
+        self.log.out("> cd "+self.dir)
         try:
             self.ana.onRun(self)
             self.onRun() #now this calls child onRun directly
         except StepError as e:
-            self.onFail(e)
-            return self._err
+            return self.onFail(e)
         except Exception as e:
-            self.onFail(e, logTrace=True)
-            return self._err
+            return self.onFail(e, logTrace=True)
         self.success()  # success() must be outside of try or else we loose any exeptions
         return 0
         
@@ -105,6 +106,8 @@ class LogicalStep(Target):
         for fileName in self.metaFiles:
             self.metaFiles[fileName].write()
         self._err = 0 # by definition
+        os.chdir(self._prevDir)
+        #self.log.out("> cd "+self._prevDir)
         self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
         self.ana.onSucceed(self)
         
@@ -118,11 +121,18 @@ class LogicalStep(Target):
             self.log.out(traceback.format_exc())
         if self._err == 0:
             self._err = 1  # Make sure this error is noticed!
-        self.ana.onFail(self)
+        return self.ana.onFail(self)
 
     def createDir(self):
         '''Creates logical step directory'''
-        self._dir = self.ana.createTempDir(self.name)
+        self._dir = self.ana.createTempDir(self.name, clean=True)
+        
+    def fileNameOrFullPath(self, filePath):
+        '''Returns just the file name or the full path as appropriate'''
+        if filePath.endswith('/') or not filePath.startswith(self.dir):
+            return filePath
+        else:   # Since file is in step dir, and so is execution, just return name
+            return os.path.split(filePath)[1]
        
     def declareTargetFile(self, key, name=None, ext=''):
         '''
@@ -130,7 +140,7 @@ class LogicalStep(Target):
         fully qualified filename in the local temp dir
         '''
         self.targetFiles[key] = self.makeFilePath(key, name, ext)
-        return self.targetFiles[key]
+        return self.fileNameOrFullPath(self.targetFiles[key])
         
     def declareInterimFile(self, key, name=None, ext=''):
         '''
@@ -138,7 +148,8 @@ class LogicalStep(Target):
         fully qualified filename in the local temp dir
         '''
         self.interimFiles[key] = self.makeFilePath(key, name, ext)
-        return self.interimFiles[key]
+        return self.fileNameOrFullPath(self.interimFiles[key])
+
         
     def declareGarbageFile(self, key, name=None, ext=''):
         '''
@@ -146,7 +157,7 @@ class LogicalStep(Target):
         qualified filename in the local temp dir
         '''
         self._garbageFiles[key] = self.makeFilePath(key, name, ext)
-        return self._garbageFiles[key]
+        return self.fileNameOrFullPath(self._garbageFiles[key])
         
     def declareLogFile(self, name=None):
         '''
@@ -169,8 +180,8 @@ class LogicalStep(Target):
         if path.endswith('/'):
             self.ana.runCmd('mkdir -p '+path,logOut=show,logErr=show,dryRun=False,log=self.log)
         else:
-            dir = os.path.split( path )[0]
-            self.ana.runCmd('mkdir -p '+dir, logOut=show,logErr=show,dryRun=False,log=self.log)
+            dirt = os.path.split( path )[0]
+            self.ana.runCmd('mkdir -p '+dirt,logOut=show,logErr=show,dryRun=False,log=self.log)
             self.ana.runCmd('touch -a '+path,logOut=show,logErr=show,dryRun=False,log=self.log)
         
     def mockUpResults(self):
@@ -310,13 +321,71 @@ class LogicalStep(Target):
         for key in sorted( self.targetFiles.keys() ):
             title = "targetFile[%s]:" % (key)
             log.out(title.ljust(tab) + self.targetFiles[key])
-    
 
+    def getToolVersion(self, executable, logOut=True):
+        '''
+        Retrieves tool version, but if there is no success, then the version is the md5sum.
+        '''
+        if executable.find('/') == -1: # Not a path, then look for this on the path!
+            toolId = self.ana.getCmdOut("md5sum `which "+executable+"` | awk '{print $1}'", \
+                                        dryRun=False,logCmd=False)
+            toolName = executable
+        else:
+            toolId = self.ana.getCmdOut("md5sum "+executable+" | awk '{print $1}'", \
+                                        dryRun=False,logCmd=False)
+            toolName = os.path.split( executable )[1]
+
+        toolData = self.ana.getToolData(toolId, toolName)
+        if toolData == None:
+            version = 'md5sum:'+toolId  # when all else fails
+            if logOut:
+                self.log.out("# tool: "+toolName+" [version: " + version + "]")
+            return version
+
+        try:
+            version = toolData['version']
+        except:
+            try:
+                version = toolData['packageVersion']
+            except:
+                raise Exception("Tool '"+executable+"' was found in tool database, " + \
+                                "but 'version' was not!")
+
+        # Try to get actual version and compare the two
+        if 'versionCommand' in toolData:
+            actual = self.ana.getCmdOut(toolData['versionCommand'],dryRun=False,logCmd=False)
+            if version != actual:
+                if self.ana.strict:
+                    raise Exception("Expecting "+executable+" [version: "+version+"], " + \
+                                    "but found [version: "+actual+"]")
+                version = actual # Use actual rather than expected.
+
+        # If the toolData was found by name, then the tooldIds may not match, so:
+        if toolId != toolData['toolId']:
+            version += ' (md5sum:'+toolId+')' 
+
+        # If there is a package name or version that differs, then use it
+        intro = "tool: "
+        if 'packageName' in toolData and 'packageVersion' in toolData:
+            package = toolData['packageName']
+            packageVersion = toolData['packageVersion']
+            if packageVersion != version or package.lower() != toolName.lower():
+                toolName = package+'('+toolName+')' 
+                intro = "package(tool): "
+                if packageVersion != version:
+                    version = packageVersion+'('+version+')' 
+            
+        if logOut:
+            self.log.out("# "+intro+toolName+" [version: " + version + "]")
+
+        return version
+            
+        
 
 ############ command line testing ############
 if __name__ == '__main__':
     '''
-    Command-line testing
+    Command-line testing - WARNING: out of date
     '''
     print "======== begin '" + sys.argv[0] + "' test ========"
     e3 = Analysis('/hive/users/tdreszer/galaxy/galaxy-dist/tools/encode/settingsE3.txt',

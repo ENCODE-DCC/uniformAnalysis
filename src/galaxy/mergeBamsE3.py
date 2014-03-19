@@ -3,7 +3,7 @@
 # Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
 #
 #  Usage: python(2.7) mergeBamsE3,py <inputBamA> <repA> <inputBamB> <repB> <galaxyOutMergedBam> \
-#                                    <analysisId>
+#                                    <genome> <expType> <analysisId>
 
 # TODO: Do we really need to track replicate numbers?
 
@@ -13,9 +13,6 @@ from src.steps.mergeBamStep import MergeBamStep
 
 ###############
 testOnly = False
-#python bamValidateE3.py /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep1.bam 1 \
-#                        /hive/users/tdreszer/galaxy/data/dnase/UwDnaseAg04449RawDataRep2.bam 2 \
-#                  /hive/users/tdreszer/galaxy/galaxy-dist/database/files/000/dataset_293.dat test
 ###############
 
 if  sys.argv[1] == '--version':
@@ -32,7 +29,9 @@ repA               = sys.argv[2]
 galaxyInputBamB    = sys.argv[3]
 repB               = sys.argv[4]
 galaxyOutMergedBam = sys.argv[5]
-anaId              = sys.argv[6]
+genome             = sys.argv[6]
+expType            = sys.argv[7]
+anaId              = sys.argv[8]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -40,7 +39,7 @@ galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])
 settingsFile = scriptPath + '/' + "settingsE3.txt"
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
-ana = GalaxyAnalysis(settingsFile, anaId, 'hg19')
+ana = GalaxyAnalysis(settingsFile, anaId, genome, expType)
 if testOnly:
     ana.dryRun = testOnly
 
