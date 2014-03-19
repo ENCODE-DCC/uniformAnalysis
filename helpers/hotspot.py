@@ -25,7 +25,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
     
     # ensure all inputs are valid directories/files/arguments
-    if not os.path.isdir(args.hotspotLocation):
+    if not os.path.exists(args.hotspotLocation):
         raise ValueError('hotspotLocation: %s is not a valid directory' % args.hotspotLocation)
     if not os.path.isfile(args.inputBam):
         raise ValueError('inputBam: %s is not a valid file' % args.inputBam)
