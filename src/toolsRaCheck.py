@@ -1,17 +1,12 @@
 #!/usr/bin/env python2.7
-# stanzas.py module for reading simple (non-hierarchical) RA style files.  Used by ENCODE3.
-#            File should contain "stanzas" or sets of settings delimited by at least one blank 
-#            line.  Each setting consists of a single line beginning with a key word that is unique
-#            to the stanza and the next non-space character starts the value of that setting.
-#            Each stanza is expected to begin with a setting that is the stanza key.  All stanzas
-#            in a file must begin with the same key word but have a key value that is unique
-#            for the file.
-#            After reading a RA stanzas file, each stanza can be retrieved as a 'dict' object
-#            via the unique primary key, or optionally a secondarily declared key which may not
-#            be unique. 
-#            '#' based comments are supported anywhere in the file or at the end of a setting line.
-#            Use '\#' to escape '#'.   Continuation lines (with '\') ARE supported. 
-#            Leading whitespace on continued line is stripped.
+# toolsRaCheck.py v1 module for validating the tools.ra: ENCODE Analysis Pipeline tools DB file.
+#            The file is a simple RA file (as read by Stanzas.py).  Several settings that can
+#            be verified are: md5sum, version, archive file and size of archive, and installed dir.
+#            Not every tool has all aof these settings defined and some may not be validatable.
+#            The md5sum can also be fixed, if it is in error.
+#     Usage: toolsRaCheck.py [--fixMd5sum] [{tools.ra}]
+#            --fixMd5sum  Updates md5sums if it is able to
+#            {tools.ra}   File to check.  Default ${EAP_TOOLS_DIR}/tools.ra
 
 # imports needed for Settings class:
 import sys, os.path, commands
@@ -52,8 +47,10 @@ def replaceLine(filePath,oldLine,newLine):
 
 if __name__ == '__main__':
     """
+    toolsRaCheck.py v1 - Checks the tools.ra file for consistency.
     Usage: toolsRaCheck.py [--fixMd5sum] [{tools.ra}]
-           Checks the tools.ra file for consistency
+           --fixMd5sum  Updates md5sums if it is able to
+           {tools.ra}   File to check.  Default ${EAP_TOOLS_DIR}/tools.ra
     """
 
     # make sure toolsDir is on path    
