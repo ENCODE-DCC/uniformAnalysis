@@ -96,7 +96,11 @@ class Stanzas(Settings):
                 if primaryLabel != stanzaLabel:
                     raise Exception("RA file", self._filename, "stanzas must match on '"+ \
                                     primaryLabel+"', but found '"+stanzaLabel+"'.")
-            self[stanzaKey] = stanza
+            try:
+                prevStanza = self[stanzaKey]
+                raise Exception("RA file", self._filename, "has duplicate key '"+stanzaKey+"'.")
+            except:
+                self[stanzaKey] = stanza
         
         fileH.close()
         return primaryLabel
@@ -270,8 +274,8 @@ class Stanzas(Settings):
         '''
         self.setSortOrder(settingOrder)
         if keys == None:
-            keys = stanzas.keys()
-        keys.sort(key=stanzas.altCmpKey)
+            keys = self.keys()
+        keys.sort(key=self.altCmpKey)
         return keys
     
     def stanzaPrint(self, stanza, settingOrder=None):
@@ -283,7 +287,6 @@ class Stanzas(Settings):
         for setting in stanza.keys():
             if setting not in settingOrder:
                 print setting,stanza[setting]
-            
 
 
 ############ command line testing ############
@@ -314,7 +317,7 @@ if __name__ == '__main__':
         stanza = stanzas[key]
         print "Tool",stanza['name'],stanzas.primaryLabel()+':'+stanzas.getKeyFromStanza(stanza)
     print '---------------\n'
-
+    
     print '---------------\nOrdered List:\n'
     keys = stanzas.sortedKeys([altLabel,'name','version'])
     stanzas.setSortOrder([stanzas.primaryLabel(),stanzas.altLabel(),'name','version'])
@@ -323,5 +326,3 @@ if __name__ == '__main__':
         print ' '
         stanzas.stanzaPrint(stanza,[stanzas.primaryLabel(),altLabel,'name','version'])
     print '---------------\n'
-    
-
