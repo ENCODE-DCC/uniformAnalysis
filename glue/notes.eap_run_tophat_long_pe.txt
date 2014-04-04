@@ -1,0 +1,112 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 5 ]; then 
+echo "usage v1: eap_run_tophat_long_pe tophatRefDir spikeInSet read1.fq read2.fq out.bam"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Copy reads to local tmp file since will be making several passes
+cp $3 tmp1.fq.gz
+cp $4 tmp2.fq.gz
+
+# Gravelely lab:
+#tophat --no-discordant --no-mixed --transcriptome-index gencode.v16.female.spikeins   -p 16
+#       --min-intron-length 70
+#       --library-type fr-firststrand -a 6 -m 2 -g 20 -n 2 -z0 
+#       -o $output_directory female.spikeins.hg19 Read1.fastq.gz Read2.fastq.gz
+# Wold lab:
+#tophat --no-discordant --no-mixed --transcriptome-index gencode.v16.annotation.female -p 8
+#       --min-intron-length 20 --max-intron-length 1000000
+#       --bowtie1 -p 8 --read-edit-dist 4 --read-mismatches 4
+#       --GTF gencode.v16.annotation.female.gtf 
+
+# Differences to resolve:  Gravely          Wold                Should be
+# --min-intron-length      70               20 (default         20
+# --max-intron-length      500000 (default) 1000000             1000000
+# -a/--min-anchor          6                8  (default)
+# -m/--splice-mismatches   2                0  (default)
+# --library-type           fr-firststrand                                   (sequencer specific???)
+# -n                       2
+# -N/--read-mismatches     2 (default)      4                   4
+# -z/--zpacker             -z0                                  -z0
+# --read-edit-dist         2 (default)      4                   4
+# --bowtie1                                 --bowtie1                        (color-space reads???)
+# --GTF                                     gencode.v16.annotation.female.gtf 
+
+## --keep-tmp # Should consider this for debugging
+## --resume tophat_out
+## --b2-seed # ? should set Random number seed for reproducibility  Can this be set??
+
+
+# Important params?
+# -r/--mate-inner-dist  default 50  This is the expected (mean) inner distance between mate pairs. 
+# --mate-std-dev                20  The standard deviation for the distribution on inner distances between mate pairs.
+# --max-insertion-length        3   The maximum insertion length. The default is 3.
+# --max-deletion-length         3   The maximum deletion length. The default is 3. 
+# --report-secondary-alignments     By default TopHat reports best or primary alignments based on alignment scores (AS). Use this option if you want to output additional or secondary alignments
+# --microexon-search                With this option, the pipeline will attempt to find alignments incident to micro-exons. Works only for reads 50bp or longer. 
+
+# Must build annotation index once first using -GTF and --transcriptome-index, then mapping runs can just use --transcriptome-index:
+#tophat --transcriptome-index ${EAP_REF_DIR}/female.hg19/tophatData/annotation/gencode.v16
+
+# Using $1 as location of genome indexes, $2 as subdir containing thespikein index, align reads
+### Temporary use of if while developing:
+if [ $2 == 'ERCC' ]; then
+    tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
+           --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 --library-type fr-firststrand \
+           --transcriptome-index $1annotation/gencode.v19 \
+       --min-anchor-length 8 --splice-mismatches 0 --read-gap-length 2 \
+       --mate-inner-dist 50 --mate-std-dev 20 --segment-length 25 \
+       --b2-L 20 --b2-N 0 --b2-D 15 --b2-R 2 \
+           $1$2 tmp1.fq.gz tmp2.fq.gz
+else
+    tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
+           --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 \
+           --transcriptome-index $1annotation/gencode.v19 \
+       --min-anchor-length 8 --splice-mismatches 0 --read-gap-length 2 \
+       --mate-inner-dist 50 --mate-std-dev 20 --segment-length 25 \
+       --b2-L 20 --b2-N 0 --b2-D 15 --b2-R 2 \
+           $1$2 tmp1.fq.gz tmp2.fq.gz
+fi
+
+# Expect:
+# tophat_out/accepted_hits.bam
+# tophat_out/junctions.bed
+# insertions.bed # - chromLeft refers to the last genomic base before the insertion.
+# deletions.bed  # - chromLeft refers to the first genomic base of the deletion.
+
+# sort
+samtools view -bu tophat_out/accepted_hits.bam | samtools sort -m20G - sorted 
+    
+# Building a new header
+HD="@HD\tVN:1.4\tSO:coordinate" 
+stCommand="samtools view -buS - | samtools sort -m20G - sorted"
+newPG="@PG ID:Samtools PN:Samtools CL:"$stCommand" PP:Tophat VN:VN:0.1.19-96b5f2294a"
+
+samtools view -H -S sorted.bam | \
+gawk -v HD="$HD" -v newPG="$newPG" -v headDone=0 \
+   '{     if ($0 ~ /^@PG/) {PG=$0} 
+     else if ($0 ~ /^@HD/) {} 
+     else {if(!headDone) {print HD; 
+                          print newPG"\n"PG; 
+                          print $0; headDone = 1} 
+           else {print $0}}}' > newHeader.sam
+           
+### # Add reference genome specific accessions to header
+cat $1/$2_COfile.txt >> newHeader.sam
+
+### TODO: Find appropriate accession for library.  Perhaps it is beyond scope.
+### echo "@CO LIBID:ENCLB175ZZZ" >> newHeader.sam 
+
+samtools reheader newHeader.sam sorted.bam > reheaded.bam
+
+### #rm tmp1.fq.gz tmp2.fq.gz sorted.bam
+
+mv reheaded.bam $5
+
+### # make sure star log is recorded.
+### cat Log.final.out
+

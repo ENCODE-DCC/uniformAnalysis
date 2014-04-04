@@ -1,11 +1,8 @@
 # installs scripts to tools directory
 
 STEP_SCRIPTS=eap_run_bwa_pe eap_run_bwa_se eap_run_slx_bwa_pe eap_run_slx_bwa_se \
-             eap_run_star_long_se eap_run_star_long_pe \
-             eap_run_tophat_long_pe \
-	     eap_run_bam_to_bw_all_minus eap_run_bam_to_bw_all_plus \
-	     eap_run_bam_to_bw_uniq_minus eap_run_bam_to_bw_uniq_plus \
-             eap_run_hotspot eap_run_macs2_chip_pe eap_run_macs2_chip_se eap_run_macs2_dnase_se
+             eap_run_hotspot eap_run_macs2_chip_pe eap_run_macs2_chip_se eap_run_macs2_dnase_se \
+             eap_run_star_long_se eap_run_star_long_pe eap_run_rna_bam_to_bigwigs
 MORE_SCRIPTS=eap_narrowPeak_to_bigBed eap_broadPeak_to_bigBed eap_macs2_xls_to_narrowPeak
 
 # NOTE: tools.ra is actively changing in /hive/groups/encode/encode3/tools and 
