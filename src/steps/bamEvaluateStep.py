@@ -39,15 +39,28 @@ class BamEvaluateStep(LogicalStep):
         bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        strandCorr = self.declareInterimFile( 'strandCorrRep'+ self.replicate + '.txt')
+        strandCorr = self.declareInterimFile('strandCorrRep'+ self.replicate + '.txt')
         bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
 
-        # Do UCSCs bam stats first  
+        # Read bam header to see if aligner can be determined
+        bamHeader  = self.declareGarbageFile('bamHeader.txt')
+        samtools.header(self,bam,bamHeader)
+        pg = self.ana.getCmdOut("grep \@PG "+bamHeader,logCmd=False,errOk=True)
+        if pg.find('STAR') != -1:
+            self.json['alignedBy'] = 'STAR'
+        elif pg.lower().find('tophat') != -1:
+            self.json['alignedBy'] = 'Tophat'
+        elif pg.find('BEDTools_bedToBam') != -1:
+            self.json['alignedBy'] = 'bwa'
+        else:
+            self.json['alignedBy'] = 'unknown'
+
+        # Do UCSCs bam stats
         statsRa  = self.declareGarbageFile('stats.ra')
         tagAlignSample  = self.declareGarbageFile('sample.tagAlign')
         ucscUtils.edwBamStats(self, bam, statsRa, tagAlignSample, self.sampleSize)
         
-        # json summary:
+        # json summary of stats:
         if not self.ana.dryRun:
             stats = Settings(statsRa)
             if stats.getBoolean('isPaired'):
@@ -110,5 +123,5 @@ class BamEvaluateStep(LogicalStep):
             self.json['strandCorrelation']['Frag'] = 0
             self.json['strandCorrelation']['RSC'] = 0
             self.json['strandCorrelation']['NSC'] = 0
-
+            
         self.createAndWriteJsonFile( 'bamEvaluateRep'+ self.replicate, target=True )

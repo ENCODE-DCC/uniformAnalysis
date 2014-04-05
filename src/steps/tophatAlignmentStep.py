@@ -1,23 +1,23 @@
 #!/usr/bin/env python2.7
-# starAlignmentStep.py module holds StarAlignmentStep class which descends from LogicalStep class.
-# It performs star alignment on single or paired end reads.
+# tophatAlignmentStep.py module holds TophatAlignmentStep class which descends from LogicalStep.
+# It performs tophat alignment on single or paired end reads.
 #
 # Inputs: 1 or 2 fastq files, pre-registered in the analysis keyed as:
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
-# Outputs: a single bam target keyed as: 'alignmentStarRep'+replicate+'.bam'
+# Outputs: a single bam target keyed as: 'alignmentTophatRep'+replicate+'.bam'
 
 from src.logicalStep import LogicalStep
 from src.wrappers import samtools
 
-class StarAlignmentStep(LogicalStep):
+class TophatAlignmentStep(LogicalStep):
 
     def __init__(self, analysis, replicate, spikeIn='ERCC', encoding='sanger', tagLen=101):
         self.replicate = str(replicate)
         self.encoding  = encoding
         self.spikeIn   = spikeIn
         self.tagLen    = int(tagLen)
-        LogicalStep.__init__(self, analysis, 'alignmentByStar_' + analysis.readType + 'Rep' + \
+        LogicalStep.__init__(self, analysis, 'alignmentByTophat_' + analysis.readType + 'Rep' + \
                                                                                    self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all step versions
 
@@ -26,10 +26,12 @@ class StarAlignmentStep(LogicalStep):
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
-            raFile.add('star', self.getToolVersion('STAR'))
+            raFile.add('tophat', self.getToolVersion('tophat'))
+            raFile.add('bowtie2', self.getToolVersion('bowtie2'))
             raFile.add('samtools', self.getToolVersion('samtools'))
         else:
-            self.getToolVersion('STAR')
+            self.getToolVersion('tophat')
+            self.getToolVersion('bowtie2')
             self.getToolVersion('samtools')
         
     def onRun(self):
@@ -42,7 +44,7 @@ class StarAlignmentStep(LogicalStep):
             input2 = self.ana.getFile('tagsRd2Rep' + self.replicate + '.fastq')
              
         # Outputs:
-        bam = self.declareTargetFile('alignmentStarRep' + self.replicate + '.bam')
+        bam = self.declareTargetFile('alignmentTophatRep' + self.replicate + '.bam')
         
         # TODO: Distinguish between long and short RNA
         # TODO: Distinguish between ERCC and Wold
@@ -52,51 +54,51 @@ class StarAlignmentStep(LogicalStep):
         
         # Locate the correct reference file(s)
         genome = self.ana.genome
-        refDir = self.ana.refDir + genome + "/starData/"
+        refDir = self.ana.refDir + genome + "/tophatData/"
         if self.ana.gender == 'female':  # male and unspecified are treated the same
-            refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/starData/"
-        if self.spikeIn != '':
-            refDir += self.spikeIn + '/'
+            refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/tophatData/"
             
         if self.ana.type == 'RNAseq-long':
             if self.encoding.lower().startswith('sanger'):
                 if self.ana.readType == 'single':
-                    self.eap_long_se(refDir, input1, bam)
+                    self.eap_long_se(refDir, self.spikeIn, input1, bam)
                 elif self.ana.readType == 'paired':
-                    self.eap_long_pe(refDir, input1, input2, bam)
+                    self.eap_long_pe(refDir, self.spikeIn, input1, input2, bam)
             else:
                 self.fail("fastq encoding '" + self.encoding + "' is not supported.")
         else:
-                self.fail("Alignment by STAR for '"+self.ana.type+"' is currently not supported.")
+                self.fail("Alignment by Tophat for '"+self.ana.type+"' is currently not supported.")
                 
         samtools.index(self, bam)
 
-    def eap_long_se(self, refDir, fastq, outBam):
+    def eap_long_se(self, refDir, spikeIn, fastq, outBam):
         '''Single end bam generation'''
         
-        cmd = "eap_run_star_long_se {ref} {fq} {output}".format( \
-              ref=refDir, fq=fastq, output=outBam)
+        cmd = "eap_run_tophat_long_se {ref} {spike} {fq} {output}".format( \
+              ref=refDir, spike=spikeIn, fq=fastq, output=outBam)
               
-        toolName = 'eap_run_star_long_se'
+        toolName = 'eap_run_tophat_long_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('STAR',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.getToolVersion(toolName)
+        self.getToolVersion('tophat')
+        self.getToolVersion('bowtie2')
+        self.getToolVersion('samtools')
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
 
-    def eap_long_pe(self, refDir, fastq1, fastq2, outBam):
+    def eap_long_pe(self, refDir, spikeIn, fastq1, fastq2, outBam):
         '''Paired end bam generation'''
         
-        cmd = "eap_run_star_long_pe {ref} {fq1} {fq2} {output}".format( \
-              ref=refDir, fq1=fastq1, fq2=fastq2, output=outBam)
+        cmd = "eap_run_tophat_long_pe {ref} {spike} {fq1} {fq2} {output}".format( \
+              ref=refDir, spike=spikeIn, fq1=fastq1, fq2=fastq2, output=outBam)
               
-        toolName = 'eap_run_star_long_pe'
+        toolName = 'eap_run_tophat_long_pe'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('STAR',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.getToolVersion(toolName)
+        self.getToolVersion('tophat')
+        self.getToolVersion('bowtie2')
+        self.getToolVersion('samtools')
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)

@@ -28,9 +28,9 @@
     </inputs>
     <outputs>
         <data format="html" name="statsHtml" 
-              label="${name}Rep${repNo} fastQ Stats from $in_fastq.name" />
+              label="FastQ Stats ${name}Rep${repNo} from $in_fastq.name" />
         <data format="txt" name="fastqEval" 
-              label="${name}Rep${repNo} fastQ Evaluation (json) from $in_fastq.name" />
+              label="FastQ Evaluation (json) ${name}Rep${repNo} from $in_fastq.name" />
     </outputs>
     <help>
 .. class:: infomark
@@ -66,8 +66,8 @@
     This step is expected to produce the following output:
     
     - A directory of files produced by FastQC.
-    - A **fastQ Stats** HTML file linking to these FastQC evaluation results.
-    - A **fastQ Evaluation** file in json format is produced and used as input for later ENCODE3 Analysis Pipeline steps.
+    - A **FastQ Stats** HTML file linking to these FastQC evaluation results.
+    - A **FastQ Evaluation** file in json format is produced and used as input for later ENCODE3 Analysis Pipeline steps.
 
     The **log** of this single step can be seen under *view details* stdout.
 

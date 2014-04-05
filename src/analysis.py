@@ -357,9 +357,15 @@ class Analysis(object):
                 err = self.runCmd('cp -rf '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
             else:
                 err = self.runCmd('cp -f '+fromLoc+' '+toLoc,logOut=logOut,dryRun=dryRun,log=log)
-        
+                
         if err != 0:
             raise Exception("Unable to ln or cp '" + fromLoc + "' to '" + toLoc + "'")
+        
+        # special case for bam files that may be paired with bai files!
+        if fromLoc.endswith('.bam') and toLoc.endswith('.bam'):
+            if os.path.exists(fromLoc + '.bai'):
+                return self.linkOrCopy(fromLoc + '.bai',toLoc + '.bai',soft,logOut,dryRun,log)
+        
         return err
     
     def getFile(self, name, io='input'):
