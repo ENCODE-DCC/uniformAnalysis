@@ -1,5 +1,5 @@
 <tool id="bamToBigWigE3" name="EAP alignment to signal" version="1.0">
-    <description> (bam to 4 bigwigs)</description>
+    <description> (bam to bigwig)</description>
     <command interpreter="python">
         bamToBigWigE3.py $bamInput $bamEval $readFilter $strand $signalBw
         $genome $expType $repNo ${name}U${__user_id__}
@@ -73,9 +73,8 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce four files:
-    
-    - *Signal** covering All or Uniquely mapped reads on the Plus or Minus strand.
+    This step is expected to produce a single file: **Signal** covering All or Uniquely mapped 
+    reads on the Plus or Minus strand.
 
     The **log** of this single step can be seen under *view details* stdout.
 

@@ -329,10 +329,17 @@ class LogicalStep(Target):
         if executable.find('/') == -1: # Not a path, then look for this on the path!
             toolId = self.ana.getCmdOut("md5sum `which "+executable+"` | awk '{print $1}'", \
                                         dryRun=False,logCmd=False)
+            if toolId.startswith('which: no'): # failed to find executable: might be perl script
+                toolId = self.ana.getCmdOut("md5sum "+self.ana.toolsDir + executable + \
+                                            " | awk '{print $1}'",dryRun=False,logCmd=False)
+                if toolId.startswith('md5sum: '): # failed to find executable
+                    toolId = ""
             toolName = executable
         else:
             toolId = self.ana.getCmdOut("md5sum "+executable+" | awk '{print $1}'", \
                                         dryRun=False,logCmd=False)
+            if toolId.startswith('md5sum: '): # failed to find executable
+                toolId = ""
             toolName = os.path.split( executable )[1]
 
         toolData = self.ana.getToolData(toolId, toolName)
@@ -361,7 +368,7 @@ class LogicalStep(Target):
                 version = actual # Use actual rather than expected.
 
         # If the toolData was found by name, then the tooldIds may not match, so:
-        if toolId != toolData['toolId']:
+        if toolId != toolData['toolId'] and toolId != "":
             version += ' (md5sum:'+toolId+')' 
 
         # If there is a package name or version that differs, then use it

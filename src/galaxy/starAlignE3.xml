@@ -7,7 +7,7 @@
         #else
              $fastqInput $fastqEval $fastqInput2 $fastqEval2 $bamPaired
         #end if
-        $spike $gender $genome $expType $repNo ${name}U${__user_id__}
+        $spike $libId $gender $genome $expType $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/starAlignE3.py --version</version_command>
     <stdio>
@@ -28,7 +28,11 @@
         </param>
         <param name="spike" type="select" label="Spike In Control">
             <option value="ERCC" selected="true">ERCC/NIST/Ambion</option>
-            <option value="wold">Wold single-cell</option>
+            <option value="WSC">Wold single-cell</option>
+        </param>
+        <param name="libId" type="text" value="" size="40" optional="false" label="Library ID" 
+               help="Letters and numbers only [required]">
+            <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
     <conditional name="runType">
         <param name="singlePaired" type="select" label="Single or Paired Reads">
@@ -81,6 +85,9 @@
     
     Select the **Spike In** control set used for this experiment.  Spike ins provide a method
     of normalization across experiments.  Most EAP experiments use the ERCC set.  
+    
+    Enter the required **Library ID** or a one word identifier for this experiment.  The 
+    library ID will be added to the bam file header.  Only letters and numbers are supported. 
     
     Enter **Single or Paired reads** to declare whether the reads are contained in a single 
     'unpaired' reads fastQ or a pair of fastQs for paired reads.

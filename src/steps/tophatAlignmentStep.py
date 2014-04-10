@@ -12,10 +12,11 @@ from src.wrappers import samtools
 
 class TophatAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, spikeIn='ERCC', encoding='sanger', tagLen=101):
+    def __init__(self, analysis, replicate, spikeIn='ERCC', libId, encoding='sanger', tagLen=101):
         self.replicate = str(replicate)
         self.encoding  = encoding
         self.spikeIn   = spikeIn
+        self.libId     = libId
         self.tagLen    = int(tagLen)
         LogicalStep.__init__(self, analysis, 'alignmentByTophat_' + analysis.readType + 'Rep' + \
                                                                                    self.replicate)
@@ -29,10 +30,12 @@ class TophatAlignmentStep(LogicalStep):
             raFile.add('tophat', self.getToolVersion('tophat'))
             raFile.add('bowtie2', self.getToolVersion('bowtie2'))
             raFile.add('samtools', self.getToolVersion('samtools'))
+            raFile.add('tophat_bam_xsA_tag_fix.pl', self.getToolVersion('tophat_bam_xsA_tag_fix.pl'))
         else:
             self.getToolVersion('tophat')
             self.getToolVersion('bowtie2')
             self.getToolVersion('samtools')
+            self.getToolVersion('tophat_bam_xsA_tag_fix.pl')
         
     def onRun(self):
         
@@ -46,59 +49,96 @@ class TophatAlignmentStep(LogicalStep):
         # Outputs:
         bam = self.declareTargetFile('alignmentTophatRep' + self.replicate + '.bam')
         
-        # TODO: Distinguish between long and short RNA
-        # TODO: Distinguish between ERCC and Wold
-        # TODO Use tagLen to determine which genomeDir (--sjdbOverhang 100).  Currently all 100.
-        # TODO Use tagLen to determine short RNA-seq.
-        # TODO: support solexa?
-        
         # Locate the correct reference file(s)
         genome = self.ana.genome
-        refDir = self.ana.refDir + genome + "/tophatData/"
+        refDir = self.ana.refDir + genome + "/tophatData" # doesn't end in '/' on purpose.
         if self.ana.gender == 'female':  # male and unspecified are treated the same
-            refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/tophatData/"
+            refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/tophatData"
             
         if self.ana.type == 'RNAseq-long':
-            if self.encoding.lower().startswith('sanger'):
+            if self.spikeIn == 'ERCC':
                 if self.ana.readType == 'single':
-                    self.eap_long_se(refDir, self.spikeIn, input1, bam)
+                    self.eap_long_ercc_se(refDir, self.libId, input1, bam)
                 elif self.ana.readType == 'paired':
-                    self.eap_long_pe(refDir, self.spikeIn, input1, input2, bam)
+                    self.eap_long_ercc_pe(refDir, self.libId, input1, input2, bam)
+            elif self.spikeIn == 'WSC':
+                if self.ana.readType == 'single':
+                    self.eap_long_wsc_se(refDir, self.libId, input1, bam)
+                elif self.ana.readType == 'paired':
+                    self.eap_long_wsc_pe(refDir, self.libId, input1, input2, bam)
             else:
-                self.fail("fastq encoding '" + self.encoding + "' is not supported.")
+                self.fail("Alignment by Tophat, spike-in '"+self.spikeIn+ \
+                          "' iscurrently not supported.")
         else:
                 self.fail("Alignment by Tophat for '"+self.ana.type+"' is currently not supported.")
                 
         samtools.index(self, bam)
 
-    def eap_long_se(self, refDir, spikeIn, fastq, outBam):
-        '''Single end bam generation'''
+    def eap_long_ercc_pe(self, refDir, libId, fastq1, fastq2, outBam):
+        '''Paired end bam generation'''
         
-        cmd = "eap_run_tophat_long_se {ref} {spike} {fq} {output}".format( \
-              ref=refDir, spike=spikeIn, fq=fastq, output=outBam)
+        cmd = "eap_run_tophat_long_ercc_pe {ref} {lib} {fq1} {fq2} {output}".format( \
+              ref=refDir, lib=libId, fq1=fastq1, fq2=fastq2, output=outBam)
               
-        toolName = 'eap_run_tophat_long_se'
+        toolName = 'eap_run_tophat_long_ercc_pe'
         self.toolBegins(toolName)
         self.getToolVersion(toolName)
         self.getToolVersion('tophat')
         self.getToolVersion('bowtie2')
         self.getToolVersion('samtools')
+        self.getToolVersion('tophat_bam_xsA_tag_fix.pl')
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
 
-    def eap_long_pe(self, refDir, spikeIn, fastq1, fastq2, outBam):
-        '''Paired end bam generation'''
+    # This is probably never used in EAP.
+    def eap_long_ercc_se(self, refDir, libId, fastq, outBam):
+        '''Single end bam generation'''
         
-        cmd = "eap_run_tophat_long_pe {ref} {spike} {fq1} {fq2} {output}".format( \
-              ref=refDir, spike=spikeIn, fq1=fastq1, fq2=fastq2, output=outBam)
+        cmd = "eap_run_tophat_long_ercc_se {ref} {lib} {fq} {output}".format( \
+              ref=refDir, lib=libId, fq=fastq, output=outBam)
               
-        toolName = 'eap_run_tophat_long_pe'
+        toolName = 'eap_run_tophat_long_ercc_se'
         self.toolBegins(toolName)
         self.getToolVersion(toolName)
         self.getToolVersion('tophat')
         self.getToolVersion('bowtie2')
         self.getToolVersion('samtools')
+        self.getToolVersion('tophat_bam_xsA_tag_fix.pl')
+        
+        self.err = self.ana.runCmd(cmd, log=self.log)
+        self.toolEnds(toolName,self.err)
+
+    def eap_long_wsc_pe(self, refDir, libId, fastq1, fastq2, outBam):
+        '''Paired end bam generation'''
+        
+        cmd = "eap_run_tophat_long_wsc_pe {ref} {lib} {fq1} {fq2} {output}".format( \
+              ref=refDir, lib=libId, fq1=fastq1, fq2=fastq2, output=outBam)
+              
+        toolName = 'eap_run_tophat_long_wsc_pe'
+        self.toolBegins(toolName)
+        self.getToolVersion(toolName)
+        self.getToolVersion('tophat')
+        self.getToolVersion('bowtie2')
+        self.getToolVersion('samtools')
+        self.getToolVersion('tophat_bam_xsA_tag_fix.pl')
+        
+        self.err = self.ana.runCmd(cmd, log=self.log)
+        self.toolEnds(toolName,self.err)
+
+    def eap_long_wsc_se(self, refDir, libId, fastq, outBam):
+        '''Single end bam generation'''
+        
+        cmd = "eap_run_tophat_long_wsc_se {ref} {lib} {fq} {output}".format( \
+              ref=refDir, lib=libId, fq=fastq, output=outBam)
+              
+        toolName = 'eap_run_tophat_long_wsc_se'
+        self.toolBegins(toolName)
+        self.getToolVersion(toolName)
+        self.getToolVersion('tophat')
+        self.getToolVersion('bowtie2')
+        self.getToolVersion('samtools')
+        self.getToolVersion('tophat_bam_xsA_tag_fix.pl')
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
