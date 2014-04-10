@@ -2,7 +2,8 @@
 
 STEP_SCRIPTS=eap_run_bwa_pe eap_run_bwa_se eap_run_slx_bwa_pe eap_run_slx_bwa_se \
              eap_run_star_long_se eap_run_star_long_pe \
-             eap_run_tophat_long_pe \
+             eap_run_tophat_long_ercc_pe eap_run_tophat_long_wsc_pe \
+             eap_run_tophat_long_ercc_se eap_run_tophat_long_wsc_se \
 	     eap_run_bam_to_bw_all_minus eap_run_bam_to_bw_all_plus \
 	     eap_run_bam_to_bw_uniq_minus eap_run_bam_to_bw_uniq_plus \
              eap_run_hotspot eap_run_macs2_chip_pe eap_run_macs2_chip_se eap_run_macs2_dnase_se
