@@ -43,20 +43,27 @@ if testOnly:
 
 # What step expects:
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
-# Outputs: 1 interim bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
-#          1 interim Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
-#          1 target json        file, keyed as: 'bamEvaluateRep' + replicate +   '.json'
+# Outputs: 1 interim bam sample file, keyed as: 'alignment'  + suffix + '_5M.bam'
+#          1 interim Corr       file, keyed as: 'strandCorr' + suffix +    '.txt'
+#          1 target json        file, keyed as: 'bamEvaluate' + suffix +   '.json'
 
 # TODO: Does a galaxy user really want the sample bam?
     
 # set up keys that join inputs through various file forwardings:
 bamInputKey   = 'alignmentRep'   + repNo +    '.bam'
-bamSampleKey  = 'alignmentRep'   + repNo + '_5M.bam'
-bamEvalKey    = 'bamEvaluateRep' + repNo +    '.json'
 
 # Establish Inputs for galaxy and nonGalaxy alike
 ana.registerFile(bamInputKey,'galaxyInput', galaxyInputFile)
 nonGalaxyInput  = ana.nonGalaxyInput(bamInputKey)  # Registers and returns the outside location
+suffix = 'Rep' + repNo
+if nonGalaxyInput.lower().find('_star') != -1:
+    suffix += 'ByStar'
+elif nonGalaxyInput.find('_tophat') != -1:
+    suffix += 'ByTophat'
+elif nonGalaxyInput.lower().find('_bwa') != -1:
+    suffix += 'ByBwa'
+bamSampleKey  = 'alignment'      + suffix + '_5M.bam'
+bamEvalKey    = 'bamEvaluate'    + suffix +    '.json'
 
 # outputs:
 ana.registerFile( bamEvalKey,     'galaxyOutput',galaxyOutBamEval)
@@ -66,6 +73,6 @@ ana.registerFile(bamSampleKey,    'galaxyOutput',galaxyOutSampleBam)
 ana.createOutFile(bamSampleKey,'nonGalaxyOutput','%s_sample',ext='bam' )
 
 # Establish step and run it:
-step = BamEvaluateStep(ana,repNo,sampleSize=sampleSize)
+step = BamEvaluateStep(ana,repNo,suffix,sampleSize=sampleSize)
 sys.exit( step.run() )
 
