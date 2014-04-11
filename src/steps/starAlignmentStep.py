@@ -47,12 +47,11 @@ class StarAlignmentStep(LogicalStep):
         
         # Locate the correct reference file(s)
         genome = self.ana.genome
-        refDir = self.ana.refDir + genome + "/starData/"
+        refDir = self.ana.refDir + genome + "/starData/" 
         if self.ana.gender == 'female':  # male and unspecified are treated the same
             refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/starData/"
-        if self.spikeIn != '':
-            refDir += self.spikeIn + '/'
-            
+        refDir += self.spikeIn  # doesn't end in '/' on purpose.
+        
         if self.ana.type == 'RNAseq-long':
             if self.encoding.lower().startswith('sanger'):
                 if self.ana.readType == 'single':

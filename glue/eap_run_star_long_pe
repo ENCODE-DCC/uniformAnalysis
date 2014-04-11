@@ -24,13 +24,10 @@ STAR --genomeDir $1 --readFilesIn tmp1.fq.gz tmp2.fq.gz                         
      --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
      --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
      --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
-     --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD VN:1.4 SO:coordinate   \
-     --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:VN:0.1.19-96b5f2294a \
+     --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD\tVN:1.4 SO:coordinate     \
+     --outSAMheaderPG @PG\tID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:VN:0.1.19-96b5f2294a \
      --outSAMunmapped Within --outFilterType BySJout --outStd SAM | samtools view -buS - | \
-     samtools sort -m20G - sorted
-
-### TODO: Find appropriate accession for library.  Perhaps it is beyond scope.
-### echo "@CO LIBID:ENCLB175ZZZ" >> newHeader.sam 
+     samtools sort -m20G -@4 - sorted
 
 rm tmp1.fq.gz tmp2.fq.gz
 mv sorted.bam $5
