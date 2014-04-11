@@ -12,7 +12,7 @@ from src.wrappers import samtools
 
 class StarAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, spikeIn='ERCC', libId, encoding='sanger', tagLen=101):
+    def __init__(self, analysis, replicate, spikeIn, libId, encoding='sanger', tagLen=101):
         self.replicate = str(replicate)
         self.encoding  = encoding
         self.spikeIn   = spikeIn
