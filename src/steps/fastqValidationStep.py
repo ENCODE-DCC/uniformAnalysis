@@ -10,7 +10,7 @@
 #          json file                                     keyed as: 'fastqVal' + suffix + '.json'
 
 from src.logicalStep import LogicalStep
-from src.wrappers import ucscUtils, fastqc
+from src.wrappers import ucscUtils
 
 class FastqValidationStep(LogicalStep):
 
@@ -25,10 +25,10 @@ class FastqValidationStep(LogicalStep):
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
             raFile.add('ucscUtils', ucscUtils.version(self,tool='fastqStatsAndSubsample'))
-            raFile.add('fastqc', fastqc.version(self))
+            raFile.add('fastqc', self.getToolVersion('fastqc'))
         else:
             ucscUtils.version(self,tool='fastqStatsAndSubsample')
-            fastqc.version(self)
+            self.getToolVersion('fastqc')
 
     def onRun(self):
         # Inputs:
@@ -48,7 +48,7 @@ class FastqValidationStep(LogicalStep):
         ucscUtils.fastqStatsAndSubsample(self,fastq,simpleStats,sampleFastq)
 
         # sample fastqc step that generates HTML output
-        fastqc.validate(self,sampleFastq,valDir)
+        self.fastqc(sampleFastq,valDir)
         
         # json summary:
         if not self.ana.dryRun:
@@ -119,4 +119,15 @@ class FastqValidationStep(LogicalStep):
             self.json['FastQC']['basic'] = 'PASS'
         self.createAndWriteJsonFile( 'fastqVal'+ self.suffix, target=True )
         
+    def fastqc(self, inFastq, outDir):
+        '''Validation'''
+        
+        cmd = 'fastqc {fastq} --extract -q'.format( fastq=inFastq )
+    
+        toolName = __name__.split('.')[-1] + " validate"
+        self.toolBegins(toolName)
+        self.getToolVersion('fastqc', logOut=True)
+    
+        self.err = self.ana.runCmd(cmd, log=self.log) # stdout goes to file
+        self.toolEnds(toolName,self.err)
 
