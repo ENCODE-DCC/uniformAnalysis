@@ -7,7 +7,7 @@
 #   Note: name,version could act as a secondary unique key.
 # - 'versionCommand' command-line method to find tool version
 # - 'executable' EAP_TOOLS_DIR relative path to the executable. Used for md5sum validation.
-#   Note: dependent scripts should include engine (e.g. 'java -jar SortSam.jar')
+#   Note: dependent scripts should include engine (e.g. 'python2.7 ${EAP_TOOLS_DIR}/hotspot.py')
 #
 # Most tools are downloaded from git style repositories as packages.
 # - 'packageId' is the gitId, or SHA1 or md5sum identifier of the package.
@@ -24,8 +24,6 @@
 # - fastqStatsAndSubsample and bedGraphPack not part of ucscUtils package yet
 # - edwBamStats and edwSolexaToSangerFastq: not part of ucscUtils package yet and unversioned
 # - all eap_* scripts need to be made a part of ucscUtils or some other package
-# - java is a part of encode-01 linux install, so there is no archive, etc.  More needed?
-# - java executable is not the same on hgwdev and encode-01, so there are atleast 2 toolIds
 #   galaxy methods can survive the non-unique name,version alt key!
 # - numpy, pysam and scipy are all python needed packages with no 'executable'
 # - makewigglefromBAM-NH.py needs github release AND version
@@ -180,19 +178,20 @@ packageVersion 0.5.9-r16
 packageId gitId 87664941b09d8ded9705ccdb5af7b375751d5187  
 packageSize 138167
 
-toolId 159d49eabb8747bceda741a51f032321
-name bam_to_histo.py
-version 0.8
-versionCommand python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py -v | awk '{print $1}' 
-executable python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py
-packageName census       
-url https://github.com/matted/census/archive/v0.8.tar.gz                    
-archive /hive/groups/encode/encode3/tools/census-0.8/census-0.8.tar.gz
-installed /hive/groups/encode/encode3/tools/census-0.8/
-packageVersion 0.8                  
-email matted@mit.edu
-packageId gitId 5d2aacb31e071ca0ed473f2574f00cabd6ad5365  
-packageSize 35237
+### census no longer used
+# toolId 159d49eabb8747bceda741a51f032321
+# name bam_to_histo.py
+# version 0.8
+# versionCommand python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py -v | awk '{print $1}' 
+# executable python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py
+# packageName census       
+# url https://github.com/matted/census/archive/v0.8.tar.gz                    
+# archive /hive/groups/encode/encode3/tools/census-0.8/census-0.8.tar.gz
+# installed /hive/groups/encode/encode3/tools/census-0.8/
+# packageVersion 0.8                  
+# email matted@mit.edu
+# packageId gitId 5d2aacb31e071ca0ed473f2574f00cabd6ad5365  
+# packageSize 35237
 
 toolId bbf6208b209fe336bc0c8729d460c9ff
 name fastqc
@@ -279,47 +278,50 @@ email anshul.kundaje@gmail.com
 packageId SHA1 b3761331e0c011d7faa9f1dad2ac9bd37c82f050
 packageSize 152878
 
-toolId 9b2baf5c815fb23b074e9292056d3d1c
-name SortSam.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/SortSam.jar --version | awk '{print $1}'
-executable java -jar ${EAP_TOOLS_DIR}/SortSam.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>          
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId 9b2baf5c815fb23b074e9292056d3d1c
+# name SortSam.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/SortSam.jar --version | awk '{print $1}'
+# executable java -jar ${EAP_TOOLS_DIR}/SortSam.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>          
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
-toolId 91b6bc3dc6a9629afeff6c370a578075
-name CollectInsertSizeMetrics.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/CollectInsertSizeMetrics.jar --version | awk '{print $1}'
-executable java -jar CollectInsertSizeMetrics.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>             
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId 91b6bc3dc6a9629afeff6c370a578075
+# name CollectInsertSizeMetrics.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/CollectInsertSizeMetrics.jar --version | awk '{print $1}'
+# executable java -jar CollectInsertSizeMetrics.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>             
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
-toolId c999481ef13f1411b1d7a94bfdcf17e2
-name DownsampleSam.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/DownsampleSam.jar --version | awk '{print $1}'
-executable java -jar DownsampleSam.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>             
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId c999481ef13f1411b1d7a94bfdcf17e2
+# name DownsampleSam.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/DownsampleSam.jar --version | awk '{print $1}'
+# executable java -jar DownsampleSam.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>             
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
 toolId 613b3af42a5bd0d8f05625e003e2c854
 name samtools
@@ -667,7 +669,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 7e2d14dbe5722507059fc6f26acb2b58
+toolId d7c9cccc7fb432340783e3b5f9dea1ba
 name eap_run_star_long_pe
 version v1
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
@@ -681,7 +683,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId e797b68c05efaca03a2573100166bf3a
+toolId cd59d6b561f1d495166122c28d50aa0e
 name eap_run_star_long_se
 version v1
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
@@ -695,7 +697,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 5e8f0ce2895f30b28aba4f11341e25e6
+toolId 6b0f907aa0429bf01feb6008b0101041
 name eap_run_tophat_long_ercc_pe
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_ercc_pe` | awk '{print $3}' | tr -d :
@@ -709,7 +711,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 309a0d45c48b0b8fb9d51c684c42e5aa
+toolId eb5dc36a22b346a93f8ecd99de1228e4
 name eap_run_tophat_long_ercc_se
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_ercc_se` | awk '{print $3}' | tr -d :
@@ -723,7 +725,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId c663e4e50f47d167e418a1f550c6763a
+toolId 37c690b1347f00d21253b3b20d834e6c
 name eap_run_tophat_long_wsc_pe
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_wsc_pe` | awk '{print $3}' | tr -d :
@@ -737,7 +739,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId f7cea13c75fdc2d1408a448768201136
+toolId f2e05799e27b0009ce0dfe15e3fd3167
 name eap_run_tophat_long_wsc_se
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_wsc_se` | awk '{print $3}' | tr -d :
@@ -863,7 +865,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 0558266f338c260a17967a940f39266d
+toolId 3e90bec1f71afd0ff767745c2d3bf161
 name toolsRaCheck.py
 version v1
 versionCommand toolsRaCheck.py -version | head -1 | awk '{print $2}'
@@ -879,29 +881,30 @@ packageSize 42410574
 
 ### Engines for running other tools:
 
+### java was only needed for picard-tools which are no longer used.
 ### Part of encode-01 linux install   More needed?
 ### java executable is not the same on hgwdev and encode-01 !!
-toolId 906a0890a4cc5d75449ace194738d14c
-name java
-version 1.6.0_24
-versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
-executable java
-packageName java
-url <unknown>
-#archive <unknown>
-installed /usr/bin/java
-packageVersion 1.6.0_24
+# toolId 906a0890a4cc5d75449ace194738d14c
+# name java
+# version 1.6.0_24
+# versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
+# executable java
+# packageName java
+# url <unknown>
+# #archive <unknown>
+# installed /usr/bin/java
+# packageVersion 1.6.0_24
 
-toolId 7e313d41a4229bede0df8f1082cdaf32
-name java
-version 1.6.0_24
-versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
-executable java
-packageName java
-url <unknown>
-#archive <unknown>
-installed /usr/bin/java
-packageVersion 1.6.0_24
+# toolId 7e313d41a4229bede0df8f1082cdaf32
+# name java
+# version 1.6.0_24
+# versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
+# executable java
+# packageName java
+# url <unknown>
+# #archive <unknown>
+# installed /usr/bin/java
+# packageVersion 1.6.0_24
 
 toolId d0574c3d29e4683a2a7d82b35b857b55
 name python
