@@ -6,6 +6,7 @@
 #                                      <genome> <expType> <repNo> <analysisId>
 
 import os, sys
+import json
 from src.galaxyAnalysis import GalaxyAnalysis
 from src.steps.fastqValidationStep import FastqValidationStep
 
@@ -94,10 +95,14 @@ err = step.run()
 # Determine success or failure by reading json output
 # NOTE: if this test were in FastqValidationStep(), the results would not be delivered to galaxy!
 if err == 0:
-    failures = ana.getCmdOut('grep "FAIL" '+jsonOut+'" | grep "basic" | wc -l',logCmd=False)
-if failures != "0":
-    print "Failed validation test!"
-    # sys.exit(1)  # TODO: should we fail here????
+    fp = open(jsonOut, 'r')
+    valJson = json.load(fp)
+    fp.close()
+    grade = str(valJson['FastQC']['basic'])
+    print "Basic validation test: [" + grade + "]"
+    #if grade != 'PASS':
+    #    os.system('cat ' + jsonOut)
+    #    sys.exit(1)  # TODO: should we fail here????
 
 sys.exit(err)
 
