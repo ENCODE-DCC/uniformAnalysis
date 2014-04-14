@@ -14,7 +14,7 @@ from src.wrappers import samtools
 
 class BwaAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, encoding):
+    def __init__(self, analysis, replicate="1", encoding='sanger'):
         self.replicate = str(replicate)
         self.encoding  = encoding
         LogicalStep.__init__(self, analysis, 'alignmentByBwa_' + analysis.readType + 'Rep' + \

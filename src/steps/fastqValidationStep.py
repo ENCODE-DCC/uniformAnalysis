@@ -14,7 +14,7 @@ from src.wrappers import ucscUtils, fastqc
 
 class FastqValidationStep(LogicalStep):
 
-    def __init__(self, analysis, suffix):
+    def __init__(self, analysis, suffix=''):
         self.suffix = str(suffix)
         LogicalStep.__init__(self, analysis, 'fastqValidation_' + self.suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions

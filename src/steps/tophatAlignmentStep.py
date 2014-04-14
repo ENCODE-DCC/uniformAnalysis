@@ -12,7 +12,8 @@ from src.wrappers import samtools
 
 class TophatAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, spikeIn, libId, encoding='sanger', tagLen=101):
+    def __init__(self, analysis, replicate='1', spikeIn='ERCC', libId='', \
+                                                                encoding='sanger', tagLen=100):
         self.replicate = str(replicate)
         self.encoding  = encoding
         self.spikeIn   = spikeIn

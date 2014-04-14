@@ -17,7 +17,7 @@ if  sys.argv[1] == '--version':
     settingsFile = os.path.split( os.path.abspath( sys.argv[0] ) )[0] + '/' + "settingsE3.txt"
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
-        FastqValidationStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        FastqValidationStep(ana).writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)
@@ -94,9 +94,9 @@ err = step.run()
 # Determine success or failure by reading json output
 # NOTE: if this test were in FastqValidationStep(), the results would not be delivered to galaxy!
 if err == 0:
-   failures = ana.getCmdOut('grep "FAIL" '+jsonOut+" | wc -l",logCmd=False)
+    failures = ana.getCmdOut('grep "FAIL" '+jsonOut+'" | grep "basic" | wc -l',logCmd=False)
 if failures != "0":
-    print "Failed " + failures + " validation tests!"
+    print "Failed validation test!"
     # sys.exit(1)  # TODO: should we fail here????
 
 sys.exit(err)

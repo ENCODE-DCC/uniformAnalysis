@@ -20,7 +20,7 @@ if  sys.argv[1] == '--version':
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
         ana.readType = 'paired'
-        TophatAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        TophatAlignmentStep(ana).writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)

@@ -6,7 +6,7 @@
 #                               [<inFastqR2> <inFastqEvalR2>] <galaxyOutBam> \
 #                               <gender> <genome> <expType> <repNo> <analysisId>
 
-import os, sys, string
+import os, sys
 import json
 from src.galaxyAnalysis import GalaxyAnalysis
 from src.steps.bwaAlignmentStep import BwaAlignmentStep
@@ -20,7 +20,7 @@ if  sys.argv[1] == '--version':
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
         ana.readType = 'paired'
-        BwaAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        BwaAlignmentStep(ana).writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)

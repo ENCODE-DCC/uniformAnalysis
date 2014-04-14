@@ -11,9 +11,8 @@ from src.wrappers import samtools
 
 class BamToBwStep(LogicalStep):
 
-    def __init__(self, analysis, suffix, readFilter='all', strand='Plus'):
+    def __init__(self, analysis, suffix="", readFilter='all', strand='Plus'):
         self.suffix = str(suffix)
-        #self.replicate = str(replicate)
         self.readFilter = readFilter
         self.strand     = strand
         LogicalStep.__init__(self, analysis, 'bamToBws_' + \
@@ -24,9 +23,9 @@ class BamToBwStep(LogicalStep):
         '''Writes versions to to the log or a file.'''
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
+        script = 'eap_run_bam_to_bw_' + self.readFilter.lower() + '_' + self.strand.lower()
         if raFile != None:
-            raFile.add('eap_run_rna_bam_to_bigwigs', \
-                       self.getToolVersion('eap_run_rna_bam_to_bigwigs'))
+            raFile.add(script, self.getToolVersion(script))
             self.getToolVersion('samtools')
             raFile.add('makewigglefromBAM-NH.py', \
                        self.getToolVersion('makewigglefromBAM-NH.py'))
@@ -34,7 +33,7 @@ class BamToBwStep(LogicalStep):
             raFile.add('wigToBigWig',  self.getToolVersion('wigToBigWig'))
             #raFile.add('perl', self.getToolVersion('perl'))
         else:
-            self.getToolVersion('eap_run_rna_bam_to_bigwigs')
+            self.getToolVersion(script)
             self.getToolVersion('samtools')
             self.getToolVersion('makewigglefromBAM-NH.py')
             self.getToolVersion('python2.7')
