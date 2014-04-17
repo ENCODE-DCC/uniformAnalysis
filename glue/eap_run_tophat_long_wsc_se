@@ -44,8 +44,10 @@ perl ${EAP_TOOLS_DIR}/tophat_bam_xsA_tag_fix.pl tophat_out/accepted_hits.bam | \
 
 # merge aligned and unaligned into single bam, using the patched up header
 samtools merge -h newHeader.sam mergedSortedFixed.bam sortedFixedMapped.bam tophat_out/unmapped.bam
+samtools index mergedSortedFixed.bam
 
 # remove some larger files:
 #rm reads1.fq.gz reads2.fq.gz sorted.bam sortedFixedMapped.bam tophat_out/accepted_hits.bam
 
 mv mergedSortedFixed.bam $4
+mv mergedSortedFixed.bam.bai $4.bai

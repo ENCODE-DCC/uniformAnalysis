@@ -17,9 +17,14 @@ libraryId="@CO\tLIBID:$2"
 echo -e $libraryId > COfile.txt
 cat $1/COfile.txt >> COfile.txt
 
+# Note: in order to run on cluster, using:
+# - STAR symlinked to STARstatic, 
+# - --genomeLoad NoSharedMemory (instead of LoadAndRemove) 
+# - 32g ram, 12 cpus.
+
 # Using $1 as an reference genome, align reads ($2)
 STAR --genomeDir $1 --readFilesIn reads.fq.gz                                       \
-     --readFilesCommand zcat --runThreadN 12 --genomeLoad LoadAndRemove              \
+     --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory             \
      --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
      --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
      --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
@@ -29,9 +34,11 @@ STAR --genomeDir $1 --readFilesIn reads.fq.gz                                   
      
 samtools view -buS star.sam > star.bam
 samtools sort -m10G star.bam sorted
+samtools index sorted.bam
 
 #rm reads.fq.gz star.samstar.bam
 mv sorted.bam $4
+mv sorted.bam.bai $4.bai
 
 # make sure star log is recorded.
 cat Log.final.out

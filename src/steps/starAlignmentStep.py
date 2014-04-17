@@ -63,8 +63,6 @@ class StarAlignmentStep(LogicalStep):
                 self.fail("fastq encoding '" + self.encoding + "' is not supported.")
         else:
                 self.fail("Alignment by STAR for '"+self.ana.type+"' is currently not supported.")
-                
-        samtools.index(self, bam)
 
     def eap_long_se(self, refDir, libId, fastq, outBam):
         '''Single end bam generation'''

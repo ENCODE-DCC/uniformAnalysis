@@ -72,8 +72,6 @@ class TophatAlignmentStep(LogicalStep):
                           "' iscurrently not supported.")
         else:
                 self.fail("Alignment by Tophat for '"+self.ana.type+"' is currently not supported.")
-                
-        samtools.index(self, bam)
 
     def eap_long_ercc_pe(self, refDir, libId, fastq1, fastq2, outBam):
         '''Paired end bam generation'''
