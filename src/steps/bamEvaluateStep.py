@@ -14,7 +14,7 @@ from src.wrappers import samtools, bedtools, phantomTools, ucscUtils
 
 class BamEvaluateStep(LogicalStep):
 
-    def __init__(self, analysis, replicate="1", suffix="", sampleSize):
+    def __init__(self, analysis, replicate="1", suffix="", sampleSize=0):
         self.replicate = str(replicate)
         self.suffix = suffix
         self.sampleSize = sampleSize
