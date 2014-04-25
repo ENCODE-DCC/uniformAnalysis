@@ -1,0 +1,17 @@
+#!/bin/bash -ex
+
+# Check command line and provide usage and version information
+if [ $# -ne 3 ];
+then echo "usage v2: eap_sum_bigWig assembly in1.lst out.bigWig"
+echo Makes temp files so should be run in a freshly created directory .
+exit -1; fi
+
+# Use bigWigMerge to produce bedGraph that is result of summing all bigWigs, and pack it.
+bigWigMerge -inList $2 stdout | bedGraphPack stdin tmp.bedGraph
+
+# Convert back to bigWig and clean up big boring temp file
+bedGraphToBigWig tmp.bedGraph /hive/groups/encode/encode3/encValData/$1/chrom.sizes tmp.bigWig
+rm tmp.bedGraph
+
+# Move output to final destination
+mv tmp.bigWig $3
