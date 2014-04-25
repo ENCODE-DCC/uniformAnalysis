@@ -7,7 +7,7 @@ def main():
     genomes = ['hg19', 'mm9']
     dataTypes = ['DNase-seq', 'ChIP-seq']
 
-    parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline. Version 2')
+    parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline. Version 3')
     parser.add_argument('hotspotLocation', help='The directory to the hotspot installation, for instance "/hive/groups/encode/encode3/tools/hotspot-distr-v4/"')
     parser.add_argument('inputBam', help='Alignment file (in BAM format) to run hotspot on')
     parser.add_argument('genome', help='Which genome to use, the following are supported: ' + ','.join(genomes))
