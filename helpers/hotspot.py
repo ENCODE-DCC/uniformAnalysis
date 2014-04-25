@@ -25,7 +25,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
     
     # ensure all inputs are valid directories/files/arguments
-    if not os.path.exists(args.hotspotLocation):
+    if not os.path.isdir(args.hotspotLocation):
         raise ValueError('hotspotLocation: %s is not a valid directory' % args.hotspotLocation)
     if not os.path.isfile(args.inputBam):
         raise ValueError('inputBam: %s is not a valid file' % args.inputBam)
@@ -35,10 +35,10 @@ def main():
         raise ValueError('readLength: ' + args.readLength + ' is not a supported read length, must be one of: ' + ','.join(readLengths))
       
     # checking dataType constraints
-    if args.dataType == 'DNase-seq':
+    if args.dataType.lower() == 'dnase-seq':
         if args.inputControl != None:
             raise ValueError('DNase-seq does not support input controls')
-    elif args.dataType == 'ChIP-seq':   
+    elif args.dataType.lower() == 'chip-seq':   
         if args.inputControl == None:
             raise ValueError('ChIP-seq requires an input control')
         if not os.path.isfile(args.inputControl):
@@ -112,7 +112,7 @@ def main():
         tokens.write('_MAPPABLE_FILE_ = %s\n' % mappableFile)
         
         # Duplicates ok for DNAse, but not for other datatypes
-        if args.dataType == 'Dnase-seq':
+        if args.dataType.lower() == 'dnase-seq':
             tokens.write('_DUPOK_ = T\n')
         else:
             tokens.write('_DUPOK_ = F\n')
