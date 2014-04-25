@@ -1,4 +1,5 @@
 #!/bin/bash -ex
+# OBSOLETE - use eap_pool_big_wig instead
 # Run bash with -e exit on first error, -x add +command stream to sterr.
 # Remove -x for cleaner usage message
 
