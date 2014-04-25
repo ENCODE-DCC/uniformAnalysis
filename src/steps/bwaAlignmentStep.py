@@ -10,10 +10,11 @@
 #          'alignmentRep'+replicate+'.bam'
 
 from src.logicalStep import LogicalStep
+from src.wrappers import samtools
 
 class BwaAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, encoding):
+    def __init__(self, analysis, replicate="1", encoding='sanger'):
         self.replicate = str(replicate)
         self.encoding  = encoding
         LogicalStep.__init__(self, analysis, 'alignmentByBwa_' + analysis.readType + 'Rep' + \
@@ -63,6 +64,8 @@ class BwaAlignmentStep(LogicalStep):
                 self.eap_slx_pe(refFile, input1, input2, bam)
         else:
             self.fail("fastq encoding '" + self.encoding + "' is not supported.")
+                
+        samtools.index(self, bam)
 
     # As no other step should call star scripts, there is no need for a wrapper
     # and wrapped methods are here:

@@ -4,7 +4,7 @@
 #
 #Usage: python(2.7) starAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
 #                               [<inFastqR2> <inFastqEvalR2>] <galaxyOutBam> \
-#                               <spikeIn> <gender> <genome> <expType> <repNo> <analysisId>
+#                               <spikeIn> <libId> <gender> <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 import json
@@ -20,7 +20,7 @@ if  sys.argv[1] == '--version':
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
         ana.readType = 'paired'
-        StarAlignmentStep(ana,'1').writeVersions(allLevels=True) # Prints to stdout
+        StarAlignmentStep(ana).writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)
@@ -31,21 +31,23 @@ galaxyInputFile      = sys.argv[2]
 galaxyEvalFile       = sys.argv[3]    # Look up tagLength and encoding
 galaxyOutputFile     = sys.argv[4]
 spikeIn              = sys.argv[5]
-gender               = sys.argv[6]
-genome               = sys.argv[7]
-expType              = sys.argv[8]
-repNo                = sys.argv[9]
-anaId                = sys.argv[10]
+libId                = sys.argv[6]
+gender               = sys.argv[7]
+genome               = sys.argv[8]
+expType              = sys.argv[9]
+repNo                = sys.argv[10]
+anaId                = sys.argv[11]
 if pairedOrUnpaired == "paired":
     galaxyInputFile2 = sys.argv[4]
     galaxyEvalFile2  = sys.argv[5]
     galaxyOutputFile = sys.argv[6]
     spikeIn          = sys.argv[7]
-    gender           = sys.argv[8]
-    genome           = sys.argv[9]
-    expType          = sys.argv[10]
-    repNo            = sys.argv[11]
-    anaId            = sys.argv[12]
+    libId            = sys.argv[8]
+    gender           = sys.argv[9]
+    genome           = sys.argv[10]
+    expType          = sys.argv[11]
+    repNo            = sys.argv[12]
+    anaId            = sys.argv[13]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -120,5 +122,5 @@ else:
     ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_star',ext='bam' )
 
 # Establish step and run it:
-step = StarAlignmentStep(ana,repNo, spikeIn, encoding, tagLength)
+step = StarAlignmentStep(ana,repNo, spikeIn, libId, encoding, tagLength)
 sys.exit( step.run() )

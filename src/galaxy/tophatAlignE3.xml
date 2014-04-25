@@ -1,7 +1,7 @@
-<tool id="starAlignE3" name="EAP alignment by STAR" version="1.0">
+<tool id="tophatAlignE3" name="EAP alignment by Tophat" version="1.0">
     <description> (fastQ to bam)</description>
     <command interpreter="python">
-        starAlignE3.py $runType.singlePaired
+        tophatAlignE3.py $runType.singlePaired
         #if $runType.singlePaired == "single":
              $fastqInput $fastqEval $bamUnpaired
         #else
@@ -61,18 +61,18 @@
     </inputs>
     <outputs>
         <data format="bam" name="bamUnpaired" 
-              label="bam by star ${name}Rep${repNo} alignments (unpaired)">
+              label="bam by tophat ${name}Rep${repNo} alignments (unpaired)">
             <filter>(runType['singlePaired'] == 'single')</filter>
         </data>
         <data format="bam" name="bamPaired" 
-              label="bam by star ${name}Rep${repNo} alignments (paired-end)">
+              label="bam by tophat ${name}Rep${repNo} alignments (paired-end)">
             <filter>(runType['singlePaired'] == 'paired')</filter>
         </data>
     </outputs>
     <help>
 .. class:: infomark
 
-   Aligns high-throughput-sequencing reads to the reference genome using 'STAR'. 
+   Aligns high-throughput-sequencing reads to the reference genome using 'Tophat'. 
    An *ENCODE3 Analysis Pipeline* involves multiple steps and dataset replicates, of which this
    is one. Use *EAP workflows* to ensure that all analysis steps are performed in the proper
    sequence.
@@ -111,8 +111,8 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce a single file: **bam by star** alignments produced by
-    the 'STAR' package and samtools.
+    This step is expected to produce a single file: **bam by tophat** alignments produced 
+    by 'tophat', 'bowtie' and 'samtools'.
 
     The **log** of this single step can be seen under *view details* stdout.
 

@@ -1,10 +1,10 @@
-<tool id="rnaBamToBwsE3" name="EAP RNA alignment to signal" version="1.0">
-    <description> (bam to 4 bigwigs)</description>
+<tool id="bamToBigWigE3" name="EAP alignment to signal" version="1.0">
+    <description> (bam to bigwig)</description>
     <command interpreter="python">
-        rnaBamToBwsE3.py $bamInput $bamEval $uniqPlusBw $uniqMinusBw $allPlusBw $allMinusBw
+        bamToBigWigE3.py $bamInput $bamEval $readFilter $strand $signalBw
         $genome $expType $repNo ${name}U${__user_id__}
     </command>
-    <version_command>python ../../../../tools/encode/rnaBamToBwsE3.py --version</version_command>
+    <version_command>python ../../../../tools/encode/bamToBigWigE3.py --version</version_command>
     <stdio>
         <exit_code range="1:" level="fatal" description="Fatal error" />
         <regex match=".*" source="stderr" level="log" />
@@ -21,16 +21,23 @@
                format="txt" />
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
         </param>
+        <param name="readFilter" type="select" label="Read Filter">
+            <option value="All" selected="true">All reads</option>
+            <option value="Uniq">Unique only</option>
+        </param>
+        <param name="strand" type="select" label="Strand">
+            <!-- <option value="Unstranded" selected="true">Unstranded</option> -->
+            <option value="Plus">Plus</option>
+            <option value="Minus">Minus</option>
+        </param>
         <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
                help="Letters and numbers only [optional]">
             <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
         </param>
     </inputs>
     <outputs>
-        <data name="uniqPlusBw"   format="bigWig" label="${name}Rep${repNo} Unique Plus Signal" />
-        <data name="uniqMinusBw"  format="bigWig" label="${name}Rep${repNo} Unique Minus Signal" />
-        <data name="allPlusBw"  format="bigWig" label="${name}Rep${repNo} All Plus Signal" />
-        <data name="allMinusBw" format="bigWig" label="${name}Rep${repNo} All Minus Signal" />
+        <data name="signalBw" format="bigWig" 
+              label="Signal ${readFilter} ${strand} ${name}Rep${repNo} from $bamInput.name" />
     </outputs>
     <help>
 .. class:: infomark
@@ -53,7 +60,11 @@
 
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
     replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results. 
+    results.
+    
+    The **Read Filter** allows excluding reads mapped to multiple locations in the signal.
+    
+    Set the **Strand** to ensure that signals reflect the strand reads were aligned to.
     
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 
@@ -62,12 +73,8 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce four files:
-    
-    - **Unique Plus Signal** covering reads that have been uniquely mapped to the plus (+) strand.
-    - **Unique Minus Signal** covering reads that have been uniquely mapped to the minus (-) strand.
-    - **All Plus Signal** covering all reads that have been mapped to the plus (+) strand.
-    - **All Minus Signal** covering all reads that have been mapped to the minus (-) strand.
+    This step is expected to produce a single file: **Signal** covering All or Uniquely mapped 
+    reads on the Plus or Minus strand.
 
     The **log** of this single step can be seen under *view details* stdout.
 

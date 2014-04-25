@@ -1,5 +1,5 @@
 import os, sys, pprint, traceback, json
-from datetime import datetime
+from datetime import datetime, timedelta
 from jobTree.scriptTree.target import Target
 from ra.raFile import RaFile
 from analysis import Analysis
@@ -68,6 +68,8 @@ class LogicalStep(Target):
         self._err = -1 # descendent classes should set this to returns from ganular steps
         self._status = 'Init' # Init/Running/Success/Fail
         self._dir = None # needs to make temp directory for itself
+        self._toolBegan = None
+        self._stepBegan = None
         self.ana.registerStep(self)  # Analysis may manage multiple steps simultaneously
 
     def __str__(self):
@@ -77,8 +79,9 @@ class LogicalStep(Target):
         self._status = 'Running'
         self.createDir()
         self.declareLogFile() # Ensures that the logical step dir and log exist
+        self._stepBegan = datetime.now()
         self.log.out("--- Beginning '" + self._stepName + "' [version: "+self.version+"] [" + 
-                     datetime.now().strftime("%Y-%m-%d %X (%A)")+ '] ---')
+                     self._stepBegan.strftime("%Y-%m-%d %X (%A)")+ '] ---')
         self._prevDir = os.getcwd()
         os.chdir(self.dir)
         self.log.out("> cd "+self.dir)
@@ -108,7 +111,10 @@ class LogicalStep(Target):
         self._err = 0 # by definition
         os.chdir(self._prevDir)
         #self.log.out("> cd "+self._prevDir)
-        self.log.out("\n>> Successfully completed '" + self._stepName + "'\n")
+        stepEnded = datetime.now()
+        stepTook = str(stepEnded - self._stepBegan + timedelta(seconds=0.5)).split('.')[0]
+        self.log.out("\n>> Successfully completed '" + self._stepName + "' [" + \
+                     stepEnded.strftime("%Y-%m-%d %X (%A)") + ' duration:' + stepTook + "]\n")
         self.ana.onSucceed(self)
         
     def fail(self, message):
@@ -116,7 +122,10 @@ class LogicalStep(Target):
     
     def onFail(self, e, logTrace=False):
         self._status = 'Fail'
-        self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "'\n")
+        stepEnded = datetime.now()
+        stepTook = str(stepEnded - self._stepBegan + timedelta(seconds=0.5)).split('.')[0]
+        self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "' [" + \
+                     stepEnded.strftime("%Y-%m-%d %X (%A)") + ' duration:' + stepTook + "]\n")
         if logTrace:
             self.log.out(traceback.format_exc())
         if self._err == 0:
@@ -249,13 +258,17 @@ class LogicalStep(Target):
     
     def toolBegins(self, toolName):
         '''Standardized message before tool comandline'''
-        self.log.out("\n# " + datetime.now().strftime("%Y-%m-%d %X") + " '" + toolName + \
+        self._toolBegan = datetime.now()
+        self.log.out("\n# [" + self._toolBegan.strftime("%Y-%m-%d %X") + "] '" + toolName + \
                      "' begins...")
         
     def toolEnds(self,toolName,retVal,raiseError=True):
         '''Standardized message after tool comandline.  Raise exception for non-zero retVal.'''
-        self.log.out("# "+datetime.now().strftime("%Y-%m-%d %X") + " '" + toolName + \
-                     "' returned " + str(retVal))
+        toolEnded = datetime.now()
+        toolTook = str(toolEnded - self._toolBegan + timedelta(seconds=0.5)).split('.')[0]
+        
+        self.log.out("# ["+toolEnded.strftime("%Y-%m-%d %X") + ' duration:' + toolTook + "] '" + \
+                     toolName + "' returned " + str(retVal))
         if raiseError and not retVal == 0:
             self._err = retVal
             self.fail(toolName + " returned " + str(self._err))
@@ -287,6 +300,7 @@ class LogicalStep(Target):
         if jsonObj:
             fp = open(filePath, 'w')
             json.dump(jsonObj, fp, sort_keys=True, indent=4, separators=(',', ': '))
+            fp.write('\n') # Hopefully this makes galaxy happy that the json is plain txt.
             fp.close()
 
     def createMetadataFile(self, name, target=False):
@@ -329,10 +343,17 @@ class LogicalStep(Target):
         if executable.find('/') == -1: # Not a path, then look for this on the path!
             toolId = self.ana.getCmdOut("md5sum `which "+executable+"` | awk '{print $1}'", \
                                         dryRun=False,logCmd=False)
+            if toolId.startswith('which: no'): # failed to find executable: might be perl script
+                toolId = self.ana.getCmdOut("md5sum "+self.ana.toolsDir + executable + \
+                                            " | awk '{print $1}'",dryRun=False,logCmd=False)
+                if toolId.startswith('md5sum: '): # failed to find executable
+                    toolId = ""
             toolName = executable
         else:
             toolId = self.ana.getCmdOut("md5sum "+executable+" | awk '{print $1}'", \
                                         dryRun=False,logCmd=False)
+            if toolId.startswith('md5sum: '): # failed to find executable
+                toolId = ""
             toolName = os.path.split( executable )[1]
 
         toolData = self.ana.getToolData(toolId, toolName)
@@ -361,7 +382,7 @@ class LogicalStep(Target):
                 version = actual # Use actual rather than expected.
 
         # If the toolData was found by name, then the tooldIds may not match, so:
-        if toolId != toolData['toolId']:
+        if toolId != toolData['toolId'] and toolId != "":
             version += ' (md5sum:'+toolId+')' 
 
         # If there is a package name or version that differs, then use it

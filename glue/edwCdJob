@@ -1,0 +1,11 @@
+#!/bin/bash -ex
+# Create a temp directory, run job in it, and the remove that directory
+cd /scratch
+mkdir -p edwCdJob
+cd edwCdJob
+uuid=$(uuidgen)
+mkdir $uuid
+cd $uuid
+$*
+cd ..
+rm -r $uuid

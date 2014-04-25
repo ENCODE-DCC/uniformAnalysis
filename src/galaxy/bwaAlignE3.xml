@@ -53,11 +53,11 @@
     </inputs>
     <outputs>
         <data format="bam" name="bamUnpaired" 
-              label="${name}Rep${repNo} bam alignments (unpaired)">
+              label="bam by bwa${name}Rep${repNo} alignments (unpaired)">
             <filter>(runType['singlePaired'] == 'single')</filter>
         </data>
         <data format="bam" name="bamPaired" 
-              label="${name}Rep${repNo} bam alignments (paired-end)">
+              label="bam by bwa ${name}Rep${repNo} alignments (paired-end)">
             <filter>(runType['singlePaired'] == 'paired')</filter>
         </data>
     </outputs>
@@ -97,8 +97,8 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce a single file: **bam alignments** produced by the 'bwa' 
-    package and samtools.
+    This step is expected to produce a single file: **bam by bwa** alignments produced by 
+    the 'bwa' package and samtools.
 
     The **log** of this single step can be seen under *view details* stdout.
 

@@ -99,4 +99,15 @@ def idxstats(step, inBam, outStats):
 
     step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
     step.toolEnds(toolName, step.err)
+
+def header(step, inBam, outHeader):
+    '''Outputs header of a bam'''
+    cmd = 'samtools view -H {inBam} > {outHeader}'.format(inBam=inBam, outHeader=outHeader)
+    toolName = __name__.split('.')[-1] + ' header'
+    step.toolBegins(toolName)
+    step.getToolVersion('samtools',logOut=True)
+
+    step.err = step.ana.runCmd(cmd, logOut=False, log=step.log)
+    step.toolEnds(toolName, step.err)
+    
     

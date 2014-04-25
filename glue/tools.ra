@@ -7,7 +7,7 @@
 #   Note: name,version could act as a secondary unique key.
 # - 'versionCommand' command-line method to find tool version
 # - 'executable' EAP_TOOLS_DIR relative path to the executable. Used for md5sum validation.
-#   Note: dependent scripts should include engine (e.g. 'java -jar SortSam.jar')
+#   Note: dependent scripts should include engine (e.g. 'python2.7 ${EAP_TOOLS_DIR}/hotspot.py')
 #
 # Most tools are downloaded from git style repositories as packages.
 # - 'packageId' is the gitId, or SHA1 or md5sum identifier of the package.
@@ -24,12 +24,15 @@
 # - fastqStatsAndSubsample and bedGraphPack not part of ucscUtils package yet
 # - edwBamStats and edwSolexaToSangerFastq: not part of ucscUtils package yet and unversioned
 # - all eap_* scripts need to be made a part of ucscUtils or some other package
-# - java is a part of encode-01 linux install, so there is no archive, etc.  More needed?
-# - java executable is not the same on hgwdev and encode-01, so there are atleast 2 toolIds
 #   galaxy methods can survive the non-unique name,version alt key!
 # - numpy, pysam and scipy are all python needed packages with no 'executable'
+# - makewigglefromBAM-NH.py needs github release AND version
+# - tophat_bam_xsA_tag_fix.pl needs github release AND version
 
 
+### Third party tools section:
+
+### Is this used anywhere?
 toolId 7bf805c86c798aeb59e0b66c2380d645
 name bedops
 version 2.3.0
@@ -44,6 +47,7 @@ email bedops@stamlab.org
 packageId gitId dc154918df5ed1ae9bcfef07187bed37da3759e4  
 packageSize 4812239
 
+### Is this used anywhere?
 toolId 220e9f396f2602a8e1dfdc56d1a07291
 name bedmap
 version 2.3.0
@@ -58,6 +62,7 @@ email bedops@stamlab.org
 packageId gitId dc154918df5ed1ae9bcfef07187bed37da3759e4  
 packageSize 4812239
 
+### Is this used anywhere?
 toolId 0ef4c939101cc73c6cd459b640dbebf1
 name sort-bed
 version 2.3.0
@@ -72,6 +77,7 @@ email bedops@stamlab.org
 packageId gitId dc154918df5ed1ae9bcfef07187bed37da3759e4  
 packageSize 4812239
 
+### Is this used anywhere?
 toolId 19ffcc180a09f24a1237398c19aa6783
 name starch
 version 2.3.0
@@ -86,6 +92,7 @@ email bedops@stamlab.org
 packageId gitId dc154918df5ed1ae9bcfef07187bed37da3759e4  
 packageSize 4812239
 
+### Is this used anywhere?
 toolId f19df07a543009b5b1e83f8b3bce35fa
 name starchcat
 version 2.3.0
@@ -171,19 +178,20 @@ packageVersion 0.5.9-r16
 packageId gitId 87664941b09d8ded9705ccdb5af7b375751d5187  
 packageSize 138167
 
-toolId 159d49eabb8747bceda741a51f032321
-name bam_to_histo.py
-version 0.8
-versionCommand python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py -v | awk '{print $1}' 
-executable python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py
-packageName census       
-url https://github.com/matted/census/archive/v0.8.tar.gz                    
-archive /hive/groups/encode/encode3/tools/census-0.8/census-0.8.tar.gz
-installed /hive/groups/encode/encode3/tools/census-0.8/
-packageVersion 0.8                  
-email matted@mit.edu
-packageId gitId 5d2aacb31e071ca0ed473f2574f00cabd6ad5365  
-packageSize 35237
+### census no longer used
+# toolId 159d49eabb8747bceda741a51f032321
+# name bam_to_histo.py
+# version 0.8
+# versionCommand python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py -v | awk '{print $1}' 
+# executable python2.7 ${EAP_TOOLS_DIR}/bam_to_histo.py
+# packageName census       
+# url https://github.com/matted/census/archive/v0.8.tar.gz                    
+# archive /hive/groups/encode/encode3/tools/census-0.8/census-0.8.tar.gz
+# installed /hive/groups/encode/encode3/tools/census-0.8/
+# packageVersion 0.8                  
+# email matted@mit.edu
+# packageId gitId 5d2aacb31e071ca0ed473f2574f00cabd6ad5365  
+# packageSize 35237
 
 toolId bbf6208b209fe336bc0c8729d460c9ff
 name fastqc
@@ -256,7 +264,6 @@ email vladimir.liu@gmail.com
 packageId md5sum 930bfb0711ca289ce56cf7943d838120
 packageSize 1679498
 
-
 toolId 9119e40c6087e4751aa9fac6f1410aa3
 name run_spp.R
 version 2.0
@@ -271,47 +278,50 @@ email anshul.kundaje@gmail.com
 packageId SHA1 b3761331e0c011d7faa9f1dad2ac9bd37c82f050
 packageSize 152878
 
-toolId 9b2baf5c815fb23b074e9292056d3d1c
-name SortSam.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/SortSam.jar --version | awk '{print $1}'
-executable java -jar ${EAP_TOOLS_DIR}/SortSam.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>          
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId 9b2baf5c815fb23b074e9292056d3d1c
+# name SortSam.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/SortSam.jar --version | awk '{print $1}'
+# executable java -jar ${EAP_TOOLS_DIR}/SortSam.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>          
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
-toolId 91b6bc3dc6a9629afeff6c370a578075
-name CollectInsertSizeMetrics.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/CollectInsertSizeMetrics.jar --version | awk '{print $1}'
-executable java -jar CollectInsertSizeMetrics.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>             
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId 91b6bc3dc6a9629afeff6c370a578075
+# name CollectInsertSizeMetrics.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/CollectInsertSizeMetrics.jar --version | awk '{print $1}'
+# executable java -jar CollectInsertSizeMetrics.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>             
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
-toolId c999481ef13f1411b1d7a94bfdcf17e2
-name DownsampleSam.jar
-version 1.94(1484)
-versionCommand java -jar ${EAP_TOOLS_DIR}/DownsampleSam.jar --version | awk '{print $1}'
-executable java -jar DownsampleSam.jar
-packageName picard-tools
-url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
-archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
-installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
-packageVersion 1.94(1484)
-email  <unknown>             
-packageId md5sum dde380863282152eb4690560ff60e1f5
-packageSize 43569338
+### No longer need picard-tools
+# toolId c999481ef13f1411b1d7a94bfdcf17e2
+# name DownsampleSam.jar
+# version 1.94(1484)
+# versionCommand java -jar ${EAP_TOOLS_DIR}/DownsampleSam.jar --version | awk '{print $1}'
+# executable java -jar DownsampleSam.jar
+# packageName picard-tools
+# url http://sourceforge.net/projects/picard/files/picard-tools/1.94/
+# archive /hive/groups/encode/encode3/tools/picard-tools-1.94/picard-tools-1.94.zip
+# installed /hive/groups/encode/encode3/tools/picard-tools-1.94/
+# packageVersion 1.94(1484)
+# email  <unknown>             
+# packageId md5sum dde380863282152eb4690560ff60e1f5
+# packageSize 43569338
 
 toolId 613b3af42a5bd0d8f05625e003e2c854
 name samtools
@@ -326,6 +336,121 @@ packageVersion 0.1.19-96b5f2294a
 email hengli@broadinstitute.org
 packageId gitId 44428cd6d2c6f24b7fe59e1333d883a5a1a11e12
 packageSize 557812
+
+toolId dae37d6a00b537deaf0a5bda56c1d93f
+name STAR
+version 2.3.1
+versionCommand head -1 ${EAP_TOOLS_DIR}/STAR-ENCODE_2014-03-16_2.3.1z1/README | awk '{print $2}'
+executable STAR
+packageName STAR
+packageVersion 2.3.1
+url https://github.com/alexdobin/STAR/archive/ENCODE_2014-03-16_2.3.1z1.tar.gz
+archive /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/STAR-ENCODE_2014-03-16_2.3.1z1.tar.gz
+installed /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/
+email dobin@cshl.edu         
+packageId gitId 9ec48835b9c41e576123b24785747c09d9355307
+packageSize 1155777
+
+### makewigglefromBAM-NH.py - Needs github release AND version
+toolId 56dc86a6cf4d0ceb5e6517bf9b5b2c37
+name makewigglefromBAM-NH.py
+version Last modified 09/06/2013
+versionCommand grep "Last modified" ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py | awk '{print $2" "$3" "$4}'
+executable makewigglefromBAM-NH.py
+packageName GeorgiScripts
+packageVersion Last modified 09/06/2013
+url https://github.com/georgimarinov/GeorgiScripts.git
+#archive /hive/groups/encode/encode3/tools/GeorgiScripts/*.tgz
+installed /hive/groups/encode/encode3/tools/GeorgiScripts/
+email georgi@caltech.edu         
+packageId gitId e7a6ae12e65b7b8a391dc511b8d94b7173225bbb
+#packageSize 241237
+
+toolId 599b0f419eab73b06a2e70c6f5d76cad
+name bowtie2
+version 2.1.0
+versionCommand bowtie2 --version 2>&1 | grep bowtie | awk '{print $3}'
+executable bowtie2
+packageName bowtie2
+packageVersion 2.1.0
+url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+email langmea@cs.jhu.edu
+packageId md5sum c00c168f8825382896cee967e191d71b
+packageSize 15631689
+
+toolId 545e73a9774e613c57a438ced5b227ea
+name bowtie2-align
+version 2.1.0
+versionCommand bowtie2-align --version 2>&1 | grep bowtie | awk '{print $3}'
+executable bowtie2-build
+packageName bowtie2
+packageVersion 2.1.0
+url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+email langmea@cs.jhu.edu
+packageId md5sum c00c168f8825382896cee967e191d71b
+packageSize 15631689
+
+toolId 545e73a9774e613c57a438ced5b227ea
+name bowtie2-build
+version 2.1.0
+versionCommand bowtie2-build --version 2>&1 | grep bowtie | awk '{print $3}'
+executable bowtie2-build
+packageName bowtie2
+packageVersion 2.1.0
+url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+email langmea@cs.jhu.edu
+packageId md5sum c00c168f8825382896cee967e191d71b
+packageSize 15631689
+
+toolId 7671d99d6282fcc729262b64b671d27d
+name bowtie2-inspect
+version 2.1.0
+versionCommand bowtie2-inspect --version 2>&1 | grep bowtie | awk '{print $3}'
+executable bowtie2-inspect
+packageName bowtie2
+packageVersion 2.1.0
+url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+email langmea@cs.jhu.edu
+packageId md5sum c00c168f8825382896cee967e191d71b
+packageSize 15631689
+
+toolId 72a3416b1db65cd746378fe4401e82a1
+name tophat
+version v2.0.8
+versionCommand tophat -v | awk '{print $2}'
+executable tophat
+packageName tophat
+packageVersion 2.0.8
+url http://tophat.cbcb.umd.edu/downloads/tophat-2.0.8.Linux_x86_64.tar.gz
+archive /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/tophat-2.0.8.Linux_x86_64.tar.gz
+installed /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/
+email tophat.cufflinks@gmail.com
+packageId md5sum ec29164105d44a5b4ac5bd73e1d1918a
+packageSize 12602082
+
+toolId 2e76f25ab5b87020742d95790c02fbee
+name tophat_bam_xsA_tag_fix.pl
+version v1.0 xwei 04/07/2014
+versionCommand perl ${EAP_TOOLS_DIR}/tophat_bam_xsA_tag_fix.pl --version 2>&1
+executable perl ${EAP_TOOLS_DIR}/tophat_bam_xsA_tag_fix.pl
+packageName xweiScripts
+packageVersion v1.0
+url https://github.com/xweigit/xweiEncodeScripts/archive/v1.0.tar.gz
+archive /hive/groups/encode/encode3/tools/xweiEncodeScripts-1.0/xweiEncodeScripts-1.0.tar.gz
+installed /hive/groups/encode/encode3/tools/xweiEncodeScripts-1.0/
+email xwei@uchc.edu
+packageId gitId c3f99d8ae400b4e73a0ff35ee7d586734899283f
+packageSize 1654
+
+### UCSC scripts section:
 
 toolId 1f5634ec995a813c45d74194cbb5bc92
 name bedGraphToBigWig
@@ -429,109 +554,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-### Old.  Replaced outright by 2.3.1
-toolId 27e19e80a243f9e884da292806a95c4a
-name STAR
-version 2.3.0
-versionCommand head -1 ${EAP_TOOLS_DIR}/STAR_2.3.0e/README.txt | awk '{print $2}'
-executable STAR_2.3.0e/STAR
-packageName STAR
-packageVersion 2.3.0e
-url http://rna-star.googlecode.com/files/STAR_2.3.0e.tgz
-archive /hive/groups/encode/encode3/tools/STAR_2.3.0e/STAR_2.3.0e.tgz
-installed /hive/groups/encode/encode3/tools/STAR_2.3.0e/
-email dobin@cshl.edu         
-packageId SHA1 e12da3769d1fe5b1003587956f1e6fad2f7a16d7
-packageSize 241237
-### doc http://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CCQQFjAA&url=http%3A%2F%2Frna-star.googlecode.com%2Ffiles%2FSTARmanual_2.1.4.pdf&ei=LIH1UsOuA4XfoATWxYDgBQ&usg=AFQjCNFS5bU3aZ1jEB2bFWZjM9-phpdHbg&bvm=bv.60983673,d.cGU
-
-toolId dae37d6a00b537deaf0a5bda56c1d93f
-name STAR
-version 2.3.1
-versionCommand head -1 ${EAP_TOOLS_DIR}/STAR-ENCODE_2014-03-16_2.3.1z1/README | awk '{print $2}'
-executable STAR
-packageName STAR
-packageVersion 2.3.1
-url https://github.com/alexdobin/STAR/archive/ENCODE_2014-03-16_2.3.1z1.tar.gz
-archive /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/STAR-ENCODE_2014-03-16_2.3.1z1.tar.gz
-installed /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/
-email dobin@cshl.edu         
-packageId gitId 9ec48835b9c41e576123b24785747c09d9355307
-packageSize 1155777
-
-### Needs github release
-toolId 56dc86a6cf4d0ceb5e6517bf9b5b2c37
-name makewigglefromBAM-NH.py
-version Last modified 09/06/2013
-versionCommand grep "Last modified" ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py | awk '{print $2" "$3" "$4}'
-executable makewigglefromBAM-NH.py
-packageName GeorgiScripts
-packageVersion Last modified 09/06/2013
-url https://github.com/georgimarinov/GeorgiScripts.git
-#archive /hive/groups/encode/encode3/tools/GeorgiScripts/*.tgz
-installed /hive/groups/encode/encode3/tools/GeorgiScripts/
-email georgi@caltech.edu         
-packageId gitId e7a6ae12e65b7b8a391dc511b8d94b7173225bbb
-#packageSize 241237
-
-### Work in progress
-toolId 72a3416b1db65cd746378fe4401e82a1
-name tophat
-version v2.0.8
-versionCommand tophat -v | awk '{print $2}'
-executable tophat
-packageName tophat
-packageVersion 2.0.8
-url http://tophat.cbcb.umd.edu/downloads/tophat-2.0.8.Linux_x86_64.tar.gz
-archive /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/tophat-2.0.8.Linux_x86_64.tar.gz
-installed /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/
-email tophat.cufflinks@gmail.com
-packageId md5sum ec29164105d44a5b4ac5bd73e1d1918a
-packageSize 12602082
-
-toolId 8cd5722ceb0360c5ca048ffbcdb1cbf0
-name bowtie2
-version 2.2.1
-versionCommand bowtie2 --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2
-packageName bowtie2
-packageVersion 2.2.1
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.1/bowtie2-2.2.1-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.2.1/bowtie2-2.2.1-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.2.1/
-email langmea@cs.jhu.edu
-packageId md5sum 3d733972557416f7b8eda702a3d56567
-packageSize 26374304
-
-toolId 250ccb77161f7bc1996ca775c5e4852c
-name bowtie2-build
-version 2.2.1
-versionCommand bowtie2-build --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2-build
-packageName bowtie2
-packageVersion 2.2.1
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.1/bowtie2-2.2.1-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.2.1/bowtie2-2.2.1-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.2.1/
-email langmea@cs.jhu.edu
-packageId md5sum 3d733972557416f7b8eda702a3d56567
-packageSize 26374304
-
-toolId 623a82e3572200cd53add4c2ed655492
-name bowtie2-inspect
-version 2.2.1
-versionCommand bowtie2-inspect --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2-inspect
-packageName bowtie2
-packageVersion 2.2.1
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.1/bowtie2-2.2.1-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.2.1/bowtie2-2.2.1-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.2.1/
-email langmea@cs.jhu.edu
-packageId md5sum 3d733972557416f7b8eda702a3d56567
-packageSize 26374304
-
-### eap_run scripts:
+### eap_run scripts section:
 ### - all eap_* scripts need to be made a part of ucscUtils or some other package
 
 toolId 9aca44e597f42a0afd7227708701df7b
@@ -646,7 +669,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId b8bdb0ebe431507b22a4d0b711638bf8
+toolId d7c9cccc7fb432340783e3b5f9dea1ba
 name eap_run_star_long_pe
 version v1
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
@@ -660,7 +683,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 64036d5abf20d1cba89d8e76cd95ed73
+toolId cd59d6b561f1d495166122c28d50aa0e
 name eap_run_star_long_se
 version v1
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
@@ -674,12 +697,109 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-### Work in progress...
-toolId 4faf3a0c52c70d7a270cce48e07145af
-name eap_run_rna_bam_to_bigwigs
+toolId 6b0f907aa0429bf01feb6008b0101041
+name eap_run_tophat_long_ercc_pe
 version v1
-versionCommand grep \"usage `which eap_run_rna_bam_to_bigwigs` | awk '{print $3}' | tr -d :
-executable eap_run_rna_bam_to_bigwigs
+versionCommand grep \"usage `which eap_run_tophat_long_ercc_pe` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_ercc_pe
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId eb5dc36a22b346a93f8ecd99de1228e4
+name eap_run_tophat_long_ercc_se
+version v1
+versionCommand grep \"usage `which eap_run_tophat_long_ercc_se` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_ercc_se
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId 37c690b1347f00d21253b3b20d834e6c
+name eap_run_tophat_long_wsc_pe
+version v1
+versionCommand grep \"usage `which eap_run_tophat_long_wsc_pe` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_wsc_pe
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId f2e05799e27b0009ce0dfe15e3fd3167
+name eap_run_tophat_long_wsc_se
+version v1
+versionCommand grep \"usage `which eap_run_tophat_long_wsc_se` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_wsc_se
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId 90f4344e835890955940207eadea63c1
+name eap_run_bam_to_bw_all_minus
+version v1
+versionCommand grep \"usage `which eap_run_bam_to_bw_all_minus` | awk '{print $3}' | tr -d :
+executable eap_run_bam_to_bw_all_minus
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId bdc1cef76c5f6cfd463f5f299c692ee5
+name eap_run_bam_to_bw_all_plus
+version v1
+versionCommand grep \"usage `which eap_run_bam_to_bw_all_plus` | awk '{print $3}' | tr -d :
+executable eap_run_bam_to_bw_all_plus
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId 38ce608b5afc671f78296e0026b08def
+name eap_run_bam_to_bw_uniq_minus
+version v1
+versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_minus` | awk '{print $3}' | tr -d :
+executable eap_run_bam_to_bw_uniq_minus
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId c92064c528d119e0fdb0607fa6f36454
+name eap_run_bam_to_bw_uniq_plus
+version v1
+versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_plus` | awk '{print $3}' | tr -d :
+executable eap_run_bam_to_bw_uniq_plus
 packageName ucscUtils
 url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
 archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
@@ -745,7 +865,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 160a434194dd8a01a0bc490bd192f222
+toolId 3e90bec1f71afd0ff767745c2d3bf161
 name toolsRaCheck.py
 version v1
 versionCommand toolsRaCheck.py -version | head -1 | awk '{print $2}'
@@ -761,29 +881,30 @@ packageSize 42410574
 
 ### Engines for running other tools:
 
+### java was only needed for picard-tools which are no longer used.
 ### Part of encode-01 linux install   More needed?
 ### java executable is not the same on hgwdev and encode-01 !!
-toolId 906a0890a4cc5d75449ace194738d14c
-name java
-version 1.6.0_24
-versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
-executable java
-packageName java
-url <unknown>
-#archive <unknown>
-installed /usr/bin/java
-packageVersion 1.6.0_24
+# toolId 906a0890a4cc5d75449ace194738d14c
+# name java
+# version 1.6.0_24
+# versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
+# executable java
+# packageName java
+# url <unknown>
+# #archive <unknown>
+# installed /usr/bin/java
+# packageVersion 1.6.0_24
 
-toolId 7e313d41a4229bede0df8f1082cdaf32
-name java
-version 1.6.0_24
-versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
-executable java
-packageName java
-url <unknown>
-#archive <unknown>
-installed /usr/bin/java
-packageVersion 1.6.0_24
+# toolId 7e313d41a4229bede0df8f1082cdaf32
+# name java
+# version 1.6.0_24
+# versionCommand java -version 2>&1 | grep version | awk '{print $3}' | tr -d \"
+# executable java
+# packageName java
+# url <unknown>
+# #archive <unknown>
+# installed /usr/bin/java
+# packageVersion 1.6.0_24
 
 toolId d0574c3d29e4683a2a7d82b35b857b55
 name python
@@ -804,10 +925,11 @@ version 2.15.2
 versionCommand Rscript --version 2>&1 | awk '{print $5}'
 executable Rscript
 packageName R
-packageVersion 2.15.2
 url http://cran.cnr.berkeley.edu/src/base/R-2/R-2.15.2.tar.gz
 archive /hive/groups/encode/encode3/tools/R-2.15.2/R-2.15.2.tar.gz
 installed /hive/groups/encode/encode3/tools/R-2.15.2/
+packageVersion 2.15.2
+email R-core@r-project.org
 packageId md5sum 346d16bab26fcae15e53755be8a69b00
 packageSize 24338934
 

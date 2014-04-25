@@ -3,50 +3,41 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 4 ]; then 
-echo "usage v1: eap_run_star_long_pe star-genomeDir read1.fq read2.fq out.bam"
+if [ $# -ne 5 ]; then 
+echo "usage v1: eap_run_star_long_pe star-genomeDir libraryId read1.fq read2.fq out.bam"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
 # Copy reads to local tmp file since will be making several passes
-cp $2 tmp1.fq.gz
-cp $3 tmp2.fq.gz
+cp $3 read1.fq.gz
+cp $4 read2.fq.gz
 
-# Using $1 as an reference genome, align reads
-STAR --genomeDir $1 --readFilesIn tmp1.fq.gz tmp2.fq.gz                       \
-     --readFilesCommand zcat --runThreadN 6 --genomeLoad LoadAndRemove         \
-     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 \
-     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04               \
-     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000      \
-     --outSAMunmapped Within --outFilterType BySJout --outStd SAM |                \
-     samtools view -S -b -u - | samtools sort -m 20000000000 - sorted
-#rm Log.out
-    
-# Building a new header
-HD="@HD\tVN:1.4\tSO:coordinate" 
-stCommand="samtools view -S -b -u - | samtools sort -m 20000000000 - sorted" 
-newPG="@PG\tID:Samtools\tPN:Samtools\tCL:$stCommand\tPP:STAR\tVN:0.1.18" 
+# samtools command, library and COfile will be folded into bam header
+samtoolsCommand="samtools view -buS - | samtools sort -m10G - sorted"
+libraryId="@CO\tLIBID:$2"
+echo -e $libraryId > COfile.txt
+cat $1/COfile.txt >> COfile.txt
 
-samtools view -H -S sorted.bam | \
-gawk -v HD="$HD" -v newPG="$newPG" -v headDone=0 \
-   '{     if ($0 ~ /^@PG/) {PG=$0} 
-     else if ($0 ~ /^@HD/) {} 
-     else {if(!headDone) {print HD; 
-                          print newPG"\n"PG; 
-                          print $0; headDone = 1} 
-           else {print $0}}}' > newHeader.sam
-           
-# Add reference genome specific accessions to header
-cat $1/COfile.txt >> newHeader.sam
+# Note: in order to run on cluster, using:
+# - STAR symlinked to STARstatic, 
+# - --genomeLoad NoSharedMemory (instead of LoadAndRemove) 
+# - 32g ram, 12 cpus.
 
-### TODO: Find appropriate accession for library.  Perhaps it is beyond scope.
-### echo "@CO LIBID:ENCLB175ZZZ" >> newHeader.sam 
+# Using $1 as an reference genome, align reads ($2 and $3)
+STAR --genomeDir $1 --readFilesIn read1.fq.gz read2.fq.gz                           \
+     --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory             \
+     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
+     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
+     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
+     --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD VN:1.4 SO:coordinate      \
+     --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:VN:0.1.19-96b5f2294a \
+     --outSAMunmapped Within --outFilterType BySJout --outStd SAM > star.sam
+     
+samtools view -buS star.sam > star.bam
+samtools sort -m10G star.bam sorted
 
-samtools reheader newHeader.sam sorted.bam > reheaded.bam
-
-#rm tmp1.fq.gz tmp2.fq.gz sorted.bam
-
-mv reheaded.bam $4
+#rm read1.fq.gz read2.fq.gz star.sam star.bam
+mv sorted.bam $5
 
 # make sure star log is recorded.
 cat Log.final.out

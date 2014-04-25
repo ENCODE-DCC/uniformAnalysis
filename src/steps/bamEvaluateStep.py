@@ -3,9 +3,9 @@
 # It takes a sample of a bam and characterizes the library complexity
 #
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
-# Outputs: 1 interim bam sample file, keyed as: 'alignmentRep'  + replicate + '_5M.bam'
-#          1 interim Corr       file, keyed as: 'strandCorrRep' + replicate +    '.txt'
-#          1 target json        file, keyed as: 'bamEvaluateRep' + replicate +   '.json'
+# Outputs: 1 interim bam sample file, keyed as: 'alignment'  + suffix + '_5M.bam'
+#          1 interim Corr       file, keyed as: 'strandCorr' + suffix +    '.txt'
+#          1 target json        file, keyed as: 'bamEvaluate' + suffix +   '.json'
 
 import os
 from src.logicalStep import LogicalStep
@@ -14,10 +14,11 @@ from src.wrappers import samtools, bedtools, phantomTools, ucscUtils
 
 class BamEvaluateStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, sampleSize):
+    def __init__(self, analysis, replicate="1", suffix="", sampleSize=0):
         self.replicate = str(replicate)
+        self.suffix = suffix
         self.sampleSize = sampleSize
-        LogicalStep.__init__(self, analysis, 'bamEvaluateRep' + self.replicate)
+        LogicalStep.__init__(self, analysis, 'bamEvaluate' + self.suffix)
         
     def writeVersions(self,raFile=None,allLevels=False):
         '''Writes versions to to the log or a file.'''
@@ -39,15 +40,28 @@ class BamEvaluateStep(LogicalStep):
         bam = self.ana.getFile('alignmentRep' + self.replicate + '.bam')
         
         # Outputs:
-        strandCorr = self.declareInterimFile( 'strandCorrRep'+ self.replicate + '.txt')
-        bamSample  = self.declareInterimFile('alignmentRep' + self.replicate + '_5M.bam')
+        strandCorr = self.declareInterimFile('strandCorr'+ self.suffix + '.txt')
+        bamSample  = self.declareInterimFile('alignment' + self.suffix + '_5M.bam')
 
-        # Do UCSCs bam stats first  
+        # Read bam header to see if aligner can be determined
+        bamHeader  = self.declareGarbageFile('bamHeader.txt')
+        samtools.header(self,bam,bamHeader)
+        pg = self.ana.getCmdOut("grep \@PG "+bamHeader,logCmd=False,errOk=True)
+        if pg.find('STAR') != -1:
+            self.json['alignedBy'] = 'STAR'
+        elif pg.lower().find('tophat') != -1:
+            self.json['alignedBy'] = 'Tophat'
+        elif pg.find('BEDTools_bedToBam') != -1:
+            self.json['alignedBy'] = 'bwa'
+        else:
+            self.json['alignedBy'] = 'unknown'
+
+        # Do UCSCs bam stats
         statsRa  = self.declareGarbageFile('stats.ra')
         tagAlignSample  = self.declareGarbageFile('sample.tagAlign')
         ucscUtils.edwBamStats(self, bam, statsRa, tagAlignSample, self.sampleSize)
         
-        # json summary:
+        # json summary of stats:
         if not self.ana.dryRun:
             stats = Settings(statsRa)
             if stats.getBoolean('isPaired'):
@@ -110,5 +124,5 @@ class BamEvaluateStep(LogicalStep):
             self.json['strandCorrelation']['Frag'] = 0
             self.json['strandCorrelation']['RSC'] = 0
             self.json['strandCorrelation']['NSC'] = 0
-
-        self.createAndWriteJsonFile( 'bamEvaluateRep'+ self.replicate, target=True )
+            
+        self.createAndWriteJsonFile( 'bamEvaluate'+ self.suffix, target=True )

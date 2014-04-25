@@ -8,13 +8,16 @@
 # Outputs: a single bam target keyed as: 'alignmentStarRep'+replicate+'.bam'
 
 from src.logicalStep import LogicalStep
+from src.wrappers import samtools
 
 class StarAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate, spikeIn='ERCC', encoding='sanger', tagLen=101):
+    def __init__(self, analysis, replicate='1', spikeIn='ERCC', libId='', \
+                                                                encoding='sanger', tagLen=100):
         self.replicate = str(replicate)
         self.encoding  = encoding
         self.spikeIn   = spikeIn
+        self.libId     = libId
         self.tagLen    = int(tagLen)
         LogicalStep.__init__(self, analysis, 'alignmentByStar_' + analysis.readType + 'Rep' + \
                                                                                    self.replicate)
@@ -43,36 +46,29 @@ class StarAlignmentStep(LogicalStep):
         # Outputs:
         bam = self.declareTargetFile('alignmentStarRep' + self.replicate + '.bam')
         
-        # TODO: Distinguish between long and short RNA
-        # TODO: Distinguish between ERCC and Wold
-        # TODO Use tagLen to determine which genomeDir (--sjdbOverhang 100).  Currently all 100.
-        # TODO Use tagLen to determine short RNA-seq.
-        # TODO: support solexa?
-        
         # Locate the correct reference file(s)
         genome = self.ana.genome
-        refDir = self.ana.refDir + genome + "/starData/"
+        refDir = self.ana.refDir + genome + "/starData/" 
         if self.ana.gender == 'female':  # male and unspecified are treated the same
             refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/starData/"
-        if self.spikeIn != '':
-            refDir += self.spikeIn + '/'
-            
+        refDir += self.spikeIn  # doesn't end in '/' on purpose.
+        
         if self.ana.type == 'RNAseq-long':
             if self.encoding.lower().startswith('sanger'):
                 if self.ana.readType == 'single':
-                    self.eap_long_se(refDir, input1, bam)
+                    self.eap_long_se(refDir, self.libId, input1, bam)
                 elif self.ana.readType == 'paired':
-                    self.eap_long_pe(refDir, input1, input2, bam)
+                    self.eap_long_pe(refDir, self.libId, input1, input2, bam)
             else:
                 self.fail("fastq encoding '" + self.encoding + "' is not supported.")
         else:
                 self.fail("Alignment by STAR for '"+self.ana.type+"' is currently not supported.")
 
-    def eap_long_se(self, refDir, fastq, outBam):
+    def eap_long_se(self, refDir, libId, fastq, outBam):
         '''Single end bam generation'''
         
-        cmd = "eap_run_star_long_se {ref} {fq} {output}".format( \
-              ref=refDir, fq=fastq, output=outBam)
+        cmd = "eap_run_star_long_se {ref} {lib} {fq} {output}".format( \
+              ref=refDir, lib=libId, fq=fastq, output=outBam)
               
         toolName = 'eap_run_star_long_se'
         self.toolBegins(toolName)
@@ -83,11 +79,11 @@ class StarAlignmentStep(LogicalStep):
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
 
-    def eap_long_pe(self, refDir, fastq1, fastq2, outBam):
+    def eap_long_pe(self, refDir, libId, fastq1, fastq2, outBam):
         '''Paired end bam generation'''
         
-        cmd = "eap_run_star_long_pe {ref} {fq1} {fq2} {output}".format( \
-              ref=refDir, fq1=fastq1, fq2=fastq2, output=outBam)
+        cmd = "eap_run_star_long_pe {ref} {lib} {fq1} {fq2} {output}".format( \
+              ref=refDir, lib=libId, fq1=fastq1, fq2=fastq2, output=outBam)
               
         toolName = 'eap_run_star_long_pe'
         self.toolBegins(toolName)

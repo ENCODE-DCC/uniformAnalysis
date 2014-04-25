@@ -113,11 +113,7 @@ if __name__ == '__main__':
             version = toolData['version']
             versionCommand = toolData['versionCommand']
             err, versionFound = commands.getstatusoutput(versionCommand)
-            if err != 0:
-                okay = False
-                print key + " {:<35}".format(name+' ('+version+')') + " ERROR: " + \
-                      "expected version '" + version + "' command '" + versionCommand + "' failed"
-            elif versionFound == version:
+            if versionFound == version:
                 versionPass = True
             else:
                 # Look for matching tool with alternate key

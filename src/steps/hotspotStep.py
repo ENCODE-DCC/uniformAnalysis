@@ -11,9 +11,8 @@ from src.logicalStep import LogicalStep
 
 class HotspotStep(LogicalStep):
 
-    def __init__(self, analysis, suffix, tagLen=36):
+    def __init__(self, analysis, suffix='', tagLen=50):
         self.suffix = str(suffix)
-        #self.replicate = str(replicate)
         self.tagLen    = int(tagLen)
         LogicalStep.__init__(self, analysis, 'peaksByHotspot_' + self.suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions

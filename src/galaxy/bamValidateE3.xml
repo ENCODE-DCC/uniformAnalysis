@@ -27,8 +27,10 @@
         </param>
     </inputs>
     <outputs>
-        <data format="bam" name="bamSample"    label="${name}Rep${repNo} bam sample" />
-        <data format="txt" name="bamEval"     label="${name}Rep${repNo} bam Evaluation" />
+        <data format="bam" name="bamSample"  
+              label="bam sample ${name}Rep${repNo} from $bamInput.name" />
+        <data format="txt" name="bamEval"
+              label="bam Evaluation (json) ${name}Rep${repNo} of $bamInput.name" />
     </outputs>
     <help>
 .. class:: infomark
@@ -60,7 +62,7 @@
     This step is expected to produce two files:
     
     - **bam sample** is a randomized sample of the bam alignments file that will be evaluated. It will also be input for later processing in the ENCODE 3 pipeline.
-    - **bam Evaluation** including summary statistics from 'phantom-tools' and UCSC. This file is used as input for later ENCODE3 Analysis Pipeline steps.
+    - **bam Evaluation** (json) including summary statistics from 'phantom-tools' and UCSC. This file is used as input for later ENCODE3 Analysis Pipeline steps.
     
     The **log** of this single step can be seen under *view details* stdout.
     

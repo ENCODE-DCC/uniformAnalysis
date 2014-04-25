@@ -11,9 +11,8 @@ from src.logicalStep import LogicalStep
 
 class MacsStep(LogicalStep):
 
-    def __init__(self, analysis, suffix, expType='ChIPseq',isPaired=False):
+    def __init__(self, analysis, suffix='', expType='ChIPseq',isPaired=False):
         self.suffix = str(suffix)
-        #self.replicate = str(replicate)
         self.expType    = str(expType)
         self.isPaired   = isPaired
         LogicalStep.__init__(self, analysis, 'peaksByMacs_' + self.suffix)

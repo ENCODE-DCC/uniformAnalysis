@@ -19,7 +19,7 @@ if  sys.argv[1] == '--version':
     settingsFile = os.path.split( os.path.abspath( sys.argv[0] ) )[0] + '/' + "settingsE3.txt"
     if os.path.isfile( settingsFile ):  # Unfortunately can't get xml arg for settings
         ana = GalaxyAnalysis(settingsFile, 'versions', 'hg19')
-        MergeBamStep(ana,'1','2').writeVersions(allLevels=True) # Prints to stdout
+        MergeBamStep(ana).writeVersions(allLevels=True) # Prints to stdout
     else:
         print "Can't locate " + settingsFile
     exit(0)

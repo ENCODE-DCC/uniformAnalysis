@@ -11,7 +11,7 @@ from src.wrappers import samtools
 
 class MergeBamStep(LogicalStep):
 
-    def __init__(self, analysis, replicate1, replicate2):
+    def __init__(self, analysis, replicate1='1', replicate2='2'):
         self.replicate1 = str(replicate1)
         self.replicate2 = str(replicate2)
         LogicalStep.__init__(self, analysis, \
