@@ -1,0 +1,17 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+#
+# Run hotspot on a list (pool) of bam files.
+
+# Check command line and provide usage and version information
+if [ $# -ne 6 ];
+then echo "usage v2: eap_pool_hotspot genome pool.txt readLength out.narrowPeak out.broadPeak out.bigWig"
+echo Makes temp files so should be run in a freshly created directory.
+exit -1; fi
+
+# Convert list of bam second argument into giant pooled.bam file
+samtools cat `cat $2` > pooled.bam
+eap_run_hotspot $1 pooled.bam $3 $4 $5 $6 
+
+# Clean up big boring temporary files
+rm pooled.bam
