@@ -359,8 +359,8 @@ versionCommand grep "Last modified" ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py | a
 executable makewigglefromBAM-NH.py
 packageName GeorgiScripts
 packageVersion Last modified 09/06/2013
-url https://github.com/georgimarinov/GeorgiScripts.git
-#archive /hive/groups/encode/encode3/tools/GeorgiScripts/*.tgz
+url https://github.com/georgimarinov/GeorgiScripts/archive/master.zip
+archive /hive/groups/encode/encode3/tools/GeorgiScripts/GeorgiScripts-master.zip
 installed /hive/groups/encode/encode3/tools/GeorgiScripts/
 email georgi@caltech.edu         
 packageId gitId e7a6ae12e65b7b8a391dc511b8d94b7173225bbb
@@ -428,7 +428,7 @@ version v2.0.8
 versionCommand tophat -v | awk '{print $2}'
 executable tophat
 packageName tophat
-packageVersion 2.0.8
+packageVersion v2.0.8
 url http://tophat.cbcb.umd.edu/downloads/tophat-2.0.8.Linux_x86_64.tar.gz
 archive /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/tophat-2.0.8.Linux_x86_64.tar.gz
 installed /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/
@@ -449,6 +449,26 @@ installed /hive/groups/encode/encode3/tools/xweiEncodeScripts-1.0/
 email xwei@uchc.edu
 packageId gitId c3f99d8ae400b4e73a0ff35ee7d586734899283f
 packageSize 1654
+
+### WIP (has another version of samtools!
+# expect: rsem-prepare-reference --no-bowtie
+#         rsem-sam-validator (possibly)
+#         rsem-calculate-expression --bam
+# Warning: probably needs to be run within dir!
+toolId cc2e8a6bbb31077798eb0491f7bd61aa
+name rsem-calculate-expression
+version v1.2.12
+versionCommand ${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression --version | awk '{print $5}'
+executable rsem/rsem-calculate-expression
+packageName RSEM
+packageVersion v1.2.12
+url https://github.com/bli25wisc/RSEM/archive/v1.2.12.tar.gz
+archive /hive/groups/encode/encode3/tools/RSEM-1.2.12/RSEM-1.2.12.tar.gz
+installed /hive/groups/encode/encode3/tools/RSEM-1.2.12/
+email bli@cs.wisc.edu 
+packageId gitId 636b82d9f60ebcbec7ef1b73ba23bbbacfd8b36a
+packageSize 8833010
+
 
 ### UCSC scripts section:
 
@@ -669,7 +689,35 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId d7c9cccc7fb432340783e3b5f9dea1ba
+toolId d227e2cdbe8338528cabb67815acd138
+name eap_run_rsem_long_pe
+version v1
+versionCommand grep \"usage `which eap_run_rsem_long_pe` | awk '{print $3}' | tr -d :
+executable eap_run_rsem_long_pe
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId 9e1778d078b3b7c9de1c57eb6b26b675
+name eap_run_rsem_long_se
+version v1
+versionCommand grep \"usage `which eap_run_rsem_long_se` | awk '{print $3}' | tr -d :
+executable eap_run_rsem_long_se
+packageName ucscUtils
+url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
+packageVersion v293
+email genome@soe.ucsc.edu           
+packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
+packageSize 42410574
+
+toolId b0cea85471fed0b969f1dacaa2a20725
 name eap_run_star_long_pe
 version v1
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
@@ -683,7 +731,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId cd59d6b561f1d495166122c28d50aa0e
+toolId b306b3558ac33cbec4f9e9d1687ae60f
 name eap_run_star_long_se
 version v1
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
@@ -697,7 +745,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 6b0f907aa0429bf01feb6008b0101041
+toolId 38f70c97cbc6c2da6b9c9008d836292b
 name eap_run_tophat_long_ercc_pe
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_ercc_pe` | awk '{print $3}' | tr -d :
@@ -711,7 +759,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId eb5dc36a22b346a93f8ecd99de1228e4
+toolId d0fc5e6f6cf877e25fbb8d769c9f4a8a
 name eap_run_tophat_long_ercc_se
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_ercc_se` | awk '{print $3}' | tr -d :
@@ -725,7 +773,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 37c690b1347f00d21253b3b20d834e6c
+toolId fdcedbe9cc1fa8181faae30dd5c34adb
 name eap_run_tophat_long_wsc_pe
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_wsc_pe` | awk '{print $3}' | tr -d :
@@ -739,7 +787,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId f2e05799e27b0009ce0dfe15e3fd3167
+toolId 1145c708e33c3f0159803300ce2210d4
 name eap_run_tophat_long_wsc_se
 version v1
 versionCommand grep \"usage `which eap_run_tophat_long_wsc_se` | awk '{print $3}' | tr -d :
@@ -753,7 +801,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 90f4344e835890955940207eadea63c1
+toolId 90acd0c81a547dfcf7095f5a8f4edf6d
 name eap_run_bam_to_bw_all_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_minus` | awk '{print $3}' | tr -d :
@@ -767,7 +815,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId bdc1cef76c5f6cfd463f5f299c692ee5
+toolId dd3bfbb22ebe1023ba51f1db7f070ce5
 name eap_run_bam_to_bw_all_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_plus` | awk '{print $3}' | tr -d :
@@ -781,7 +829,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId 38ce608b5afc671f78296e0026b08def
+toolId 136f7638dddebed0afc0d85e5d0f045d
 name eap_run_bam_to_bw_uniq_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_minus` | awk '{print $3}' | tr -d :
@@ -795,7 +843,7 @@ email genome@soe.ucsc.edu
 packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
 packageSize 42410574
 
-toolId c92064c528d119e0fdb0607fa6f36454
+toolId f9a9acea19c279e74392818e297f07a2
 name eap_run_bam_to_bw_uniq_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_plus` | awk '{print $3}' | tr -d :

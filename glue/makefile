@@ -1,6 +1,7 @@
 # installs scripts to tools directory
 
 STEP_SCRIPTS=eap_run_bwa_pe eap_run_bwa_se eap_run_slx_bwa_pe eap_run_slx_bwa_se \
+             eap_run_rsem_long_se eap_run_rsem_long_pe \
              eap_run_star_long_se eap_run_star_long_pe \
              eap_run_tophat_long_ercc_pe eap_run_tophat_long_wsc_pe \
              eap_run_tophat_long_ercc_se eap_run_tophat_long_wsc_se \
