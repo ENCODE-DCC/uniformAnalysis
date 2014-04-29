@@ -8,6 +8,14 @@ echo "usage v1: eap_run_bam_to_bw_uniq_plus in.bam chrom.file out.bw"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
+# Expected versions:
+# [2014-04-17 14:42:27] 'eap_run_bam_to_bw_uniq_plus' begins...
+# package(tool): ucscUtils(eap_run_bam_to_bw_uniq_plus) [version: v293(v1)]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): GeorgiScripts(makewigglefromBAM-NH.py) [version: Last modified 09/06/2013]
+# package(tool): python(python2.7) [version: 2.7.6]
+# package(tool): ucscUtils(wigToBigWig) [version: v293(v4)]
+
 # Copy reads and index to local tmp file since will be making several passes
 cp $1 tmp.bam
 cp ${1}.bai tmp.bam.bai
@@ -16,6 +24,9 @@ cp ${1}.bai tmp.bam.bai
 python2.7 ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py --- tmp.bam $2 tmpUniqPlus.wig -stranded + \
           -nomulti -RPM -notitle -fragments second-read-strand
 wigToBigWig tmpUniqPlus.wig $2 tmpUniqPlus.bw
-rm tmpUniqPlus.wig
 
+# remove some larger files:
+rm tmpUniqPlus.wig tmp.bam tmp.bam.bai
+
+# deliver results:
 mv tmpUniqPlus.bw $3 

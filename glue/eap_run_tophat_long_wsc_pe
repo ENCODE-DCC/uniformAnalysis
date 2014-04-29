@@ -12,6 +12,15 @@ exit -1; fi
 cp $3 read1.fq.gz
 cp $4 read2.fq.gz
 
+# Expected versions:
+# package(tool): ucscUtils(eap_run_tophat_long_wsc_pe) [version: v293(v1)]
+# tool: tophat [version: v2.0.8]
+# package(tool): bowtie2(bowtie2-inspect) [version: 2.1.0]
+# package(tool): bowtie2(bowtie2-build) [version: 2.1.0]
+# package(tool): bowtie2(bowtie2-align) [version: 2.1.0]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): xweiScripts(tophat_bam_xsA_tag_fix.pl) [version: v1.0(v1.0 xwei 04/07/2014)]
+
 # Using $1 as location of genome indexes, 'WSC' as base containing the spikein index, align reads
 tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
        --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 \
@@ -48,7 +57,9 @@ samtools merge -h newHeader.sam mergedSortedFixed.bam sortedFixedMapped.bam toph
 samtools index mergedSortedFixed.bam
 
 # remove some larger files:
-#rm read1.fq.gz read2.fq.gz sorted.bam sortedFixedMapped.bam tophat_out/accepted_hits.bam
+rm read1.fq.gz read2.fq.gz
+#rm sorted.bam sortedFixedMapped.bam tophat_out/accepted_hits.bam
 
+# deliver results:
 mv mergedSortedFixed.bam $5
-mv mergedSortedFixed.bam.bai $5.bai
+mv mergedSortedFixed.bam.bai ${5}.bai

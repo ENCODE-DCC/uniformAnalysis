@@ -1,0 +1,36 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 5 ]; then 
+echo "usage v1: eap_run_rsem_long_se rsemRefPath read1.fq read2.fq gene.results isoform.results annotation.bam"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Expected versions:
+# package(tool): ucscUtils(eap_run_rsem_long_se) [version: v293(v1)]
+# package(tool): RSEM(rsem-calculate-expression) [version: v1.2.12]
+# tool: bowtie2 [version: 2.1.0]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+
+# Copy reads to local tmp file since will be making several passes
+cp $2 reads.fq.gz
+
+# From Colin Dewey:
+# --no-bam-output # if we are not going to do anything with the RSEM alignments, give this option
+
+# Using $1 as location of genome indexes, ERCC as base containing the spikein index, align reads
+${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression -p 8 --bowtie2 \
+       --forward-prob 0 --estimate-rspd --calc-ci --ci-memory 10000 reads.fq.gz $1 rsemOut
+
+# remove some larger files:
+rm reads.fq.gz
+#rm rsemOut.transcript.bam
+
+# deliver results:
+mv rsemOut.genes.results $3
+mv rsemOut.isoforms.results $4
+mv rsemOut.transcript.sorted.bam $5
+mv rsemOut.transcript.sorted.bam.bai $5.bai
+
