@@ -59,8 +59,8 @@
     a previous *EAP bam evaluation* step.  
 
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
-    replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results.
+    replicate number is not incremented then repeated steps within the same named analysis will 
+    overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
     
     The **Read Filter** allows excluding reads mapped to multiple locations in the signal.
     

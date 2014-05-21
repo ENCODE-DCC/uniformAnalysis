@@ -101,8 +101,8 @@
     *EAP fastQ validation* step.
     
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
-    replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results. 
+    replicate number is not incremented then repeated steps within the same named analysis will 
+    overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
     
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 

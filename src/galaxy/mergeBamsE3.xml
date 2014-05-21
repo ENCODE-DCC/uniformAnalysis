@@ -48,8 +48,7 @@
     previous *EAP fastQ alignment* step.  
 
     The **Replicate** numbers are used to keep track of multiple replicates for a single analysis.  
-    If the replicate numbers are not specified then it may be hard to track the source of 
-    the datasets or ensure that future results do not overwrite previous results. 
+    Here the bam files from two different replicates are merged. 
 
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 

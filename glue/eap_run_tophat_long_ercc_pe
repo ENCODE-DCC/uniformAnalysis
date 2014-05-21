@@ -4,16 +4,14 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 5 ]; then 
-echo "usage v1: eap_run_tophat_long_ercc_pe tophatRefDir libraryId read1.fq read2.fq out.bam"
+echo "usage v1: eap_run_tophat_long_ercc_pe tophatRefPrefix libraryId read1.fq read2.fq out_tophat.bam"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
 # Expected versions:
 # package(tool): ucscUtils(eap_run_tophat_long_ercc_pe) [version: v293(v1)]
 # tool: tophat [version: v2.0.8]
-# package(tool): bowtie2(bowtie2-inspect) [version: 2.1.0]
-# package(tool): bowtie2(bowtie2-build) [version: 2.1.0]
-# package(tool): bowtie2(bowtie2-align) [version: 2.1.0]
+# tool: bowtie2 [version: 2.1.0]
 # tool: samtools [version: 0.1.19-96b5f2294a]
 # package(tool): xweiScripts(tophat_bam_xsA_tag_fix.pl) [version: v1.0(v1.0 xwei 04/07/2014)]
 
@@ -32,7 +30,7 @@ tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-l
 
 # Building a new header
 HD="@HD\tVN:1.4\tSO:coordinate" 
-stCommand="perl tophat_bam_xsA_tag_fix.pl tophat_out/accepted_hits.bam | samtools view -bS - -o - | samtools sort -m10G - sortedFixedMapped; samtools merge -h newHeader.sam mergedSortedFixed.bam sortedFixedMapped.bam tophat_out/unmapped.bam"
+stCommand="perl tophat_bam_xsA_tag_fix.pl tophat_out/accepted_hits.bam | samtools view -bS - -o - | samtools sort -m10G - sortedFixedMapped; samtools merge -h newHeader.sam out_tophat.bam sortedFixedMapped.bam tophat_out/unmapped.bam"
 newPG="@PG\tID:Samtools\tPN:Samtools\tCL:"$stCommand"\tPP:Tophat\tVN:VN:0.1.19-96b5f2294a"
 libraryId="@CO\tLIBID:$2"
 
@@ -53,14 +51,14 @@ perl ${EAP_TOOLS_DIR}/tophat_bam_xsA_tag_fix.pl tophat_out/accepted_hits.bam | \
                       samtools view -bS - | samtools sort -m10G - sortedFixedMapped
 
 # merge aligned and unaligned into single bam, using the patched up header
-samtools merge -h newHeader.sam mergedSortedFixed.bam sortedFixedMapped.bam tophat_out/unmapped.bam
-samtools index mergedSortedFixed.bam
+samtools merge -h newHeader.sam out_tophat.bam sortedFixedMapped.bam tophat_out/unmapped.bam
+samtools index out_tophat.bam
 
 # remove some larger files:
 rm read1.fq.gz read2.fq.gz
 #rm sorted.bam sortedFixedMapped.bam tophat_out/accepted_hits.bam
 
 # deliver results:
-mv mergedSortedFixed.bam $5
-mv mergedSortedFixed.bam.bai ${5}.bai
+mv out_tophat.bam $5
+mv out_tophat.bam.bai ${5}.bai
 

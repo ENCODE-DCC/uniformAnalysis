@@ -18,17 +18,21 @@ class MacsStep(LogicalStep):
         LogicalStep.__init__(self, analysis, 'peaksByMacs_' + self.suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
-    def writeVersions(self,raFile=None,allLevels=False):
+    def writeVersions(self,raFile=None,allLevels=False,scriptName=None):
         '''Writes versions to to the log or a file.'''
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
+            if scriptName != None:
+                raFile.add(scriptName, self.getToolVersion(scriptName))
             raFile.add('macs',                     self.getToolVersion('macs2'))
             raFile.add('eap_macs2_xls_to_narrowPeak', 
                                                 self.getToolVersion('eap_macs2_xls_to_narrowPeak'))
             raFile.add('eap_narrowPeak_to_bigBed', self.getToolVersion('eap_narrowPeak_to_bigBed'))
             raFile.add('bedGraphToBigWig',         self.getToolVersion('bedGraphToBigWig'))
         else:
+            if scriptName != None:
+                self.getToolVersion(scriptName)
             self.getToolVersion('macs2')
             self.getToolVersion('eap_macs2_xls_to_narrowPeak')
             self.getToolVersion('eap_narrowPeak_to_bigBed')
@@ -68,11 +72,7 @@ class MacsStep(LogicalStep):
               
         toolName = 'eap_run_macs2_dnase_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('macs2',logOut=True)
-        self.getToolVersion('eap_macs2_xls_to_narrowPeak',logOut=True)
-        self.getToolVersion('eap_narrowPeak_to_bigBed',logOut=True)
-        self.getToolVersion('bedGraphToBigWig', logOut=True)
+        self.writeVersions(scriptName=toolName)
     
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -87,11 +87,7 @@ class MacsStep(LogicalStep):
               
         toolName = "eap_run_macs2_dnase_pe"
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('macs2',logOut=True)
-        self.getToolVersion('eap_macs2_xls_to_narrowPeak',logOut=True)
-        self.getToolVersion('eap_narrowPeak_to_bigBed',logOut=True)
-        self.getToolVersion('bedGraphToBigWig', logOut=True)
+        self.writeVersions(scriptName=toolName)
     
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -106,11 +102,7 @@ class MacsStep(LogicalStep):
               
         toolName = 'eap_run_macs2_chip_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('macs2',logOut=True)
-        self.getToolVersion('eap_macs2_xls_to_narrowPeak',logOut=True)
-        self.getToolVersion('eap_narrowPeak_to_bigBed',logOut=True)
-        self.getToolVersion('bedGraphToBigWig', logOut=True)
+        self.writeVersions(scriptName=toolName)
     
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -125,11 +117,7 @@ class MacsStep(LogicalStep):
               
         toolName = 'eap_run_macs2_chip_pe'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('macs2',logOut=True)
-        self.getToolVersion('eap_macs2_xls_to_narrowPeak',logOut=True)
-        self.getToolVersion('eap_narrowPeak_to_bigBed',logOut=True)
-        self.getToolVersion('bedGraphToBigWig', logOut=True)
+        self.writeVersions(scriptName=toolName)
     
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)

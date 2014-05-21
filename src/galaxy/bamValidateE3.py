@@ -2,8 +2,8 @@
 # bamValidateE3.py ENCODE3 galaxy pipeline script for validating bam files
 # Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
 #
-#  Usage: python(2.7) bamValidateE3,py <userId> <galaxyInputBam> <galaxyOutSampleBam> \
-#                                      <galaxyOutBamEval> <genome> <expType> <repNo> <analysisId>
+#  Usage: python(2.7) bamValidateE3,py <userId> <galaxyInputBam> <galaxyOutBamEval> \
+#                                      <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 from src.galaxyAnalysis import GalaxyAnalysis
@@ -23,18 +23,16 @@ if  sys.argv[1] == '--version':
     exit(0)
      
 galaxyInputFile     = sys.argv[1]
-galaxyOutSampleBam  = sys.argv[2]
-galaxyOutBamEval    = sys.argv[3]
-genome              = sys.argv[4]
-expType             = sys.argv[5]
-repNo               = sys.argv[6]
-anaId               = sys.argv[7]
+galaxyOutBamEval    = sys.argv[2]
+genome              = sys.argv[3]
+expType             = sys.argv[4]
+repNo               = sys.argv[5]
+anaId               = sys.argv[6]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
 galaxyPath = '/'.join(scriptPath.split('/')[ :-2 ])  
 settingsFile = scriptPath + '/' + "settingsE3.txt"
-sampleSize = 5000000
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, genome, expType)
@@ -43,8 +41,7 @@ if testOnly:
 
 # What step expects:
 # Inputs: 1 bam, pre-registered in the analysis keyed as: 'alignmentRep' + replicate + '.bam'
-# Outputs: 1 interim bam sample file, keyed as: 'alignment'  + suffix + '_5M.bam'
-#          1 interim Corr       file, keyed as: 'strandCorr' + suffix +    '.txt'
+# Outputs: 1 interim Corr       file, keyed as: 'strandCorr' + suffix +    '.txt'
 #          1 target json        file, keyed as: 'bamEvaluate' + suffix +   '.json'
 
 # TODO: Does a galaxy user really want the sample bam?
@@ -69,10 +66,8 @@ bamEvalKey    = 'bamEvaluate'    + suffix +    '.json'
 ana.registerFile( bamEvalKey,     'galaxyOutput',galaxyOutBamEval)
 resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
 ana.createOutFile(bamEvalKey,  'nonGalaxyOutput','%s_bamEval',ext='json')
-ana.registerFile(bamSampleKey,    'galaxyOutput',galaxyOutSampleBam)
-ana.createOutFile(bamSampleKey,'nonGalaxyOutput','%s_sample',ext='bam' )
 
 # Establish step and run it:
-step = BamEvaluateStep(ana,repNo,suffix,sampleSize=sampleSize)
+step = BamEvaluateStep(ana,repNo,suffix)
 sys.exit( step.run() )
 

@@ -8,7 +8,6 @@
 # Outputs: a single bam target keyed as: 'alignmentStarRep'+replicate+'.bam'
 
 from src.logicalStep import LogicalStep
-from src.wrappers import samtools
 
 class StarAlignmentStep(LogicalStep):
 
@@ -23,14 +22,18 @@ class StarAlignmentStep(LogicalStep):
                                                                                    self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all step versions
 
-    def writeVersions(self,raFile=None,allLevels=False):
+    def writeVersions(self,raFile=None,allLevels=False,scriptName=None):
         '''Writes versions to to the log or a file.'''
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
+            if scriptName != None:
+                raFile.add(scriptName, self.getToolVersion(scriptName))
             raFile.add('star', self.getToolVersion('STAR'))
             raFile.add('samtools', self.getToolVersion('samtools'))
         else:
+            if scriptName != None:
+                self.getToolVersion(scriptName)
             self.getToolVersion('STAR')
             self.getToolVersion('samtools')
         
@@ -72,9 +75,7 @@ class StarAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_star_long_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('STAR',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -87,9 +88,7 @@ class StarAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_star_long_pe'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('STAR',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)

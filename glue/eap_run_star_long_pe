@@ -4,7 +4,7 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 5 ]; then 
-echo "usage v1: eap_run_star_long_pe star-genomeDir libraryId read1.fq read2.fq out.bam"
+echo "usage v1: eap_run_star_long_pe star-genomeDir libraryId read1.fq read2.fq out_star.bam"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
@@ -39,16 +39,16 @@ STAR --genomeDir $1 --readFilesIn read1.fq.gz read2.fq.gz                       
      --outSAMunmapped Within --outFilterType BySJout --outStd SAM > star.sam
      
 samtools view -buS star.sam > star.bam
-samtools sort -m10G star.bam sorted
-samtools index sorted.bam
+samtools sort -m10G star.bam out_star
+samtools index out_star.bam
 
 # remove some larger files:
 rm read1.fq.gz read2.fq.gz
 #rm star.sam star.bam
 
 # deliver results:
-mv sorted.bam $5
-mv sorted.bam.bai ${5}.bai
+mv out_star.bam $5
+mv out_star.bam.bai ${5}.bai
 
 # make sure star log is recorded.
 cat Log.final.out
