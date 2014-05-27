@@ -3,51 +3,63 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 4 ]; then 
-echo "usage v1: eap_run_star_long_se star-genomeDir libraryId reads.fq out_star.bam"
+if [ $# -ne 7 ]; then 
+echo "usage v2: eap_run_star_long_se starRefIndexDir chromFile libraryId read1.fq.gz \\"
+echo "          outStarGenome.bam outAll.bw outUniq.bw"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
 # Expected versions:
-# package(tool): ucscUtils(eap_run_star_long_se) [version: v293(v1)]
-# tool: STAR [version: 2.3.1]
+# package(tool): uniformAnalysis(eap_run_star_long_se) [version: v1.0(v2)]
+# tool: STAR [version: 2.4.0]
 # tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): ucscUtils(bedGraphToBigWig) [version: v293(v4)]
 
-# Copy reads to local tmp file since will be making several passes
-cp $3 reads.fq.gz
+# Label parameters and copying input(s) to local tmp dir
+starRefIndexDir=$1     # Directory containing STAR generated index on genome and spike-in
+chromFile=$2           # Chrom info file for the genome and gender
+libraryId=$3           # Accession ID (or other identifier) of bio-sample used to generate fastq(s)
+cp $4 reads.fq.gz      # INPUT: gzipped fastq of unpaired reads
+outStarGenomeBam=$5    # OUTPUT: reads aligned to whole genome by STAR (*.bai is also generated)
+outAllBw=$6            # OUTPUT: bigWig signal of unique and multi-mapped unstranded reads
+outUniqBw=$7           # OUTPUT: bigWig signal of uniquely mapped unstranded reads
 
 # samtools command, library and COfile will be folded into bam header
 samtoolsCommand="samtools view -buS - | samtools sort -m10G - sorted"
-libraryId="@CO\tLIBID:$2"
-echo -e $libraryId > COfile.txt
-cat $1/COfile.txt >> COfile.txt
+libraryComment="@CO\tLIBID:${libraryId}"
+echo -e ${libraryComment} > COfile.txt
+cat ${starRefIndexDir}/COfile.txt >> COfile.txt
 
 # Note: in order to run on cluster, using:
 # - STAR symlinked to STARstatic, 
 # - --genomeLoad NoSharedMemory (instead of LoadAndRemove) 
 # - 32g ram, 12 cpus.
 
-# Using $1 as an reference genome, align reads ($2)
-STAR --genomeDir $1 --readFilesIn reads.fq.gz                                       \
+# Run star for unpaired and unstranded reads.
+STAR --genomeDir ${starRefIndexDir} --readFilesIn reads.fq.gz                       \
      --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory             \
      --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
      --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
      --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
      --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD VN:1.4 SO:coordinate      \
-     --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:VN:0.1.19-96b5f2294a \
-     --outSAMunmapped Within --outFilterType BySJout --outStd SAM > star.sam
-     
-samtools view -buS star.sam > star.bam
-samtools sort -m10G star.bam out_star
-samtools index out_star.bam
+     --outSAMunmapped Within --outFilterType BySJout                                      \
+     --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"${samtoolsCommand}" PP:STAR VN:VN:0.1.19-96b5f2294a \
+     --outWigStrand Unstranded --outSAMattributes NH HI --outSAMtype BAM SortedByCoordinate
+
+samtools index Aligned.out.sortedByCoord.bam
+
+# bedGrah to bigWig conversions
+bedGraphToBigWig Signal.UniqueMultiple.str1.bg ${chromFile} signalAll.bw
+bedGraphToBigWig Signal.Unique.str1.bg ${chromFile} signalUniq.bw
 
 # remove some larger files:
 rm reads.fq.gz
-#rm star.sam star.bam
 
 # deliver results:
-mv out_star.bam $4
-mv out_star.bam.bai ${4}.bai
+mv Aligned.out.sortedByCoord.bam ${outStarGenomeBam}
+mv Aligned.out.sortedByCoord.bam.bai ${outStarGenomeBam}.bai
+mv signalAll.bw ${outAllBw}
+mv signalUniq.bw ${outUniqBw}
 
 # make sure star log is recorded.
 cat Log.final.out
