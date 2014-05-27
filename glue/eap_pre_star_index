@@ -1,0 +1,66 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 5 ]; then 
+echo "usage v1: eap_pre_star_index genomeRef.fa spikeIn.fa annotation.gtf starRefIndexDir \\"
+echo "          outStarIndex.tgz"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Expected versions:
+# package(tool): uniformAnalysis(eap_pre_star_long_se) [version: v1.0(v1)]
+# tool: STAR [version: 2.4.0]
+
+# Label parameters and copying input(s) to local tmp dir
+genomeRefFa=$1         # INPUT: Full path to genome reference in fa format (e.g. female.hg19.fa)
+spikeInFa=$2           # INPUT: Full path to spike-in to be included in fa format (e.g. ERCC.fa)
+annotationGtf=$3       # INPUT: Full path to gene/transcript annotation (e.g. gencode.v19.gtf)
+starRefIndexDir=$4     # Directory to build STAR generated index on genome and spike-in
+outStarIndexTgz=$5     # OUTPUT: archive of directory that may be accessioned
+
+# Make target dir and build index files
+mkdir -p ${starRefIndexDir}
+STAR --runMode genomeGenerate --genomeFastaFiles genomeRefFa ${spikeInFa} --sjdbOverhang 100 \
+     --sjdbGTFfile ${annotationGtf} --runThreadN 6 --genomeDir ${starRefIndexDir}/
+     
+# Attempt to make bamCommentLines.txt, which should be reviewed. NOTE tabs handled by assignment.
+refComment="@CO\tREFID:$(basename ${genomeRefFa%.*})"
+annotationComment="@CO\tANNID:$$(basename ${annotationGtf})"
+spikeInComment="@CO\tSPIKEID:$$(basename ${spikeInFa%.*})"
+echo ${refComment} > ${starRefIndexDir}/bamCommentLines.txt
+echo ${annotationComment} >> ${starRefIndexDir}/bamCommentLines.txt
+echo ${spikeInComment} >> ${starRefIndexDir}/bamCommentLines.txt
+
+# tar up dir for accessioning
+tar -czf starIndex.tgz ${starRefIndexDir}
+
+# deliver results:
+mv starIndex.tgz ${outStarIndexTgz}
+
+# Command lines run:
+# female.hg19/ERCC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
+#                    ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                    ${EAP_REF_DIR}/female.hg19/starData/ERCC \ 
+#                    ${EAP_REF_DIR}/female.hg19/starData/ERCC/starHg19FemaleErccGencodeV19.tgf
+# female.hg19/WSC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
+#                    ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                    ${EAP_REF_DIR}/female.hg19/starData/WSC \ 
+#                    ${EAP_REF_DIR}/female.hg19/starData/WSC/starHg19FemaleWscGencodeV19.tgf
+# male.hg19/ERCC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
+#                    ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                    ${EAP_REF_DIR}/male.hg19/starData/ERCC \ 
+#                    ${EAP_REF_DIR}/male.hg19/starData/ERCC/starHg19MaleErccGencodeV19.tgf
+# male.hg19/WSC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
+#                    ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                    ${EAP_REF_DIR}/male.hg19/starData/WSC \ 
+#                    ${EAP_REF_DIR}/male.hg19/starData/WSC/starHg19MaleWscGencodeV19.tgf
