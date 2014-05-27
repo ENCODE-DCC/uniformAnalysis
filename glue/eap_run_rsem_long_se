@@ -4,18 +4,39 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 5 ]; then 
-echo "usage v1: eap_run_rsem_long_se rsemRefPath read1.fq read2.fq gene.results isoform.results annotation.bam"
+echo "usage v1: eap_run_rsem_long_se starRefIndexDir rsemRefPath reads.fq.gz \\"
+echo "          outGene.results outIsoform.results"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
 # Expected versions:
-# package(tool): ucscUtils(eap_run_rsem_long_se) [version: v293(v1)]
-# package(tool): RSEM(rsem-calculate-expression) [version: v1.2.12]
-# tool: bowtie2 [version: 2.1.0]
+# package(tool): uniformAnalysis(eap_run_rsem_long_pe) [version: v1.0(v1)]
+# tool: STAR [version: 2.4.0]
 # tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): RSEM(rsem-calculate-expression) [version: v1.2.12]
 
-# Copy reads to local tmp file since will be making several passes
-cp $2 reads.fq.gz
+# Label parameters and copying input(s) to local tmp dir
+starRefIndexDir=$1     # Directory containing STAR generated index on genome and spike-in
+rsemRefPath=$2         # Directory/prefix of RSEM (STAR) generated index on transcriptome
+cp $3 reads.fq.gz      # INPUT: gzipped fastq of unpaired reads
+outGeneResults=$4      # OUTPUT: RSEM quantification of annotated genes
+outIsoformResults=$5   # OUTPUT: RSEM quantification of transcripts
+
+# Run star on unpaired, unstranded fastq to get transcriptome alignment.
+STAR --genomeDir ${starRefIndexDir} --readFilesIn reads.fq.gz                       \
+     --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory             \
+     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
+     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
+     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
+     --outSAMattributes NH HI --outSAMtype None --quantMode TranscriptomeSAM
+
+# Assume we need the bam indexed.
+samtools index AlignedToTranscriptome.out.bam
+
+# Run RSEM on the STAR transcriptome alignment
+${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression --bam --estimate-rspd --calc-ci --no-bam-output \
+                                 -p 12 --ci-memory 30000 \
+                                 AlignedToTranscriptome.out.bam ${rsemRefPath} rsemOut >& Log.rsem
 
 # From Colin Dewey:
 # --no-bam-output # if we are not going to do anything with the RSEM alignments, give this option
@@ -26,11 +47,9 @@ ${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression -p 8 --bowtie2 \
 
 # remove some larger files:
 rm reads.fq.gz
-#rm rsemOut.transcript.bam
+#rm AlignedToTranscriptome.out.bam*
 
 # deliver results:
-mv rsemOut.genes.results $3
-mv rsemOut.isoforms.results $4
-mv rsemOut.transcript.sorted.bam $5
-mv rsemOut.transcript.sorted.bam.bai $5.bai
+mv rsemOut.genes.results ${outGeneResults}
+mv rsemOut.isoforms.results ${outIsoformResults}
 
