@@ -4,7 +4,7 @@ import sys, os, argparse, subprocess, json
 
 def main():
     readLengths = ['32', '36', '40', '50', '58', '72', '76', '100']
-    genomes = ['hg19', 'mm9']
+    genomes = ['hg38', 'hg19', 'mm9']
     dataTypes = ['DNase-seq', 'ChIP-seq']
 
     parser = argparse.ArgumentParser(description = 'Hotspot wrapper for Uniform Analysis Pipeline. Version 3')
@@ -180,7 +180,7 @@ def main():
     
     retCode = subprocess.call(runhotspotName)
     if retCode != 0:
-        return retCode
+        raise ValueError('retCode %s from %s' % (retCode, runhotspotName))
     
     if not os.path.isdir(args.outputDir):
         os.makedirs(args.outputDir)
