@@ -1,0 +1,107 @@
+<tool id="rsemQuantifyE3" name="EAP transcript quantification by RSEM" version="1.0">
+    <description> (fastQ to bam)</description>
+    <command interpreter="python">
+        rsemQuantifyE3.py $bamInput $bamEval $geneResults $transcriptResults
+        $spike $gender $genome $expType $repNo ${name}U${__user_id__}
+    </command>
+    <version_command>python ../../../../tools/encode/starAlignE3.py --version</version_command>
+    <stdio>
+        <exit_code range="1:" level="fatal" description="Fatal error" />
+        <regex match=".*" source="stderr" level="log" />
+    </stdio>
+    <inputs>
+        <param name="genome" type="select" label="Genome Assembly">
+            <option value="hg19" selected="true">GRCh37/hg19 Human reference</option>
+        </param>
+        <param name="gender" type="select" label="Gender">
+            <option value="unspecified" selected="true">Unspecified/NA</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+        </param>
+        <param name="expType" type="select" label="Experiment Type">
+            <option value="RNAseq-long" selected="true">long RNA-seq</option>
+        </param>
+        <param name="spike" type="select" label="Spike In Control">
+            <option value="ERCC" selected="true">ERCC/NIST/Ambion</option>
+            <option value="WSC">Wold single-cell</option>
+        </param>
+        <param name="bamInput" type="data" label="Annotation bam (alignments file)" format="bam" />
+        <param name="bamEval"  type="data" label="Genome bam Evaluation file (json)"
+               format="txt" />
+        <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
+        </param>
+        <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
+               help="Letters and numbers only [optional]">
+            <sanitizer invalid_char=""><valid initial="string.letters,string.digits"/></sanitizer>
+        </param>
+    </inputs>
+    <outputs>
+        <data format="txt" name="geneResults"
+              label="Gene quantification ${name}Rep${repNo}" />
+        <data format="txt" name="transcriptResults"
+              label="Transcript quantification ${name}Rep${repNo}" />
+    </outputs>
+    <help>
+.. class:: infomark
+
+   Quantification of known transcripts found in the GENCODE annotation, performed by 'RSEM'. 
+   An *ENCODE3 Analysis Pipeline* involves multiple steps and dataset replicates, of which this
+   is one. Use *EAP workflows* to ensure that all analysis steps are performed in the proper
+   sequence.
+
+**Inputs:**
+    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
+    Additionally, alignment steps should may also specify a **Gender**.  Currently only
+    the GRCh37/hg19 reference genome is supported. Note that some steps are only appropriate
+    for some experiment types.
+    
+    Select the **Spike In** control set used for this experiment.  Spike ins provide a method
+    of normalization across experiments.  Most EAP experiments use the ERCC set.  
+    
+    The **Annotation bam** is the file of reads aligned to the gencode annotation.  This should 
+    not be confused with its companion "genome bam: which contains alignments tothe whole genome.
+
+    The **Genome bam Evaluation** file is required by this analysis step.  This evaluation file is 
+    in json format generated from a previous *EAP bam evaluation* step.  NOTE that the 
+    evaluation is of the companion "Genome bam" file and not the **Annotation bam** file 
+    that is the major input to this step. 
+    
+    The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
+    replicate number is not incremented then repeated steps within the same named analysis will 
+    overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
+    
+    The optional **Analysis Name** field will be used to tie multiple steps together into 
+    one analysis, ensuring related files are well named and a single log records all processing 
+    taken.  If the intention is to run multiple analyses, then providing an analysis name ensures 
+    that results from one analyis are over-written by another.  Multiple histories for a single user 
+    can share the same named analysis, but two separate users cannot.
+    
+**Outputs:**
+    This step is expected to produce three files:
+    
+    - **Gene quantification** is a tab delimited quanitfication file, one line per gene.
+    - **Transcript quantification** is a tab delimited quanitfication file, one line per transcript.
+    - **Gencode annotation bam** is an alignment to the Gencode annotation.
+
+    The **log** of this single step can be seen under *view details* stdout.
+
+    If the outputs are delivered to a location external to galaxy, the **Analysis log** covering 
+    all steps of the analysis will be delivered to the same location.  Otherwise the log may be
+    found in the directory pointed to by 'tmpDir' as defined in the settings file.
+
++--------+------------------------------------------------------------------------------------+
+||encPng||All *ENCODE3 Analysis Pipeline* steps provided through Galaxy are run via the same  | 
+|        |UCSC scripts and third-party tools as the official *Analysis Pipeline*.  Just as    | 
+|        |with the official pipeline, all work is be performed in temporary directories and   |
+|        |successful results moved to well-named locations.  If the initial input datasets are| 
+|        |from a symlinked Galaxy library, results will be moved to the same directory as the |  
+|        |inputs and then symlinked back into Galaxy. If the initial inputs do not have a     | 
+|        |recognizable location outside the Galaxy database, then results will be written     |
+|        |back into the Galaxy database as well.                                              |
++--------+------------------------------------------------------------------------------------+
+
+.. |encPng| image:: http://genome.ucsc.edu/images/ENCODE_scaleup_logo.png
+   :width: 100
+
+    </help>
+</tool>

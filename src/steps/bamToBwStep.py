@@ -3,7 +3,7 @@
 # It takes a bam input and generates bigWig signal.
 #
 # Inputs: 1 bam, pre-registered in analysis, keyed as: 'alignment' + suffix + '.bam'
-# Outputs: target signal file, keyed as: 'signal + suffix + readFiler + strand + '.bw'
+# Outputs: target signal file, keyed as: 'signal + suffix + readFilter + strand + '.bw'
 
 from src.logicalStep import LogicalStep
 

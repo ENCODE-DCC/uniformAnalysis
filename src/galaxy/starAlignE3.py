@@ -3,7 +3,9 @@
 # Must run from within galaxy sub-directory.  Requires settingsE3.txt in same directory as script
 #
 #Usage: python(2.7) starAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
-#                               [<inFastqR2> <inFastqEvalR2>] <galaxyOutBam> \
+#                               [<inFastqR2> <inFastqEvalR2>] <genomeOutBam> <annotationOutBam> \
+#                               <signalOutAll[Minus]> [<signalOutAllPlus>] \
+#                               <signalOutUniq[Minus]> [<signalOutUniqPlus>] \
 #                               <spikeIn> <libId> <gender> <genome> <expType> <repNo> <analysisId>
 
 import os, sys
@@ -29,25 +31,33 @@ if  sys.argv[1] == '--version':
 pairedOrUnpaired     = sys.argv[1]
 galaxyInputFile      = sys.argv[2]
 galaxyEvalFile       = sys.argv[3]    # Look up tagLength and encoding
-galaxyOutputFile     = sys.argv[4]
-spikeIn              = sys.argv[5]
-libId                = sys.argv[6]
-gender               = sys.argv[7]
-genome               = sys.argv[8]
-expType              = sys.argv[9]
-repNo                = sys.argv[10]
-anaId                = sys.argv[11]
+galaxyGenoBamOutput  = sys.argv[4]
+galaxyAnnoBamOutput  = sys.argv[5]
+galaxyBwAllOut       = sys.argv[6]
+galaxyBwUniqOut      = sys.argv[7]
+spikeIn              = sys.argv[8]
+libId                = sys.argv[9]
+gender               = sys.argv[10]
+genome               = sys.argv[11]
+expType              = sys.argv[12]
+repNo                = sys.argv[13]
+anaId                = sys.argv[14]
 if pairedOrUnpaired == "paired":
-    galaxyInputFile2 = sys.argv[4]
-    galaxyEvalFile2  = sys.argv[5]
-    galaxyOutputFile = sys.argv[6]
-    spikeIn          = sys.argv[7]
-    libId            = sys.argv[8]
-    gender           = sys.argv[9]
-    genome           = sys.argv[10]
-    expType          = sys.argv[11]
-    repNo            = sys.argv[12]
-    anaId            = sys.argv[13]
+    galaxyInputFile2     = sys.argv[4]
+    galaxyEvalFile2      = sys.argv[5]
+    galaxyGenoBamOutput  = sys.argv[6]
+    galaxyAnnoBamOutput  = sys.argv[7]
+    galaxyBwAllMinusOut  = sys.argv[8]
+    galaxyBwAllPlusOut   = sys.argv[9]
+    galaxyBwUniqMinusOut = sys.argv[10]
+    galaxyBwUniqPlusOut  = sys.argv[11]
+    spikeIn              = sys.argv[12]
+    libId                = sys.argv[13]
+    gender               = sys.argv[14]
+    genome               = sys.argv[15]
+    expType              = sys.argv[16]
+    repNo                = sys.argv[17]
+    anaId                = sys.argv[18]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -94,10 +104,17 @@ ana.readType = pairedOrUnpaired
 # Inputs: 1 or 2 fastq files, pre-registered in the analysis keyed as:
 #         Single: 'tagsRep'+replicate+'.fastq'
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
-# Outputs: a single bam target keyed as:
-#          'alignmentStarRep'+replicate+'.bam'
+# Outputs: target genome bam keyed as:          'genomeAlignedStarRep' + replicate + '.bam'
+#          interim annotation bam keyed as: 'annotationAlignedStarRep' + replicate + '.bam'
+#          and either 4 (paired) signal files:         'signalStarRep' + replicate + 'UniqMinus.bw'
+#                                                      'signalStarRep' + replicate +  'UniqPlus.bw'
+#                                                      'signalStarRep' + replicate +  'AllMinus.bw'
+#                                                      'signalStarRep' + replicate +   'AllPlus.bw'
+#          or 2 (unpaired) target signal file2:        'signalStarRep' + replicate +      'Uniq.bw'
+#                                                      'signalStarRep' + replicate +       'All.bw'
 
-bamFileKey  = 'alignmentStarRep'+repNo + '.bam' # Used to tie outputs together
+genoBamKey  =     'genomeAlignedStarRep'+repNo + '.bam' # Used to tie outputs together
+annoBamKey  = 'annotationAlignedStarRep'+repNo + '.bam' # Used to tie outputs together
     
 # Establish Inputs for galaxy and nonGalaxy alike
 if pairedOrUnpaired == "paired":
@@ -108,18 +125,49 @@ if pairedOrUnpaired == "paired":
     nonGalaxyInput  = ana.nonGalaxyInput(fastqRd1Key)  # Registers and returns the outside location
     nonGalaxyInput2 = ana.nonGalaxyInput(fastqRd2Key)  # Registers and returns the outside location
     # outputs:
-    ana.registerFile(bamFileKey,'galaxyOutput',galaxyOutputFile)
+    ana.registerFile(genoBamKey,'galaxyOutput',galaxyGenoBamOutput)
     resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-    ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_%s_star', ext='bam', \
+    ana.createOutFile(genoBamKey,'nonGalaxyOutput','%s_%s_starGenome', ext='bam', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    ana.registerFile(annoBamKey,'galaxyOutput',galaxyAnnoBamOutput)
+    ana.createOutFile(annoBamKey,'nonGalaxyOutput','%s_%s_starAnnotation', ext='bam', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    # signal bigWigs:
+    allMinusKey =               'signalStarRep' + repNo +  'AllMinus.bw'
+    ana.registerFile( allMinusKey,   'galaxyOutput',galaxyBwAllMinusOut)
+    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starAllMinus', ext='bw', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    allPlusKey =               'signalStarRep' + repNo +   'AllPlus.bw'
+    ana.registerFile( allPlusKey,    'galaxyOutput',galaxyBwAllPlusOut)
+    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starAllPlus',  ext='bw', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    uniqMinusKey =               'signalStarRep' + repNo + 'UniqMinus.bw'
+    ana.registerFile( uniqMinusKey,  'galaxyOutput',galaxyBwUniqMinusOut)
+    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starUniqMinus',ext='bw', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    uniqPlusKey =               'signalStarRep' + repNo +  'UniqPlus.bw'
+    ana.registerFile( uniqPlusKey,   'galaxyOutput',galaxyBwUniqPlusOut)
+    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starUniqPlus', ext='bw', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
 else:
     fastqKey='tagsRep'+repNo + '.fastq' # Used to tie inputs togther
     ana.registerFile(fastqKey,'galaxyInput', galaxyInputFile)
     nonGalaxyInput  = ana.nonGalaxyInput(fastqKey)  # Registers and returns the outside location
     # outputs:
-    ana.registerFile(bamFileKey,'galaxyOutput',galaxyOutputFile)
+    ana.registerFile(genoBamKey,'galaxyOutput',galaxyGenoBamOutput)
     resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-    ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_star',ext='bam' )
+    ana.createOutFile(genoBamKey,'nonGalaxyOutput','%s_starGenome',ext='bam')
+    ana.registerFile(annoBamKey,'galaxyOutput',galaxyAnnoBamOutput)
+    ana.createOutFile(annoBamKey,'nonGalaxyOutput','%s_starAnnotation', ext='bam')
+    # signal bigWigs:
+    allKey =                'signalStarRep' + repNo + 'All.bw'
+    ana.registerFile( allKey,   'galaxyOutput',galaxyBwAllOut)
+    ana.createOutFile(allKey,'nonGalaxyOutput','%s_%s_starAll',  ext='bw', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    uniqKey =                'signalStarRep' + repNo + 'Uniq.bw'
+    ana.registerFile( uniqKey,   'galaxyOutput',galaxyBwUniqOut)
+    ana.createOutFile(uniqKey,'nonGalaxyOutput','%s_%s_starUniq',ext='bw', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
 
 # Establish step and run it:
 step = StarAlignmentStep(ana,repNo, spikeIn, libId, encoding, tagLength)
