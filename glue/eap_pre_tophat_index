@@ -10,7 +10,7 @@ echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
 # Expected versions:
-# package(tool): uniformAnalysis(eap_pre_star_long_se) [version: v1.0(v1)]
+# package(tool): uniformAnalysis(eap_pre_tophat_index) [version: v1.0(v1)]
 # tool: tophat [version: v2.0.8]
 # tool: bowtie2 [version: 2.1.0]
 
@@ -19,7 +19,7 @@ genomeRefFa=$1            # INPUT: Full path to genome reference in fa format (e
 spikeInFa=$2              # INPUT: Full path to spike-in to be included in fa format (e.g. ERCC.fa)
 annotationGtf=$3          # INPUT: Full path to gene/transcript annotation (e.g. gencode.v19.gtf)
 tophatRefDir=$4           # Directory to contain TopHat index on genome,spike-in grouped by prefix
-tophatIndexPrefix=$5      # Prefix to be applied to all genome index files (just like TopHat want)
+tophatIndexPrefix=$5      # Prefix to be applied to all genome index files (just like TopHat wants)
 tinyFastq=$6              # INPUT: A tiny fastq needed for annotation index generation
 tophatAnnoIndexPrefix=$7  # Prefix to be applied to all annotation index files
 outTophatIndexTgz=$8      # OUTPUT: archive of genome index files that may be accessioned
@@ -31,8 +31,8 @@ bowtie2-build --offrate 3 -f ${genomeRefFa},${spikeInFa} ${tophatRefDir}/${topha
 
 # Attempt to make bamCommentLines.txt, which should be reviewed. NOTE tabs handled by assignment.
 refComment="@CO\tREFID:$(basename ${genomeRefFa%.*})"
-annotationComment="@CO\tANNID:$$(basename ${annotationGtf})"
-spikeInComment="@CO\tSPIKEID:$$(basename ${spikeInFa%.*})"
+annotationComment="@CO\tANNID:$(basename ${annotationGtf})"
+spikeInComment="@CO\tSPIKEID:$(basename ${spikeInFa%.*})"
 echo ${refComment} > ${tophatIndexPrefix}_bamCommentLines.txt
 echo ${annotationComment} >> ${tophatIndexPrefix}_bamCommentLines.txt
 echo ${spikeInComment} >> ${tophatIndexPrefix}_bamCommentLines.txt
@@ -46,7 +46,7 @@ tar -czf tophatIndex.tgz ${tophatIndexPrefix}*
 popd
 
 
-# Making the annotation index requires running a tophat aliognment, since there isn't a stand
+# Making the annotation index requires running a tophat alignment, since there isn't a stand
 # alone bowtie2 option to do so.
 tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
            --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 --library-type fr-firststrand \
@@ -76,7 +76,7 @@ mv tophatAnnoIndex.tgz ${outTophatAnnoIndexTgz}
 #                      ${EAP_REF_DIR}/female.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
 # female.hg19/WSC/gencode.v19:
 # eap_pre_tophat_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF.fasta \
+#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTO.fasta \
 #                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
 #                      ${EAP_REF_DIR}/female.hg19/tophatData WSC \ 
 #                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
@@ -92,7 +92,7 @@ mv tophatAnnoIndex.tgz ${outTophatAnnoIndexTgz}
 #                      ${EAP_REF_DIR}/male.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
 # male.hg19/WSC/gencode.v19:
 # eap_pre_tophat_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF.fasta \
+#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTO.fasta \
 #                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
 #                      ${EAP_REF_DIR}/male.hg19/tophatData WSC \ 
 #                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
