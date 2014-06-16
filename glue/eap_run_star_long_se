@@ -61,10 +61,9 @@ rm signal*.bg
 #rm Signal.*.bg
 
 # deliver results:
-mv Aligned.sortedByCoord.out.bam ${outStarGenomeBam}
-mv Aligned.sortedByCoord.out.bam.bai ${outStarGenomeBam}.bai
+mv Aligned.sortedByCoord.out.bam ${outGenomeBam}
+mv Aligned.sortedByCoord.out.bam.bai ${outGenomeBam}.bai
 mv Aligned.toTranscriptome.out.bam ${outAnnotationBam}
-# mv Aligned.toTranscriptome.out.bam.bai ${outAnnotationBam}.bai
 mv signalAll.bw ${outAllBw}
 mv signalUniq.bw ${outUniqBw}
 
