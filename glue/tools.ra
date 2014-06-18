@@ -451,19 +451,19 @@ email xwei@uchc.edu
 packageId gitId c3f99d8ae400b4e73a0ff35ee7d586734899283f
 packageSize 1654
 
-toolId 5c1675c87c21e241560735481ca9f2d3
+toolId 9343ec3fd3f8c8b2a4862021c521a01b
 name rsem-calculate-expression
-version v1.2.14
+version v1.2.15
 versionCommand ${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression --version | awk '{print $5}'
 executable rsem/rsem-calculate-expression
 packageName RSEM
-packageVersion v1.2.14
-url https://github.com/bli25wisc/RSEM/archive/v1.2.14.tar.gz
-archive /hive/groups/encode/encode3/tools/RSEM-1.2.14/RSEM-1.2.14.tar.gz
-installed /hive/groups/encode/encode3/tools/RSEM-1.2.14/
+packageVersion v1.2.15
+url https://github.com/bli25wisc/RSEM/archive/v1.2.15.tar.gz
+archive /hive/groups/encode/encode3/tools/RSEM-1.2.15/RSEM-1.2.15.tar.gz
+installed /hive/groups/encode/encode3/tools/RSEM-1.2.15/
 email bli@cs.wisc.edu 
-packageId gitId b64d62d49f9b0446f10f87a2aadcde2f36854ab6
-packageSize 9288799
+packageId gitId 92b24279a3ecc72946e7e7c23149ad0d181f373a
+packageSize 9289400
 
 
 ### UCSC scripts section:
@@ -699,9 +699,9 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId e8ef2a90ecd0bef05e4279aa63c124d6
+toolId eefb8900ad3930daf63cc2bc8b640b7d
 name eap_run_rsem_long_pe
-version v1
+version v2
 versionCommand grep \"usage `which eap_run_rsem_long_pe` | awk '{print $3}' | tr -d :
 executable eap_run_rsem_long_pe
 packageName uniformAnalysis
@@ -713,9 +713,9 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId a171df93dc693f7fa34d2aca5b5348f1
+toolId 8c346e7f1e7f93f668590d51adf32cfb
 name eap_run_rsem_long_se
-version v1
+version v2
 versionCommand grep \"usage `which eap_run_rsem_long_se` | awk '{print $3}' | tr -d :
 executable eap_run_rsem_long_se
 packageName uniformAnalysis
@@ -741,7 +741,7 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId ee9e59716a8124edad35db157108c832
+toolId 54a7d6fd88bb924485ec6689a5ea0e85
 name eap_run_star_long_se
 version v2
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
@@ -755,11 +755,11 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId f2c069e2c591226b7766e25cf15d3dac
-name eap_run_tophat_long_ercc_pe
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_ercc_pe` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_ercc_pe
+toolId 4ac24dac72bc41c69b79f5bef96977f8
+name eap_run_tophat_long_pe
+version v2
+versionCommand grep \"usage `which eap_run_tophat_long_pe` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_pe
 packageName uniformAnalysis
 url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
 archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
@@ -769,39 +769,11 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId aed2bf310a29cabd330a5205e8817fd3
-name eap_run_tophat_long_ercc_se
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_ercc_se` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_ercc_se
-packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
-email genome@soe.ucsc.edu           
-packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
-packageSize 77116
-
-toolId e086c8c6000dd4edb41d2be52943627d
-name eap_run_tophat_long_wsc_pe
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_wsc_pe` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_wsc_pe
-packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
-email genome@soe.ucsc.edu           
-packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
-packageSize 77116
-
-toolId f10fb5d8c23f689e0013a33e80eff567
-name eap_run_tophat_long_wsc_se
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_wsc_se` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_wsc_se
+toolId d9d649eb28b6aa5121489447baaaa5f0
+name eap_run_tophat_long_se
+version v2
+versionCommand grep \"usage `which eap_run_tophat_long_se` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_se
 packageName uniformAnalysis
 url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
 archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
