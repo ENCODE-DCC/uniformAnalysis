@@ -3,8 +3,9 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 5 ]; then 
-echo "usage v2: eap_run_tophat_long_pe tophatRefDir libraryId read1.fq.gz read2.fq.gz outTophat.bam"
+if [ $# -ne 6 ]; then 
+echo "usage v2: eap_run_tophat_long_pe referencePrefix annotationPrefix libraryId \\"
+echo "          read1.fq.gz read2.fq.gz outTophat.bam"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
@@ -16,20 +17,21 @@ exit -1; fi
 # package(tool): xweiScripts(tophat_bam_xsA_tag_fix.pl) [version: v1.0(v1.0 xwei 04/07/2014)]
 
 # Label parameters and copying input(s) to local tmp dir
-tophatRefDir=$1        # Directory containing TopHat index on genome,spike-in grouped by prefix
-libraryId=$2           # Accession ID (or other identifier) of bio-sample used to generate fastq(s)
-cp $3 read1.fq.gz      # INPUT: gzipped fastq of read1 of paired-end reads
-cp $4 read2.fq.gz      # INPUT: gzipped fastq of read2 of paired-end reads
-outGenomeBam=$5        # OUTPUT: reads aligned to whole genome by TopHat (*.bai is also generated)
+referencePrefix=$1     # Directory/prefix for TopHat index on genome, spike-in
+annotationPrefix=$2    # Directory/Prefix for TopHat index on annotation
+libraryId=$3           # Accession ID (or other identifier) of bio-sample used to generate fastq(s)
+cp $4 read1.fq.gz      # INPUT: gzipped fastq of read1 of paired-end reads
+cp $5 read2.fq.gz      # INPUT: gzipped fastq of read2 of paired-end reads
+outGenomeBam=$6        # OUTPUT: reads aligned to whole genome by TopHat (*.bai is also generated)
 
 # Run TopHat on paired-end/stranded reads using, 'ERCC' spike-in
 tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
        --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 --library-type fr-firststrand \
-       --transcriptome-index ${tophatRefDir}/annotation/gencode.v19 \
+       --transcriptome-index ${annotationPrefix} \
    --min-anchor-length 8 --splice-mismatches 0 --read-gap-length 2 \
    --mate-inner-dist 50 --mate-std-dev 20 --segment-length 25 \
    --b2-L 20 --b2-N 0 --b2-D 15 --b2-R 2 \
-       ${tophatRefDir}/ERCC read1.fq.gz read2.fq.gz
+       ${referencePrefix} read1.fq.gz read2.fq.gz
 
 # Building a new header
 HD="@HD\tVN:1.4\tSO:coordinate" 
@@ -45,7 +47,7 @@ gawk -v HD="$HD" -v newPG="$newPG" -v library="$libraryComment" \
     }; END{print newPG"\n"PG"\n"library;}' > newHeader.sam
            
 # Add reference genome specific accessions to header
-cat ${tophatRefDir}/ERCC_COfile.txt >> newHeader.sam
+cat ${referencePrefix}_COfile.txt >> newHeader.sam
 
 # sort before merge
 
