@@ -4,13 +4,13 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 6 ];
-then echo "usage v4: eap_run_hotspot genome input.bam readLength out.narrowPeak out.broadPeak out.bigWig"
+then echo "usage v5: eap_run_hotspot genome input.bam readLength out.narrowPeak out.broadPeak out.bigWig"
 echo Makes temp files so should be run in a freshly created directory.
 exit -1; fi
 
 # Set paths with ones we depend on first 
 toolsDir=${EAP_TOOLS_DIR}
-export PATH=${toolsDir}/:${toolsDir}/hotspot-distr/hotspot-deploy/bin/:${toolsDir}/bedtools/bin:$PATH
+export PATH=:${toolsDir}/hotspot-distr/hotspot-deploy/bin/:${toolsDir}/bedtools/bin:${toolsDir}:$PATH
 
 # Filter out mitochondria and non-mappers and multiple mappers, and call hotspot
 edwBamFilter $2 filtered.bam -chrom=chrM -unmapped -multimapped -sponge
