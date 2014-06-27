@@ -12,7 +12,7 @@ exit -1; fi
 
 # Expected versions:
 # package(tool): uniformAnalysis(eap_run_star_long_pe) [version: v1.0(v2)]
-# package(tool): STAR [version: 2.3.1z8(2.3.1z8_r447)]
+# package(tool): STAR [version: 2.3.1z10(2.3.1z10_r456)]
 # tool: samtools [version: 0.1.19-96b5f2294a]
 # package(tool): ucscUtils(bedGraphToBigWig) [version: v293(v4)]
 

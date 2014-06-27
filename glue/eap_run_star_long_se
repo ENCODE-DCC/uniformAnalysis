@@ -11,7 +11,7 @@ exit -1; fi
 
 # Expected versions:
 # package(tool): uniformAnalysis(eap_run_star_long_se) [version: v1.0(v2)]
-# package(tool): STAR [version: 2.3.1z8(2.3.1z8_r447)]
+# package(tool): STAR [version: 2.3.1z10(2.3.1z10_r456)]
 # tool: samtools [version: 0.1.19-96b5f2294a]
 # package(tool): ucscUtils(bedGraphToBigWig) [version: v293(v4)]
 
@@ -31,7 +31,6 @@ echo -e ${libraryComment} > COfile.txt
 cat ${starRefIndexDir}/COfile.txt >> COfile.txt
 
 # Note: in order to run on cluster, using:
-# - STAR symlinked to STARstatic, 
 # - --genomeLoad NoSharedMemory (instead of LoadAndRemove) 
 # - 32g ram, 12 cpus.
 
