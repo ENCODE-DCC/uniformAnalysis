@@ -4,8 +4,8 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 9 ]; then 
-echo "usage v1: eap_pre_tophat_index genomeRef.fa spikeIn.fa annotation.gtf tophatRefDir \\"
-echo "          tophatIndexPrefix tiny.fq.gz tophatAnnoIndexPrefix outIndex.tgz outAnnoIndex.tgz"
+echo "usage v1: eap_pre_tophat_index genomeRef.fa spikeIn.fa annotation.gtf tRNA.gtf tiny.fq.gz \\"
+echo "          tophatRefDir tophatIndexPrefix tophatAnnoIndexPrefix outTophatIndexes.tgz"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
@@ -18,83 +18,64 @@ exit -1; fi
 genomeRefFa=$1            # INPUT: Full path to genome reference in fa format (e.g. female.hg19.fa)
 spikeInFa=$2              # INPUT: Full path to spike-in to be included in fa format (e.g. ERCC.fa)
 annotationGtf=$3          # INPUT: Full path to gene/transcript annotation (e.g. gencode.v19.gtf)
-tophatRefDir=$4           # Directory to contain TopHat index on genome,spike-in grouped by prefix
-tophatIndexPrefix=$5      # Prefix to be applied to all genome index files (just like TopHat wants)
-tinyFastq=$6              # INPUT: A tiny fastq needed for annotation index generation
-tophatAnnoIndexPrefix=$7  # Prefix to be applied to all annotation index files
-outTophatIndexTgz=$8      # OUTPUT: archive of genome index files that may be accessioned
-outTophatAnnoIndexTgz=$9  # OUTPUT: archive of annotation index files that may be accessioned
+tRnaGtf=$4                # INPUT: Full path to tRNA annotation (e.g. gencode.v19.tRNAs.gtf)
+tinyFastq=$5              # INPUT: A tiny fastq needed for annotation index generation
+tophatRefDir=$6           # Directory to contain TopHat indexs grouped by prefix
+tophatGenoIndexPrefix=$7  # Prefix to be applied to all genome index files (just like TopHat wants)
+tophatAnnoIndexPrefix=$8  # Prefix to be applied to all annotation index files
+outTophatIndexesTgz=$9    # OUTPUT: archive of genome and annotation indexes (may be accessioned)
+combinedGtf=${tophatRefDir}/${tophatAnnoIndexPrefix}-tRNA-spikeIn.gtf
 
-# Make target dir and build index files
+# Make target dir and build genome/spike-in index files
 mkdir -p ${tophatRefDir}
-bowtie2-build --offrate 3 -f ${genomeRefFa},${spikeInFa} ${tophatRefDir}/${tophatIndexPrefix}
+bowtie2-build --offrate 3 -f ${genomeRefFa},${spikeInFa} ${tophatRefDir}/${tophatGenoIndexPrefix}
 
 # Attempt to make bamCommentLines.txt, which should be reviewed. NOTE tabs handled by assignment.
 refComment="@CO\tREFID:$(basename ${genomeRefFa%.*})"
 annotationComment="@CO\tANNID:$(basename ${annotationGtf})"
-spikeInComment="@CO\tSPIKEID:$(basename ${spikeInFa%.*})"
-echo ${refComment} > ${tophatIndexPrefix}_bamCommentLines.txt
-echo ${annotationComment} >> ${tophatIndexPrefix}_bamCommentLines.txt
-echo ${spikeInComment} >> ${tophatIndexPrefix}_bamCommentLines.txt
+spikeId=`echo ${spikeInFa} | cut -d . -f 2`
+spikeInComment="@CO\tSPIKEID:${spikeId}"
+echo -e ${refComment} > ${tophatGenoIndexPrefix}_bamCommentLines.txt
+echo -e ${annotationComment} >> ${tophatGenoIndexPrefix}_bamCommentLines.txt
+echo -e ${spikeInComment} >> ${tophatGenoIndexPrefix}_bamCommentLines.txt
 
-# TODO: bowtie will expect single ${tophatIndexPrefix}.fa containing genome and spike-in
+# TODO: bowtie will expect single ${tophatGenoIndexPrefix}.fa containing genome and spike-in
 #       This is generated on first run of TopHat alignment and should be move into place 
-
-# tar up index set for accessioning
-pushd ${tophatRefDir}
-tar -czf tophatIndex.tgz ${tophatIndexPrefix}*
-popd
-
 
 # Making the annotation index requires running a tophat alignment, since there isn't a stand
 # alone bowtie2 option to do so.
+GTF.awk ${annotationGtf} ${tRnaGtf} ${spikeInFa} > ${combinedGtf}
+
 tophat --no-discordant --no-mixed -p 8 -z0 --min-intron-length 20 --max-intron-length 1000000 \
            --read-mismatches 4 --read-edit-dist 4 --max-multihits 20 --library-type fr-firststrand \
-           --GTF ${annotationGtf} --transcriptome-index ${tophatRefDir}/${tophatAnnoIndexPrefix} \
-           ${tophatRefDir}/${tophatIndexPrefix} ${tinyFastq}
+           --GTF ${combinedGtf} --transcriptome-index ${tophatRefDir}/${tophatAnnoIndexPrefix} \
+           ${tophatRefDir}/${tophatGenoIndexPrefix} ${tinyFastq}
 
 # TODO: Tophat will expect single ${tophatAnnoIndexPrefix}.fa containing annotation.
 #       This is generated on first run of TopHat alignment and should be move into place 
 
-# tar up index set for accessioning
+# tar up both index sets into a single archive for accessioning
 pushd ${tophatRefDir}
-tar -czf tophatAnnoIndex.tgz ${tophatAnnoIndexPrefix}*
+tar -czf tophatIndex.tgz ${tophatGenoIndexPrefix}* ${tophatAnnoIndexPrefix}*
 popd
 
 # deliver results:
-mv tophatIndex.tgz ${outTophatIndexTgz}
-mv tophatAnnoIndex.tgz ${outTophatAnnoIndexTgz}
+mv tophatIndex.tgz ${outTophatIndexesTgz}
 
-# Command lines run:
+# Command lines to run at UCSC:
 # female.hg19/ERCC/gencode.v19:
 # eap_pre_tophat_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
-#                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData ERCC \
-#                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData/ERCC_tophatHg19FemaleErcc.tgz \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
-# female.hg19/WSC/gencode.v19:
-# eap_pre_tophat_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTO.fasta \
-#                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData WSC \ 
-#                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData/WSC_tophatHg19FemaleWsc.tgz \
-#                      ${EAP_REF_DIR}/female.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
+#                     ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                   ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                  /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz \
+#                 ${EAP_REF_DIR}/female.hg19/tophatData genome annotation \
+#                ${EAP_REF_DIR}/female.hg19/tophatData/tophatIndex_hg19F_ERCC_gencodeV19_tRNAs.tgz
 # male.hg19/ERCC/gencode.v19:
 # eap_pre_tophat_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
-#                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData ERCC \ 
-#                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData/ERCC_tophatHg19MaleErcc.tgz \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
-# male.hg19/WSC/gencode.v19:
-# eap_pre_tophat_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
-#                      ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTO.fasta \
-#                      ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData WSC \ 
-#                      /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz gencode.v19 \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData/WSC_tophatHg19MaleWsc.tgz \
-#                      ${EAP_REF_DIR}/male.hg19/tophatData/gencode.v19_tophatGencodeV19.tgz
+#                     ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                    ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                   ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                  /hive/groups/encode/encode3/testSets/eap/rnaSeq/tiny.fq.gz \
+#                 ${EAP_REF_DIR}/male.hg19/tophatData genome annotation \ 
+#                ${EAP_REF_DIR}/male.hg19/tophatData/tophatIndex_hg19M_ERCC_gencodeV19_tRNAs.tgz
