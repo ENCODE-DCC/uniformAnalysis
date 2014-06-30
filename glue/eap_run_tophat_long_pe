@@ -64,6 +64,6 @@ rm read1.fq.gz read2.fq.gz
 #rm sorted.bam sortedFixedMapped.bam tophat_out/accepted_hits.bam
 
 # deliver results:
-mv out_tophat.bam ${outTophatBam}
-mv out_tophat.bam.bai ${outTophatBam}.bai
+mv out_tophat.bam ${outGenomeBam}
+mv out_tophat.bam.bai ${outGenomeBam}.bai
 
