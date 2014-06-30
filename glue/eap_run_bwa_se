@@ -13,11 +13,8 @@ cp $2 tmp.fq.gz
 
 # Using $1 as an index, align reads from $2 putting output in $3
 # We remove temp files ASAP to conserve space on temp device
-bwa aln -t 4 $1 tmp.fq.gz > tmp.sai
-bwa samse $1 tmp.sai tmp.fq.gz > tmp.sam
-rm tmp.sai tmp.fq.gz
-samtools view -S -b tmp.sam > tmp.bam
-rm tmp.sam
+bwa aln -t 4 $1 tmp.fq.gz | bwa samse $1 /dev/stdin tmp.fq.gz | samtools view -S -b /dev/stdin > tmp.bam
+rm tmp.fq.gz
 samtools sort tmp.bam sorted
 rm tmp.bam
 mv sorted.bam $3
