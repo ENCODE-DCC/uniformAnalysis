@@ -2,7 +2,7 @@
     <description> (fastQ to bam)</description>
     <command interpreter="python">
         rsemQuantifyE3.py $bamInput $bamEval $geneResults $transcriptResults
-        $spike $gender $genome $expType $repNo ${name}U${__user_id__}
+        $genome $expType $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/starAlignE3.py --version</version_command>
     <stdio>
@@ -13,17 +13,11 @@
         <param name="genome" type="select" label="Genome Assembly">
             <option value="hg19" selected="true">GRCh37/hg19 Human reference</option>
         </param>
-        <param name="gender" type="select" label="Gender">
-            <option value="unspecified" selected="true">Unspecified/NA</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-        </param>
         <param name="expType" type="select" label="Experiment Type">
             <option value="RNAseq-long" selected="true">long RNA-seq</option>
         </param>
-        <param name="spike" type="select" label="Spike In Control">
+        <param name="spike" type="select" label="Spike-In Control">
             <option value="ERCC" selected="true">ERCC/NIST/Ambion</option>
-            <option value="WSC">Wold single-cell</option>
         </param>
         <param name="bamInput" type="data" label="Annotation bam (alignments file)" format="bam" />
         <param name="bamEval"  type="data" label="Genome bam Evaluation file (json)"
@@ -51,12 +45,11 @@
 
 **Inputs:**
     All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
-    Additionally, alignment steps should may also specify a **Gender**.  Currently only
-    the GRCh37/hg19 reference genome is supported. Note that some steps are only appropriate
-    for some experiment types.
+    Currently only the GRCh37/hg19 reference genome is supported. Note that some steps are 
+    only appropriate for some experiment types.
     
-    Select the **Spike In** control set used for this experiment.  Spike ins provide a method
-    of normalization across experiments.  Most EAP experiments use the ERCC set.  
+    All ENCODE long RNA-seq experiments are expected to include the ERCC/NIST/Ambion **Spike-In** 
+    control set.  Spike-ins provide a method of normalization across experiments.
     
     The **Annotation bam** is the file of reads aligned to the gencode annotation.  This should 
     not be confused with its companion "genome bam: which contains alignments tothe whole genome.
@@ -77,11 +70,12 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce three files:
+    This step is expected to produce two files.  The results should reflect a gender neutral 
+    annotation with ERCC spike-ins.  In other words, a female bio-sample run through the 
+    long RNA-seq analysis will contain chrY gene results but they will be zero.  The two files are:
     
     - **Gene quantification** is a tab delimited quanitfication file, one line per gene.
     - **Transcript quantification** is a tab delimited quanitfication file, one line per transcript.
-    - **Gencode annotation bam** is an alignment to the Gencode annotation.
 
     The **log** of this single step can be seen under *view details* stdout.
 

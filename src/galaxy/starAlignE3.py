@@ -6,7 +6,7 @@
 #                               [<inFastqR2> <inFastqEvalR2>] <genomeOutBam> <annotationOutBam> \
 #                               <signalOutAll[Minus]> [<signalOutAllPlus>] \
 #                               <signalOutUniq[Minus]> [<signalOutUniqPlus>] \
-#                               <spikeIn> <libId> <gender> <genome> <expType> <repNo> <analysisId>
+#                               <libId> <gender> <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 import json
@@ -35,13 +35,12 @@ galaxyGenoBamOutput  = sys.argv[4]
 galaxyAnnoBamOutput  = sys.argv[5]
 galaxyBwAllOut       = sys.argv[6]
 galaxyBwUniqOut      = sys.argv[7]
-spikeIn              = sys.argv[8]
-libId                = sys.argv[9]
-gender               = sys.argv[10]
-genome               = sys.argv[11]
-expType              = sys.argv[12]
-repNo                = sys.argv[13]
-anaId                = sys.argv[14]
+libId                = sys.argv[8]
+gender               = sys.argv[9]
+genome               = sys.argv[10]
+expType              = sys.argv[11]
+repNo                = sys.argv[12]
+anaId                = sys.argv[13]
 if pairedOrUnpaired == "paired":
     galaxyInputFile2     = sys.argv[4]
     galaxyEvalFile2      = sys.argv[5]
@@ -51,13 +50,12 @@ if pairedOrUnpaired == "paired":
     galaxyBwAllPlusOut   = sys.argv[9]
     galaxyBwUniqMinusOut = sys.argv[10]
     galaxyBwUniqPlusOut  = sys.argv[11]
-    spikeIn              = sys.argv[12]
-    libId                = sys.argv[13]
-    gender               = sys.argv[14]
-    genome               = sys.argv[15]
-    expType              = sys.argv[16]
-    repNo                = sys.argv[17]
-    anaId                = sys.argv[18]
+    libId                = sys.argv[12]
+    gender               = sys.argv[13]
+    genome               = sys.argv[14]
+    expType              = sys.argv[15]
+    repNo                = sys.argv[16]
+    anaId                = sys.argv[17]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -139,15 +137,15 @@ if pairedOrUnpaired == "paired":
                       input1=fastqRd1Key, input2=fastqRd2Key)
     allPlusKey =               'signalStarRep' + repNo +   'AllPlus.bw'
     ana.registerFile( allPlusKey,    'galaxyOutput',galaxyBwAllPlusOut)
-    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starAllPlus',  ext='bw', \
+    ana.createOutFile(allPlusKey,'nonGalaxyOutput','%s_%s_starAllPlus',  ext='bw', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
     uniqMinusKey =               'signalStarRep' + repNo + 'UniqMinus.bw'
-    ana.registerFile( uniqMinusKey,  'galaxyOutput',galaxyBwUniqMinusOut)
-    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starUniqMinus',ext='bw', \
+    ana.registerFile( uniqMinusKey,   'galaxyOutput',galaxyBwUniqMinusOut)
+    ana.createOutFile(uniqMinusKey,'nonGalaxyOutput','%s_%s_starUniqMinus',ext='bw', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
     uniqPlusKey =               'signalStarRep' + repNo +  'UniqPlus.bw'
     ana.registerFile( uniqPlusKey,   'galaxyOutput',galaxyBwUniqPlusOut)
-    ana.createOutFile(allMinusKey,'nonGalaxyOutput','%s_%s_starUniqPlus', ext='bw', \
+    ana.createOutFile(uniqPlusKey,'nonGalaxyOutput','%s_%s_starUniqPlus', ext='bw', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
 else:
     fastqKey='tagsRep'+repNo + '.fastq' # Used to tie inputs togther
@@ -162,13 +160,11 @@ else:
     # signal bigWigs:
     allKey =                'signalStarRep' + repNo + 'All.bw'
     ana.registerFile( allKey,   'galaxyOutput',galaxyBwAllOut)
-    ana.createOutFile(allKey,'nonGalaxyOutput','%s_%s_starAll',  ext='bw', \
-                      input1=fastqRd1Key, input2=fastqRd2Key)
+    ana.createOutFile(allKey,'nonGalaxyOutput','%s_starAll',  ext='bw')
     uniqKey =                'signalStarRep' + repNo + 'Uniq.bw'
     ana.registerFile( uniqKey,   'galaxyOutput',galaxyBwUniqOut)
-    ana.createOutFile(uniqKey,'nonGalaxyOutput','%s_%s_starUniq',ext='bw', \
-                      input1=fastqRd1Key, input2=fastqRd2Key)
+    ana.createOutFile(uniqKey,'nonGalaxyOutput','%s_starUniq',ext='bw')
 
 # Establish step and run it:
-step = StarAlignmentStep(ana,repNo, spikeIn, libId, encoding, tagLength)
+step = StarAlignmentStep(ana,repNo, libId, encoding, tagLength)
 sys.exit( step.run() )

@@ -18,11 +18,9 @@ from src.logicalStep import LogicalStep
 
 class StarAlignmentStep(LogicalStep):
 
-    def __init__(self, analysis, replicate='1', spikeIn='ERCC', libId='', \
-                                                                encoding='sanger', tagLen=100):
+    def __init__(self, analysis, replicate='1', libId='', encoding='sanger', tagLen=100):
         self.replicate = str(replicate)
         self.encoding  = encoding
-        self.spikeIn   = spikeIn
         self.libId     = libId
         self.tagLen    = int(tagLen)
         LogicalStep.__init__(self, analysis, 'alignmentByStar_' + analysis.readType + 'Rep' + \
@@ -66,13 +64,13 @@ class StarAlignmentStep(LogicalStep):
             allPlusBw   = self.declareTargetFile( 'signalStarRep' + self.replicate + 'AllPlus.bw')
         
         # Locate the correct reference file(s)
+        # All STAR results use [male|female] genome/annotation index with tRNAs and ERCC spike-ins
         genome = self.ana.genome
-        refDir    = self.ana.refDir + genome + "/starData/" 
+        refDir    = self.ana.refDir + genome + "/starData" 
         chromFile = self.ana.refDir + genome + "/chrom.sizes"
         if self.ana.gender == 'female':  # male and unspecified are treated the same
-            refDir    = self.ana.refDir + self.ana.gender + '.' + genome + "/starData/"
+            refDir    = self.ana.refDir + self.ana.gender + '.' + genome + "/starData"
             chromFile = self.ana.refDir + self.ana.gender + '.' + genome + "/chrom.sizes"
-        refDir += self.spikeIn  # doesn't end in '/' on purpose.
         
         if self.ana.type == 'RNAseq-long':
             if self.ana.readType == 'single':

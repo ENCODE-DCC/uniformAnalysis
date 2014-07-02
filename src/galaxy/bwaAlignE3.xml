@@ -71,7 +71,7 @@
 
 **Inputs:**
     All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
-    Additionally, alignment steps should may also specify a **Gender**.  Currently only
+    Additionally, alignment steps may also specify a **Gender**.  Currently only
     the GRCh37/hg19 reference genome is supported. Note that some steps are only appropriate
     for some experiment types.
     

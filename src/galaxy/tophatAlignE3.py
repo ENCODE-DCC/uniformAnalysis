@@ -4,7 +4,7 @@
 #
 #Usage: python(2.7) tophatAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
 #                               [<inFastqR2> <inFastqEvalR2>] <galaxyOutBam> \
-#                               <spikeIn> <libId> <gender> <genome> <expType> <repNo> <analysisId>
+#                               <libId> <gender> <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 import json
@@ -30,24 +30,22 @@ pairedOrUnpaired     = sys.argv[1]
 galaxyInputFile      = sys.argv[2]
 galaxyEvalFile       = sys.argv[3]    # Look up tagLength and encoding
 galaxyOutputFile     = sys.argv[4]
-spikeIn              = sys.argv[5]
-libId                = sys.argv[6]
-gender               = sys.argv[7]
-genome               = sys.argv[8]
-expType              = sys.argv[9]
-repNo                = sys.argv[10]
-anaId                = sys.argv[11]
+libId                = sys.argv[5]
+gender               = sys.argv[6]
+genome               = sys.argv[7]
+expType              = sys.argv[8]
+repNo                = sys.argv[9]
+anaId                = sys.argv[10]
 if pairedOrUnpaired == "paired":
     galaxyInputFile2 = sys.argv[4]
     galaxyEvalFile2  = sys.argv[5]
     galaxyOutputFile = sys.argv[6]
-    spikeIn          = sys.argv[7]
-    libId            = sys.argv[8]
-    gender           = sys.argv[9]
-    genome           = sys.argv[10]
-    expType          = sys.argv[11]
-    repNo            = sys.argv[12]
-    anaId            = sys.argv[13]
+    libId            = sys.argv[7]
+    gender           = sys.argv[8]
+    genome           = sys.argv[9]
+    expType          = sys.argv[10]
+    repNo            = sys.argv[11]
+    anaId            = sys.argv[12]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -122,5 +120,5 @@ else:
     ana.createOutFile(bamFileKey,'nonGalaxyOutput','%s_tophat',ext='bam' )
 
 # Establish step and run it:
-step = TophatAlignmentStep(ana,repNo, spikeIn, libId, encoding, tagLength)
+step = TophatAlignmentStep(ana,repNo, libId, encoding, tagLength)
 sys.exit( step.run() )

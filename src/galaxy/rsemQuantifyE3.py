@@ -5,7 +5,7 @@
 #Usage: python(2.7) rsemQuantfyAlign.py <inAnnotationBam> <bamEvalFile> \
 #                               <geneResults> <transcriptResults> \
 #                               <annotationBam> \
-#                               <spikeIn> <gender> <genome> <expType> <repNo> <analysisId>
+#                               <genome> <expType> <repNo> <analysisId>
 
 import os, sys
 import json
@@ -31,12 +31,10 @@ galaxyBamInput       = sys.argv[1]
 galaxyEvalFile       = sys.argv[2]    # Look up tagLength and encoding
 galaxyOutGenes       = sys.argv[3]
 galaxyOutTrans       = sys.argv[4]
-spikeIn              = sys.argv[5]  #### Probably this is still needed!
-gender               = sys.argv[6]
-genome               = sys.argv[7]
-expType              = sys.argv[8]
-repNo                = sys.argv[9]
-anaId                = sys.argv[10]
+genome               = sys.argv[5]
+expType              = sys.argv[6]
+repNo                = sys.argv[7]
+anaId                = sys.argv[8]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -59,7 +57,6 @@ except:
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, genome, expType)
-ana.gender = gender
 if testOnly:
     ana.dryRun = testOnly
 ana.readType = pairedOrUnpaired
@@ -84,10 +81,10 @@ nonGalaxyInput  = ana.nonGalaxyInput(bamInputKey)  # Registers and returns the o
 # outputs:
 ana.registerFile(genesFileKey,'galaxyOutput',galaxyOutGenes)
 resultsDir  = ana.resultsDir(galaxyPath) # prefers nonGalaxyInput location over settings loc
-ana.createOutFile(genesFileKey,'nonGalaxyOutput','%s_rsem', ext='tab')
+ana.createOutFile(genesFileKey,'nonGalaxyOutput','%s_rsemGenes', ext='tab')
 ana.registerFile(transFileKey,'galaxyOutput',galaxyOutTrans)
-ana.createOutFile(transFileKey,'nonGalaxyOutput','%s_rsem', ext='tab')
+ana.createOutFile(transFileKey,'nonGalaxyOutput','%s_rsemTranscripts', ext='tab')
 
 # Establish step and run it:
-step = RsemStep(ana, suffix, spikeIn)
+step = RsemStep(ana, suffix)
 sys.exit( step.run() )

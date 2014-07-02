@@ -10,9 +10,8 @@ from src.logicalStep import LogicalStep
 
 class RsemStep(LogicalStep):
 
-    def __init__(self, analysis, suffix="", spikeIn='ERCC'):
+    def __init__(self, analysis, suffix=""):
         self.suffix    = str(suffix)
-        self.spikeIn   = spikeIn
         LogicalStep.__init__(self, analysis, 'quantitateRsem_' + analysis.readType + '_' + suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all step versions
 
@@ -43,12 +42,9 @@ class RsemStep(LogicalStep):
         transFile = self.declareTargetFile('quantifyTranscriptsRsem' + self.suffix + '.tab')
         
         # Locate the correct reference file(s)
+        # All RSEM results use male genome/annotation index with tRNAs and ERCC spike-ins
         genome = self.ana.genome
-        refDir = self.ana.refDir + genome + "/rsemData/"
-        if self.ana.gender == 'female':  # male and unspecified are treated the same
-            refDir = self.ana.refDir + self.ana.gender + '.' + genome + "/rsemData/"
-        #refDir += self.spikeIn  # doesn't end in '/' on purpose.
-        refDir += "rsem"  # NOTE that we are currently not using the spike-in
+        refDir = self.ana.refDir + genome + "/rsemData/rsemIndex"
             
         if self.ana.type == 'RNAseq-long':
             if self.ana.readType == 'single':
@@ -74,7 +70,7 @@ class RsemStep(LogicalStep):
     def eap_long_se(self, refDir, inAnnoBam, outGene, outTrans):
         '''RSEM quantification for single-end datasets'''
         
-        cmd = "eap_run_rsem_long_se {ref} {annoBamIn} {geneOut} {transOut} {bamOut}".format( \
+        cmd = "eap_run_rsem_long_se {ref} {annoBamIn} {geneOut} {transOut}".format( \
               ref=refDir, annoBamIn=inAnnoBam, geneOut=outGene, transOut=outTrans)
               
         toolName = 'eap_run_rsem_long_se'
