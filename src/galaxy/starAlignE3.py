@@ -5,7 +5,7 @@
 #Usage: python(2.7) starAlign.py <'paired'|'unpaired'> <inFastq> <inFastqEval> \
 #                               [<inFastqR2> <inFastqEvalR2>] <genomeOutBam> <annotationOutBam> \
 #                               <signalOutAll[Minus]> [<signalOutAllPlus>] \
-#                               <signalOutUniq[Minus]> [<signalOutUniqPlus>] \
+#                               <signalOutUniq[Minus]> [<signalOutUniqPlus>] <statsOutput> \
 #                               <libId> <gender> <genome> <expType> <repNo> <analysisId>
 
 import os, sys
@@ -35,12 +35,13 @@ galaxyGenoBamOutput  = sys.argv[4]
 galaxyAnnoBamOutput  = sys.argv[5]
 galaxyBwAllOut       = sys.argv[6]
 galaxyBwUniqOut      = sys.argv[7]
-libId                = sys.argv[8]
-gender               = sys.argv[9]
-genome               = sys.argv[10]
-expType              = sys.argv[11]
-repNo                = sys.argv[12]
-anaId                = sys.argv[13]
+galaxyStatsOut       = sys.argv[8]
+libId                = sys.argv[9]
+gender               = sys.argv[10]
+genome               = sys.argv[11]
+expType              = sys.argv[12]
+repNo                = sys.argv[13]
+anaId                = sys.argv[14]
 if pairedOrUnpaired == "paired":
     galaxyInputFile2     = sys.argv[4]
     galaxyEvalFile2      = sys.argv[5]
@@ -50,12 +51,13 @@ if pairedOrUnpaired == "paired":
     galaxyBwAllPlusOut   = sys.argv[9]
     galaxyBwUniqMinusOut = sys.argv[10]
     galaxyBwUniqPlusOut  = sys.argv[11]
-    libId                = sys.argv[12]
-    gender               = sys.argv[13]
-    genome               = sys.argv[14]
-    expType              = sys.argv[15]
-    repNo                = sys.argv[16]
-    anaId                = sys.argv[17]
+    galaxyStatsOut       = sys.argv[12]
+    libId                = sys.argv[13]
+    gender               = sys.argv[14]
+    genome               = sys.argv[15]
+    expType              = sys.argv[16]
+    repNo                = sys.argv[17]
+    anaId                = sys.argv[18]
 
 # No longer command line parameters:
 scriptPath = os.path.split( os.path.abspath( sys.argv[0] ) )[0]
@@ -104,6 +106,7 @@ ana.readType = pairedOrUnpaired
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 # Outputs: target genome bam keyed as:          'genomeAlignedStarRep' + replicate + '.bam'
 #          interim annotation bam keyed as: 'annotationAlignedStarRep' + replicate + '.bam'
+#          interim statistics txt file keyed as:   'statisticsStarRep' + replicate + '.txt'
 #          and either 4 (paired) signal files:         'signalStarRep' + replicate + 'UniqMinus.bw'
 #                                                      'signalStarRep' + replicate +  'UniqPlus.bw'
 #                                                      'signalStarRep' + replicate +  'AllMinus.bw'
@@ -113,6 +116,7 @@ ana.readType = pairedOrUnpaired
 
 genoBamKey  =     'genomeAlignedStarRep'+repNo + '.bam' # Used to tie outputs together
 annoBamKey  = 'annotationAlignedStarRep'+repNo + '.bam' # Used to tie outputs together
+statsKey    =        'statisticsStarRep'+repNo + '.txt' # Used to tie outputs together
     
 # Establish Inputs for galaxy and nonGalaxy alike
 if pairedOrUnpaired == "paired":
@@ -129,6 +133,9 @@ if pairedOrUnpaired == "paired":
                       input1=fastqRd1Key, input2=fastqRd2Key)
     ana.registerFile(annoBamKey,'galaxyOutput',galaxyAnnoBamOutput)
     ana.createOutFile(annoBamKey,'nonGalaxyOutput','%s_%s_starAnnotation', ext='bam', \
+                      input1=fastqRd1Key, input2=fastqRd2Key)
+    ana.registerFile( statsKey,   'galaxyOutput',galaxyStatsOut)
+    ana.createOutFile(statsKey,'nonGalaxyOutput','%s_%s_starStats', ext='txt', \
                       input1=fastqRd1Key, input2=fastqRd2Key)
     # signal bigWigs:
     allMinusKey =               'signalStarRep' + repNo +  'AllMinus.bw'
@@ -157,6 +164,8 @@ else:
     ana.createOutFile(genoBamKey,'nonGalaxyOutput','%s_starGenome',ext='bam')
     ana.registerFile(annoBamKey,'galaxyOutput',galaxyAnnoBamOutput)
     ana.createOutFile(annoBamKey,'nonGalaxyOutput','%s_starAnnotation', ext='bam')
+    ana.registerFile( statsKey,   'galaxyOutput',galaxyStatsOut)
+    ana.createOutFile(statsKey,'nonGalaxyOutput','%s_starStats', ext='txt')
     # signal bigWigs:
     allKey =                'signalStarRep' + repNo + 'All.bw'
     ana.registerFile( allKey,   'galaxyOutput',galaxyBwAllOut)

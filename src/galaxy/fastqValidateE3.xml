@@ -1,4 +1,4 @@
-<tool id="fastqValidateE3" name="EAP fastQ evaluation" version="1.0">
+<tool id="fastqValidateE3" name="EAP fastQ evaluation by FastQC" version="1.0">
     <description>using FastQC</description>
     <command interpreter="python">
         fastqValidateE3.py $in_fastq $statsHtml $statsHtml.files_path $fastqEval 

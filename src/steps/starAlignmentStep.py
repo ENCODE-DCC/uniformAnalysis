@@ -7,6 +7,7 @@
 #         Paired: 'tagsRd1Rep'+replicate+'.fastq' and 'tagsRd2Rep'+replicate+'.fastq' 
 # Outputs: target genome bam keyed as:          'genomeAlignedStarRep' + replicate + '.bam'
 #          interim annotation bam keyed as: 'annotationAlignedStarRep' + replicate + '.bam'
+#          interim statistics txt file keyed as:   'statisticsStarRep' + replicate + '.txt'
 #          and either 4 (paired/stranded) signal files:'signalStarRep' + replicate + 'UniqMinus.bw'
 #                                                      'signalStarRep' + replicate +  'UniqPlus.bw'
 #                                                      'signalStarRep' + replicate +  'AllMinus.bw'
@@ -54,6 +55,7 @@ class StarAlignmentStep(LogicalStep):
         # Outputs:
         genoBam = self.declareTargetFile(     'genomeAlignedStarRep' + self.replicate + '.bam')
         annoBam = self.declareInterimFile('annotationAlignedStarRep' + self.replicate + '.bam')
+        stats   = self.declareInterimFile(       'statisticsStarRep' + self.replicate + '.txt')
         if self.ana.readType == 'single':
             uniqBw = self.declareTargetFile(      'signalStarRep' + self.replicate + 'Uniq.bw')
             allBw  = self.declareTargetFile(      'signalStarRep' + self.replicate + 'All.bw')
@@ -75,19 +77,20 @@ class StarAlignmentStep(LogicalStep):
         if self.ana.type == 'RNAseq-long':
             if self.ana.readType == 'single':
                 self.eap_long_se(refDir, chromFile, self.libId, input1, genoBam, annoBam, \
-                                 allBw, uniqBw)
+                                 allBw, uniqBw, stats)
             elif self.ana.readType == 'paired':
                 self.eap_long_pe(refDir, chromFile, self.libId, input1, input2, genoBam, \
-                                 annoBam, allMinusBw, allPlusBw, uniqMinusBw, uniqPlusBw)
+                                 annoBam, allMinusBw, allPlusBw, uniqMinusBw, uniqPlusBw, stats)
         else:
                 self.fail("Alignment by STAR for '"+self.ana.type+"' is currently not supported.")
 
-    def eap_long_se(self, refDir, chromRef, libId, fastq, outGenoBam, outAnnoBam, outAllBw, outUniqBw):
+    def eap_long_se(self, refDir, chromRef, libId, fastq, outGenoBam, outAnnoBam, outAllBw, \
+                    outUniqBw, outStats):
         '''Single-end unstranded genome and transcriptome alignment by STAR'''
         
-        cmd = "eap_run_star_long_se {ref} {chrRef} {lib} {fq} {genoBamOut} {annoBamOut} {allOut} {uniqOut}".format( \
+        cmd = "eap_run_star_long_se {ref} {chrRef} {lib} {fq} {genoBamOut} {annoBamOut} {allOut} {uniqOut} {statsOut}".format( \
               ref=refDir, chrRef=chromRef, lib=libId, fq=fastq, genoBamOut=outGenoBam, \
-              annoBamOut=outAnnoBam, allOut=outAllBw, uniqOut=outUniqBw)
+              annoBamOut=outAnnoBam, allOut=outAllBw, uniqOut=outUniqBw, statsOut=outStats)
               
         toolName = 'eap_run_star_long_se'
         self.toolBegins(toolName)
@@ -97,14 +100,14 @@ class StarAlignmentStep(LogicalStep):
         self.toolEnds(toolName,self.err)
 
     def eap_long_pe(self, refDir, chromRef, libId, fastq1, fastq2, outGenoBam, outAnnoBam, \
-                    outAllMinusBw, outAllPlusBw, outUniqMinusBw, outUniqPlusBw):
+                    outAllMinusBw, outAllPlusBw, outUniqMinusBw, outUniqPlusBw, outStats):
         '''Paired-end stranded genome and transcriptome alignment by STAR'''
         
-        cmd = "eap_run_star_long_pe {ref} {chrRef} {lib} {fq1} {fq2} {genoBamOut} {annoBamOut} {allMinusOut} {allPlusOut} {uniqMinusOut} {uniqPlusOut}".format( \
+        cmd = "eap_run_star_long_pe {ref} {chrRef} {lib} {fq1} {fq2} {genoBamOut} {annoBamOut} {allMinusOut} {allPlusOut} {uniqMinusOut} {uniqPlusOut} {statsOut}".format( \
               ref=refDir, chrRef=chromRef, lib=libId, fq1=fastq1, fq2=fastq2, \
               genoBamOut=outGenoBam, annoBamOut=outAnnoBam, \
               allMinusOut=outAllMinusBw, allPlusOut=outAllPlusBw, \
-              uniqMinusOut=outUniqMinusBw, uniqPlusOut=outUniqPlusBw)
+              uniqMinusOut=outUniqMinusBw, uniqPlusOut=outUniqPlusBw, statsOut=outStats)
               
         toolName = 'eap_run_star_long_pe'
         self.toolBegins(toolName)

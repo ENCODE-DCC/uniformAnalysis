@@ -11,7 +11,8 @@ exit -1; fi
 
 # Expected versions:
 # package(tool): uniformAnalysis(eap_pre_star_index) [version: v1.0(v1)]
-# package(tool): STAR [version: 2.3.1z10(2.3.1z10_r456)]
+# package(tool): STAR(STAR) [version: 2.3.1z12(2.3.1z12_r468)]
+# package(tool): STAR(GTF.awk) [version: 2.3.1z12]
 
 # Label parameters and copying input(s) to local tmp dir
 genomeRefFa=$1         # INPUT: Full path to genome reference in fa format (e.g. female.hg19.fa)

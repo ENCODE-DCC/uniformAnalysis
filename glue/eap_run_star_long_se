@@ -3,9 +3,9 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 8 ]; then 
-echo "usage v2: eap_run_star_long_se starRefIndexDir chromFile libraryId read1.fq.gz \\"
-echo "          outGenome.bam outAnnotation.bam outAll.bw outUniq.bw"
+if [ $# -ne 9 ]; then 
+echo "usage v2: eap_run_star_long_se starRefIndexDir chromFile libraryId reads.fq.gz \\"
+echo "          outGenome.bam outAnnotation.bam outAll.bw outUniq.bw outStats.txt"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
@@ -24,6 +24,7 @@ outGenomeBam=$5        # OUTPUT: reads aligned to whole genome by STAR (*.bai is
 outAnnotationBam=$6    # OUTPUT: reads aligned to gencode annotation by STAR
 outAllBw=$7            # OUTPUT: bigWig signal of unique and multi-mapped unstranded reads
 outUniqBw=$8           # OUTPUT: bigWig signal of uniquely mapped unstranded reads
+outStats=${9}          # OUTPUT: useful statistics compiled by STAR
 
 # library and COfile will be folded into bam header
 libraryComment="@CO\tLIBID:${libraryId}"
@@ -65,6 +66,7 @@ mv Aligned.sortedByCoord.out.bam.bai ${outGenomeBam}.bai
 mv Aligned.toTranscriptome.out.bam ${outAnnotationBam}
 mv signalAll.bw ${outAllBw}
 mv signalUniq.bw ${outUniqBw}
+cp Log.final.out ${outStats}
 
 # make sure star log is recorded.
 cat Log.final.out

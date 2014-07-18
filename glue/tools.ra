@@ -23,8 +23,7 @@
 
 ### Outstanding concerns:
 # - bwa and macs2 both have older versions here that can probably be removed.
-# - fastqStatsAndSubsample and bedGraphPack not part of ucscUtils package yet
-# - edwBamStats and edwSolexaToSangerFastq: not part of ucscUtils package yet and unversioned
+# - fastqStatsAndSubsample, edwBamStats and edwSolexaToSangerFastq are not auto-built in kentUtils
 # - numpy, pysam and scipy are all python needed packages with no 'executable'
 # - makewigglefromBAM-NH.py needs github release AND version
 
@@ -337,19 +336,34 @@ email hengli@broadinstitute.org
 packageId gitId 44428cd6d2c6f24b7fe59e1333d883a5a1a11e12
 packageSize 557812
 
-toolId f3f6b7c62b052b4f10ca212d485bfbb6
+toolId 0955e6050344ad83584bef264323e511
 name STAR
-version 2.3.1z8_r447
+version 2.3.1z12_r468
 versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
 executable STAR
 packageName STAR
-packageVersion 2.3.1z8
+packageVersion 2.3.1z12
 url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z8.tar.gz
-archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z8/STAR-STAR_2.3.1z8.tar.gz
-installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z8/
+archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
+installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
 email dobin@cshl.edu         
-packageId gitId b5961876f5062262f5d929f51b7864e747ad8177
-packageSize 1796310
+packageId gitId 7e1da8861816b804dcda56d6bd10c1b11a1371e9
+packageSize 2350222
+
+# This script from Alex Dobin has been placed in the STAR package for convenience only
+toolId 493f2a27da72651fde5fe34d865a757d
+name GTF.awk
+version 2.3.1z12_r468
+versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
+executable GTF.awk
+packageName STAR
+packageVersion 2.3.1z12
+url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z8.tar.gz
+archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
+installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
+email dobin@cshl.edu         
+packageId gitId 7e1da8861816b804dcda56d6bd10c1b11a1371e9
+packageSize 2350222
 
 ### makewigglefromBAM-NH.py - Needs github release AND version
 toolId 56dc86a6cf4d0ceb5e6517bf9b5b2c37
@@ -468,107 +482,109 @@ packageSize 9289400
 
 ### UCSC scripts section:
 
-toolId 1f5634ec995a813c45d74194cbb5bc92
+toolId 6ded633ef47fe5cc46c72d2484f4fe1a
 name bedGraphToBigWig
-version 4
-versionCommand bedGraphToBigWig 2>&1 | grep "bedGraphToBigWig v" | awk '{print $3}' 
+version v4
+versionCommand bedGraphToBigWig 2>&1 | grep "bedGraphToBigWig v" | awk '{print $2$3}' 
 executable bedGraphToBigWig
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-toolId fb9db8faa923f21e4d20e6c9c4088bcd
+toolId a0ab382afdb9d20949fd793f95648a92
 name bedToBigBed
-version 2.5
-versionCommand bedToBigBed 2>&1 | grep "bedToBigBed v" | awk '{print $3}'
+version v.2.6
+versionCommand bedToBigBed 2>&1 | grep "bedToBigBed v" | awk '{print $2$3}'
 executable bedToBigBed
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-toolId 9658540204cf1bcf91023f7c73cd0697
+toolId 4290688e1c35f9a93904c5c13db12d86
 name wigToBigWig
 version v4
 versionCommand wigToBigWig 2>&1 | grep "wigToBigWig v" | awk '{print $2$3}'
 executable wigToBigWig
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet
-toolId 89721e18b066082d455756eff7d56cc0
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/utils/fastqStatsAndSubsample; make
+toolId 55a4b8542a1766e7b46dd61889bea8a8
 name fastqStatsAndSubsample
 version v2
 versionCommand fastqStatsAndSubsample 2>&1 | grep "fastqStatsAndSubsample v" | awk '{print $2}'
 executable fastqStatsAndSubsample
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet
-toolId f0b3be0173d2d136a840cbabf1d9c959
+toolId f78eb131ad6d579e0359ade22abd2a32
 name bedGraphPack
 version v1
 versionCommand bedGraphPack 2>&1 | grep "bedGraphPack v" | awk '{print $2}'
 executable bedGraphPack
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet and unversioned
-toolId ce105dacbd731673d459327499c23008
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/hg/encode3/encodeDataWarehouse/utils/edwBamStats; make
+toolId 169111900bbb1dd5283b2cca6e92a9cf
 name edwBamStats
 version v2
 versionCommand edwBamStats 2>&1 | grep "edwBamStats v" | awk '{print $2}'
 executable edwBamStats
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet and unversioned
-toolId 83f3f03e558a96f804e2dca69ba6d8fe
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/hg/encode3/encodeDataWarehouse/utils/edwSolexaToSangerFastq; make
+toolId 8b1f8c595944467d736f434c729f7c14
 name edwSolexaToSangerFastq
-version unversioned
-#versionCommand edwSolexaToSangerFastq 2>&1 | grep "edwSolexaToSangerFastq v" | awk '{print $3}'
+version v1
+versionCommand edwSolexaToSangerFastq 2>&1 | grep "edwSolexaToSangerFastq v" | awk '{print $2}'
 executable edwSolexaToSangerFastq
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
 ### eap_run scripts section:
 ### - all eap_* scripts need to be made a part of ucscUtils or some other package
@@ -727,7 +743,7 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 82b43370f9c7f043e20092b8c3529d48
+toolId 08681060ae21c124df106c2d933d466b
 name eap_run_star_long_pe
 version v2
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
@@ -741,7 +757,7 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 54a7d6fd88bb924485ec6689a5ea0e85
+toolId d39d3a5955fee8ea18494b9394512b48
 name eap_run_star_long_se
 version v2
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
@@ -755,7 +771,7 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 4ac24dac72bc41c69b79f5bef96977f8
+toolId 1ab0cdefbb4d33193c16f157f6592b11
 name eap_run_tophat_long_pe
 version v2
 versionCommand grep \"usage `which eap_run_tophat_long_pe` | awk '{print $3}' | tr -d :
@@ -979,9 +995,9 @@ email genome@soe.ucsc.edu
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId f118a52563a75a64f3908e3b2d04e9f3
+toolId 638ccfa3c512d229d4b3f6e2d1700f82
 name hotspot.py
-version 2
+version 4
 versionCommand grep Version `which hotspot.py` | awk '{print $12 }' | tr -d \'\)
 executable python2.7 hotspot.py
 packageName uniformAnalysis

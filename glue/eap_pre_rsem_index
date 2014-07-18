@@ -11,6 +11,7 @@ exit -1; fi
 
 # Expected versions:
 # package(tool): uniformAnalysis(eap_pre_rsem_index) [version: v1.0(v1)]
+# package(tool): STAR(GTF.awk) [version: 2.3.1z12]
 # package(tool): RSEM(rsem-prepare-reference) [version: v1.2.15]
 # tool: bowtie2 [version: 2.1.0]
 
@@ -58,6 +59,6 @@ mv rsemIndex.tgz ${outRsemIndexTgz}
 # eap_pre_rsem_index ${EAP_REF_DIR}/hg19/male.hg19.fa \
 #                   ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
 #                  ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
-#                  ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
-#                 ${EAP_REF_DIR}/hg19/rsemData rsemIndex \
-#                ${EAP_REF_DIR}/hg19/rsemData/rsemIndex_hg19M_ERCC_gencodeV19_tRNAs.tgz
+#                 ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                ${EAP_REF_DIR}/hg19/rsemData rsemIndex \
+#               ${EAP_REF_DIR}/hg19/rsemData/rsemIndex_hg19M_ERCC_gencodeV19_tRNAs.tgz

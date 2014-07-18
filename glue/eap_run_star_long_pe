@@ -3,10 +3,10 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 11 ]; then 
+if [ $# -ne 12 ]; then 
 echo "usage v2: eap_run_star_long_pe starRefIndexDir chromFile libraryId read1.fq.gz read2.fq.gz \\"
 echo "          outGenome.bam outAnnotation.bam \\"
-echo "          outAllMinus.bw outAllPlus.bw outUniqMinus.bw outUniqPlus.bw"
+echo "          outAllMinus.bw outAllPlus.bw outUniqMinus.bw outUniqPlus.bw outStats.txt"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
@@ -28,6 +28,7 @@ outAllMinusBw=$8       # OUTPUT: bigWig signal of unique and multi-mapped minus-
 outAllPlusBw=$9        # OUTPUT: bigWig signal of unique and multi-mapped plus-strand reads
 outUniqMinusBw=${10}   # OUTPUT: bigWig signal of uniquely mapped minus-strand reads
 outUniqPlusBw=${11}    # OUTPUT: bigWig signal of uniquely mapped plus-strand reads
+outStats=${12}         # OUTPUT: useful statistics compiled by STAR
 
 # library and COfile will be folded into bam header
 libraryComment="@CO\tLIBID:${libraryId}"
@@ -77,6 +78,7 @@ mv signalAllMinus.bw ${outAllMinusBw}
 mv signalAllPlus.bw ${outAllPlusBw}
 mv signalUniqMinus.bw ${outUniqMinusBw}
 mv signalUniqPlus.bw ${outUniqPlusBw}
+cp Log.final.out ${outStats}
 
 # make sure star log is recorded.
 cat Log.final.out
