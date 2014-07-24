@@ -76,10 +76,11 @@ if pairedOrUnpaired == "paired":
     except:
         pass
     if encoding != encoding2:
-        raise Exception("Validation files suggest that paired fastq files are formats.")
+        raise Exception("Validation files suggest that paired fastq files are different formats" + \
+                        " ["+encoding+"] != ["+encoding2+"].")
     if tagLength != tagLength2:
         raise Exception("Validation files suggest that paired fastq files have different" + \
-                                                                                " tag lengths.")
+                        " tag lengths ["+tagLength+"] != ["+tagLength2+"].")
 
 # Set up 'ana' so she can do all the work.  If anaId matches another, then it's log is extended
 ana = GalaxyAnalysis(settingsFile, anaId, genome, expType)

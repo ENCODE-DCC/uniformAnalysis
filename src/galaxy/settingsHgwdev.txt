@@ -22,21 +22,20 @@ tmpDir	/hive/users/tdreszer/galaxy/tmp/
 # Default location of tools.  If full {exe}Tool path not defined then the tool is looked for here
 # If toolBinPath is not defined then all tools without explicit paths defined are expected
 # to be found in the environment PATH
-toolsDir /hive/groups/encode/encode3/tools/
+# Replaced by $EAP_TOOLS_DIR
+#toolsDir /hive/groups/encode/encode3/tools/
 
 # tools database RA file (for version look-up).
-toolDbFile /hive/groups/encode/encode3/tools/tools.ra
+# Replaced by $EAP_TOOLS_DIR/tools.ra
+#toolDbFile /hive/groups/encode/encode3/tools/tools.ra
 
 # Default location of reference files.  
 # Beneath this the dir structure should be as: 
 # [gender.]{genome}/chrom.sizes           (e.g. female.hg19/chrom.sizes)
 # {genome}/[{gender}.]{genome}.[2bit|fa]  (e.g. hg19/female.hg19.2bit)
 # [gender.]{genome}/{tool}Data/*          (e.g. hg19/bwaData/hg19.fa.bwt)
-refDir /hive/groups/encode/encode3/encValData/
-
-# Location of assembly files for alignments
-### TODO: hg19AssemblyFile /hive/groups/encode/encode3/encValData/hg19/hg19.fa  # Not there yet! Why?
-hg19AssemblyFile /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa
+# Replaced by $EAP_REF_DIR
+#refDir /hive/groups/encode/encode3/encValData/
 
 # Location of chromosome information for different reference genomes.
 ### TODO: move to encValData ???

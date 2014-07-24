@@ -156,7 +156,7 @@ class Analysis(object):
         '''
         if self._toolsDir != None:
             return self._toolsDir
-        self._toolsDir = self.getCmdOut(self,"echo $EAP_TOOLS_DIR | tr -d ' '",logCmd=False)
+        self._toolsDir = os.environ.get('EAP_TOOLS_DIR')
         if self._toolsDir == "":
             self._toolsDir = self.getDir('toolsDir')
         else:
@@ -170,7 +170,7 @@ class Analysis(object):
         '''
         if self._refDir != None:
             return self._refDir
-        self._refDir = self.getCmdOut(self,"echo $EAP_REF_DIR | tr -d ' '",logCmd=False)
+        self._refDir = os.environ.get('EAP_REF_DIR')
         if self._refDir == "":
             self._refDir = self.getDir('refDir')
         else:
@@ -238,16 +238,16 @@ class Analysis(object):
                 return toolName
             # to clever by half: we know there is no toolName+'Path' so if toolPath
             # is missing, then exception will already have the correct message.
-            return self.getDir(toolName + 'Dir',alt='toolsDir') + toolName
+            return self.getDir(toolName + 'Dir',self.toolsDir) + toolName
         
     def getToolData(self, toolId, name=None):
         '''
         Retrieves tool data as a dictionary from the toolDb.
         '''
         if self._toolsDb == None:
-            toolDbFile = self.getSetting('toolDbFile',None)
-            if toolDbFile == None:
-                return None
+            toolDbFile = self.getSetting('toolDbFile','')
+            if toolDbFile == '':
+                toolDbFile = self.toolsDir + 'tools.ra'
             self._toolsDb = Stanzas(toolDbFile)
             if self._toolsDb == None:
                 return None
