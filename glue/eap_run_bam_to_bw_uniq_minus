@@ -13,7 +13,7 @@ exit -1; fi
 # tool: samtools [version: 0.1.19-96b5f2294a]
 # package(tool): GeorgiScripts(makewigglefromBAM-NH.py) [version: Last modified 09/06/2013]
 # package(tool): python(python2.7) [version: 2.7.6]
-# package(tool): ucscUtils(wigToBigWig) [version: v293(v4)]
+# package(tool): ucscUtils(bedGraphToBigWig) [version: v302(v4)]
 
 # Label parameters and copying input(s) to local tmp dir
 cp $1 tmp.bam            # INPUT: alignment bam
@@ -22,12 +22,14 @@ chromFile=$2             # Chrom info file for the genome and gender
 outUniqMinusBw=$3        # OUTPUT: bigWig signal of uniquely mapped minus-strand reads
 
 # generate plus strand wig file from uniquely mapped reads from bam
-python2.7 ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py --- tmp.bam ${chromFile} tmpUniqMinus.wig \
+python2.7 ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py --- tmp.bam ${chromFile} tmpUniqMinusNeg.bg \
           -stranded - -nomulti -RPM -notitle -fragments second-read-strand
-perl -pe 's/-//g' < tmpUniqMinus.wig | wigToBigWig stdin ${chromFile} out_uniq_minus.bw
+perl -pe 's/-//g' < tmpUniqMinusNeg.bg > tmpUniqMinus.bg 
+bedGraphToBigWig tmpUniqMinus.bg ${chromFile} out_uniq_minus.bw
 
 # remove some larger files:
-rm tmpUniqMinus.wig tmp.bam tmp.bam.bai
+rm tmpUniqMinusNeg.bg tmp.bam tmp.bam.bai
+#rm tmpUniqMinus.bg 
 
 # deliver results:
 mv out_uniq_minus.bw ${outUniqMinusBw} 

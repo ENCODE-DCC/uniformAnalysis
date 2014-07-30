@@ -25,7 +25,8 @@
 # - bwa and macs2 both have older versions here that can probably be removed.
 # - fastqStatsAndSubsample, edwBamStats and edwSolexaToSangerFastq are not auto-built in kentUtils
 # - numpy, pysam and scipy are all python needed packages with no 'executable'
-# - makewigglefromBAM-NH.py needs github release AND version
+# - This file when taken from uniformAnalysis/tools.ra cannot point to its own archive!
+#   Therefore uniformAnalysis references may be stale and should be updated after extraction.
 
 
 ### Third party tools section:
@@ -343,7 +344,7 @@ versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
 executable STAR
 packageName STAR
 packageVersion 2.3.1z12
-url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z8.tar.gz
+url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z12.tar.gz
 archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
 installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
 email dobin@cshl.edu         
@@ -358,27 +359,26 @@ versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
 executable GTF.awk
 packageName STAR
 packageVersion 2.3.1z12
-url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z8.tar.gz
+url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z12.tar.gz
 archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
 installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
 email dobin@cshl.edu         
 packageId gitId 7e1da8861816b804dcda56d6bd10c1b11a1371e9
 packageSize 2350222
 
-### makewigglefromBAM-NH.py - Needs github release AND version
 toolId 56dc86a6cf4d0ceb5e6517bf9b5b2c37
 name makewigglefromBAM-NH.py
 version Last modified 09/06/2013
 versionCommand grep "Last modified" ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py | awk '{print $2" "$3" "$4}'
 executable makewigglefromBAM-NH.py
 packageName GeorgiScripts
-packageVersion Last modified 09/06/2013
-url https://github.com/georgimarinov/GeorgiScripts/archive/master.zip
-archive /hive/groups/encode/encode3/tools/GeorgiScripts/GeorgiScripts-master.zip
-installed /hive/groups/encode/encode3/tools/GeorgiScripts/
+packageVersion 1.0
+url https://github.com/georgimarinov/GeorgiScripts/archive/1.0.tar.gz
+archive /hive/groups/encode/encode3/tools/GeorgiScripts-1.0/GeorgiScripts-1.0.tar.gz
+installed /hive/groups/encode/encode3/tools/GeorgiScripts-1.0/
 email georgi@caltech.edu         
-packageId gitId e7a6ae12e65b7b8a391dc511b8d94b7173225bbb
-#packageSize 241237
+packageId gitId d89efc77dd477a6b5ab8bcddadb5390159371b3f
+packageSize 7467
 
 toolId 599b0f419eab73b06a2e70c6f5d76cad
 name bowtie2
@@ -595,10 +595,10 @@ version v4
 versionCommand grep \"usage `which eap_run_bwa_pe` | awk '{print $4}' | tr -d :
 executable eap_run_bwa_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -609,10 +609,10 @@ version v3
 versionCommand grep \"usage `which eap_run_bwa_se` | awk '{print $4}' | tr -d :
 executable eap_run_bwa_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -623,10 +623,10 @@ version v2
 versionCommand grep \"usage `which eap_run_hotspot` | awk '{print $4}' | tr -d :
 executable eap_run_hotspot
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -637,10 +637,10 @@ version v1
 versionCommand grep \"usage `which eap_run_macs2_chip_pe` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_chip_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -651,10 +651,10 @@ version v1
 versionCommand grep \"usage `which eap_run_macs2_chip_se` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_chip_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -665,10 +665,10 @@ version v2
 versionCommand grep \"usage `which eap_run_macs2_dnase_pe` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_dnase_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -679,10 +679,10 @@ version v2
 versionCommand grep \"usage `which eap_run_macs2_dnase_se` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_dnase_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -693,10 +693,10 @@ version v3
 versionCommand grep \"usage `which eap_run_slx_bwa_pe` | awk '{print $4}' | tr -d :
 executable eap_run_slx_bwa_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -707,10 +707,10 @@ version v1
 versionCommand grep \"usage `which eap_run_slx_bwa_se` | awk '{print $4}' | tr -d :
 executable eap_run_slx_bwa_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -721,10 +721,10 @@ version v2
 versionCommand grep \"usage `which eap_run_rsem_long_pe` | awk '{print $3}' | tr -d :
 executable eap_run_rsem_long_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -735,10 +735,10 @@ version v2
 versionCommand grep \"usage `which eap_run_rsem_long_se` | awk '{print $3}' | tr -d :
 executable eap_run_rsem_long_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -749,10 +749,10 @@ version v2
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
 executable eap_run_star_long_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -763,10 +763,10 @@ version v2
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
 executable eap_run_star_long_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -777,10 +777,10 @@ version v2
 versionCommand grep \"usage `which eap_run_tophat_long_pe` | awk '{print $3}' | tr -d :
 executable eap_run_tophat_long_pe
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -791,66 +791,66 @@ version v2
 versionCommand grep \"usage `which eap_run_tophat_long_se` | awk '{print $3}' | tr -d :
 executable eap_run_tophat_long_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 17c6cb6206381729c09b2eed557da29c
+toolId 6914547d8103c8e944a5d692c69b1c6e
 name eap_run_bam_to_bw_all_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_minus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_all_minus
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 43f8154af46b0bbc385ea721ddfc70ad
+toolId 192becae8c635350f445589375b32b36
 name eap_run_bam_to_bw_all_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_plus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_all_plus
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 6bdb5eec50723ecb387b82b42eb0e4e2
+toolId ff6f77a4f2b4ee2281ebfb57e8f1b988
 name eap_run_bam_to_bw_uniq_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_minus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_uniq_minus
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
 
-toolId 65c318553350ad28f9e7a8975b43573b
+toolId 252dcf98f2e8e430121714a2c6dde910
 name eap_run_bam_to_bw_uniq_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_plus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_uniq_plus
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -861,10 +861,10 @@ version v1
 versionCommand grep \"usage `which eap_eval_bam` | awk '{print $3}' | tr -d :
 executable eap_eval_bam
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -875,10 +875,10 @@ version v1
 versionCommand grep \"usage `which eap_run_spp_chip_se` | awk '{print $4}' | tr -d :
 executable eap_run_spp_chip_se
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -889,10 +889,10 @@ version v2
 versionCommand grep \"usage `which eap_broadPeak_to_bigBed` | awk '{print $4}' | tr -d :
 executable eap_broadPeak_to_bigBed
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -903,10 +903,10 @@ version v2
 versionCommand grep \"usage `which eap_narrowPeak_to_bigBed` | awk '{print $4}' | tr -d :
 executable eap_narrowPeak_to_bigBed
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -917,10 +917,10 @@ version v1
 versionCommand grep \"usage `which eap_macs2_xls_to_narrowPeak` | awk '{print $4}' | tr -d :
 executable eap_macs2_xls_to_narrowPeak
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -931,10 +931,10 @@ version v1
 versionCommand grep \"usage `which eap_bam_sort` | awk '{print $4}' | tr -d :
 executable eap_bam_sort
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -945,10 +945,10 @@ version v1
 versionCommand grep \"usage `which eap_dnase_stats` | awk '{print $4}' | tr -d :
 executable eap_dnase_stats
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -959,10 +959,10 @@ version v2
 versionCommand grep \"usage `which eap_pool_big_wig` | awk '{print $4}' | tr -d :
 executable eap_pool_big_wig
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -973,10 +973,10 @@ version v2
 versionCommand grep \"usage `which eap_pool_hotspot` | awk '{print $4}' | tr -d :
 executable eap_pool_hotspot
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -987,10 +987,10 @@ version v2
 versionCommand grep \"usage `which eap_sum_bigWig` | awk '{print $4}' | tr -d :
 executable eap_sum_bigWig
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -1001,10 +1001,10 @@ version 4
 versionCommand grep Version `which hotspot.py` | awk '{print $12 }' | tr -d \'\)
 executable python2.7 hotspot.py
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
@@ -1015,10 +1015,10 @@ version v1
 versionCommand toolsRaCheck.py -version | head -1 | awk '{print $2}'
 executable toolsRaCheck.py
 packageName uniformAnalysis
-url https://github.com/ENCODE-DCC/uniformAnalysis/archive/v1.0.tar.gz
-archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/uniformAnalysis-1.0.tar.gz
-installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.0/
-packageVersion v1.0
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
 packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
 packageSize 77116
