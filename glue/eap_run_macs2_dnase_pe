@@ -4,13 +4,16 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 4 ];
-then echo "usage v2: eap_run_macs2_dnase_pe target in.bam out.narrowPeak.bigBed out.bigWig"
+then echo "usage v3: eap_run_macs2_dnase_pe target in.bam out.narrowPeak.bigBed out.bigWig"
 echo target is ucsc database ID - hg19 or hg38 or mm10 most commonly at time of writing.
 echo Makes temp files so should be run in a freshly created directory .
 exit -1; fi
 
+# Filter out mitochondria and non-mappers and multiple mappers
+edwBamFilter $2 filtered.bam -chrom=chrM -unmapped -multimapped -sponge
+
 # Run macs on $2. The macs output will be in tmp_* 
-macs2 callpeak -t $2 -B -n tmp 
+macs2 callpeak -f BAMPE -q 0.01 -t filtered.bam -B -n tmp 
 
 # Convert macs tmp_peaks.xls output to narrowPeak.bb format in $3, checking chromosome coords vs $1
 eap_macs2_xls_to_narrowPeak tmp_peaks.xls >tmp.narrowPeak
@@ -21,4 +24,4 @@ bedGraphToBigWig tmp_treat_pileup.bdg /hive/groups/encode/encode3/encValData/$1/
 mv tmp.bigWig $4
 
 # Remove some big boring temp files
-rm tmp_*.bdg
+rm tmp_*.bdg filtered.bam
