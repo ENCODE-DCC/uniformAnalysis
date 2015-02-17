@@ -1,5 +1,7 @@
 # tools.ra  Tools used by ENCODE Analysis Pipeline (eap) and Galaxy access to EAP
 #
+# NOTE: use ${EAP_TOOLS_DIR}/toolsRaCheck.py [--fixMd5sum] to check/update this file.
+#
 # Each stanza represents a single tool object, such as a stand-alone executable tool (e.g. bwa).
 # - 'toolId' is the stanza key and is (almost always) the executable md5sum.
 # - 'name' is the tool name which may be distinct from the 'packageName'.
@@ -19,15 +21,12 @@
 # - 'email' if supplied is the contact for the tool developer.
 # - 'packageSize' is the size of the package archive.
 
-### Outstanding concersn:
+### Outstanding concerns:
 # - bwa and macs2 both have older versions here that can probably be removed.
-# - fastqStatsAndSubsample and bedGraphPack not part of ucscUtils package yet
-# - edwBamStats and edwSolexaToSangerFastq: not part of ucscUtils package yet and unversioned
-# - all eap_* scripts need to be made a part of ucscUtils or some other package
-#   galaxy methods can survive the non-unique name,version alt key!
+# - fastqStatsAndSubsample, edwBamStats and edwSolexaToSangerFastq are not auto-built in kentUtils
 # - numpy, pysam and scipy are all python needed packages with no 'executable'
-# - makewigglefromBAM-NH.py needs github release AND version
-# - tophat_bam_xsA_tag_fix.pl needs github release AND version
+# - This file when taken from uniformAnalysis/tools.ra cannot point to its own archive!
+#   Therefore uniformAnalysis references may be stale and should be updated after extraction.
 
 
 ### Third party tools section:
@@ -149,11 +148,26 @@ email arq5x@virginia.edu
 packageId gitId 5e4507c54355a4a38c6d3e7497a2836a123c6655  
 packageSize 570541   
 
+toolId bed1f241fdf4e5c8afd592a052d8ce90
+name bwa
+version 0.7.7-r441
+versionCommand bwa 2>&1 | grep Version | awk '{print $2}'
+executable bwa
+packageName bwa
+url https://github.com/lh3/bwa/archive/0.7.7.tar.gz
+archive /hive/groups/encode/encode3/tools/bwa-0.7.7/bwa-0.7.7.tar.gz
+installed /hive/groups/encode/encode3/tools/bwa-0.7.7/
+packageVersion 0.7.7-r441
+email hengli@broadinstitute.org 
+packageId gitId 1c19bc630f7cade6a27914f687bc4c862b3e567f
+packageSize 185732
+
+### Older bwa can probably be removed
 toolId 88275f59caf1c877a4e38a2f69dff327
 name bwa
 version 0.7.0-r313
 versionCommand bwa 2>&1 | grep Version | awk '{print $2}'
-executable bwa
+executable bwa70
 packageName bwa
 url https://github.com/lh3/bwa/archive/0.7.0.tar.gz
 archive /hive/groups/encode/encode3/tools/bwa-0.7.0/bwa-0.7.0.tar.gz
@@ -162,21 +176,6 @@ packageVersion 0.7.0-r313
 email hengli@broadinstitute.org 
 packageId gitId c5434ac865b71fe6fc842d63ffebb7aedc217c7a
 packageSize 180526
-
-### Older bwa can probably be removed
-### (only worked with /cluster/home/mmaddren/grad/pipeline/data/hg19/hg19.fa)
-toolId 0e89127cf7e8bc0e90aa57cf419f9607
-name bwa
-version 0.5.9-r16
-versionCommand ${EAP_TOOLS_DIR}/bwa-0.5.9/bwa 2>&1 | grep Version | awk '{print $2}'
-executable bwa-0.5.9/bwa
-packageName bwa          
-url https://github.com/lh3/bwa/archive/0.5.9.tar.gz                         
-archive /hive/groups/encode/encode3/tools/bwa-0.5.9/bwa-0.5.9.tar.gz
-installed /hive/groups/encode/encode3/tools/bwa-0.5.9/
-packageVersion 0.5.9-r16                   
-packageId gitId 87664941b09d8ded9705ccdb5af7b375751d5187  
-packageSize 138167
 
 ### census no longer used
 # toolId 159d49eabb8747bceda741a51f032321
@@ -207,6 +206,7 @@ email simon.andrews@babraham.ac.uk
 packageId md5sum c93815ddfc0259bd58430e52ae4fb429         
 packageSize 596632
 
+### Old version should be removed
 toolId e8f08b13010d6d945829c3e2cdad33e0
 name hotspot
 version HotSpot5
@@ -270,7 +270,7 @@ version 2.0
 versionCommand grep Version ${EAP_TOOLS_DIR}/phantompeakqualtools/README.txt | awk '{print $2}'
 executable Rscript ${EAP_TOOLS_DIR}/run_spp.R
 packageName phantomTools
-url https://code.google.com/p/phantompeakqualtools/
+url https://code.google.com/p/phantompeakqualtools/downloads/detail?name=ccQualityControl.v.1.1.tar.gz
 archive /hive/groups/encode/encode3/tools/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz
 installed /hive/groups/encode/encode3/tools/phantompeakqualtools/
 packageVersion 2.0
@@ -337,34 +337,48 @@ email hengli@broadinstitute.org
 packageId gitId 44428cd6d2c6f24b7fe59e1333d883a5a1a11e12
 packageSize 557812
 
-toolId dae37d6a00b537deaf0a5bda56c1d93f
+toolId 0955e6050344ad83584bef264323e511
 name STAR
-version 2.3.1
-versionCommand head -1 ${EAP_TOOLS_DIR}/STAR-ENCODE_2014-03-16_2.3.1z1/README | awk '{print $2}'
+version 2.3.1z12_r468
+versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
 executable STAR
 packageName STAR
-packageVersion 2.3.1
-url https://github.com/alexdobin/STAR/archive/ENCODE_2014-03-16_2.3.1z1.tar.gz
-archive /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/STAR-ENCODE_2014-03-16_2.3.1z1.tar.gz
-installed /hive/groups/encode/encode3/tools/STAR-ENCODE_2014-03-16_2.3.1z1/
+packageVersion 2.3.1z12
+url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z12.tar.gz
+archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
+installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
 email dobin@cshl.edu         
-packageId gitId 9ec48835b9c41e576123b24785747c09d9355307
-packageSize 1155777
+packageId gitId 7e1da8861816b804dcda56d6bd10c1b11a1371e9
+packageSize 2350222
 
-### makewigglefromBAM-NH.py - Needs github release AND version
+# This script from Alex Dobin has been placed in the STAR package for convenience only
+toolId 493f2a27da72651fde5fe34d865a757d
+name GTF.awk
+version 2.3.1z12_r468
+versionCommand STAR --version | awk '{print $1}' | cut -d _ -f 2-
+executable GTF.awk
+packageName STAR
+packageVersion 2.3.1z12
+url https://github.com/alexdobin/STAR/archive/STAR_2.3.1z12.tar.gz
+archive /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/STAR-STAR_2.3.1z12.tar.gz
+installed /hive/groups/encode/encode3/tools/STAR-STAR_2.3.1z12/
+email dobin@cshl.edu         
+packageId gitId 7e1da8861816b804dcda56d6bd10c1b11a1371e9
+packageSize 2350222
+
 toolId 56dc86a6cf4d0ceb5e6517bf9b5b2c37
 name makewigglefromBAM-NH.py
 version Last modified 09/06/2013
 versionCommand grep "Last modified" ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py | awk '{print $2" "$3" "$4}'
 executable makewigglefromBAM-NH.py
 packageName GeorgiScripts
-packageVersion Last modified 09/06/2013
-url https://github.com/georgimarinov/GeorgiScripts.git
-#archive /hive/groups/encode/encode3/tools/GeorgiScripts/*.tgz
-installed /hive/groups/encode/encode3/tools/GeorgiScripts/
+packageVersion 1.0
+url https://github.com/georgimarinov/GeorgiScripts/archive/1.0.tar.gz
+archive /hive/groups/encode/encode3/tools/GeorgiScripts-1.0/GeorgiScripts-1.0.tar.gz
+installed /hive/groups/encode/encode3/tools/GeorgiScripts-1.0/
 email georgi@caltech.edu         
-packageId gitId e7a6ae12e65b7b8a391dc511b8d94b7173225bbb
-#packageSize 241237
+packageId gitId d89efc77dd477a6b5ab8bcddadb5390159371b3f
+packageSize 7467
 
 toolId 599b0f419eab73b06a2e70c6f5d76cad
 name bowtie2
@@ -380,47 +394,48 @@ email langmea@cs.jhu.edu
 packageId md5sum c00c168f8825382896cee967e191d71b
 packageSize 15631689
 
-toolId 545e73a9774e613c57a438ced5b227ea
-name bowtie2-align
-version 2.1.0
-versionCommand bowtie2-align --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2-build
-packageName bowtie2
-packageVersion 2.1.0
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
-email langmea@cs.jhu.edu
-packageId md5sum c00c168f8825382896cee967e191d71b
-packageSize 15631689
-
-toolId 545e73a9774e613c57a438ced5b227ea
-name bowtie2-build
-version 2.1.0
-versionCommand bowtie2-build --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2-build
-packageName bowtie2
-packageVersion 2.1.0
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
-email langmea@cs.jhu.edu
-packageId md5sum c00c168f8825382896cee967e191d71b
-packageSize 15631689
-
-toolId 7671d99d6282fcc729262b64b671d27d
-name bowtie2-inspect
-version 2.1.0
-versionCommand bowtie2-inspect --version 2>&1 | grep bowtie | awk '{print $3}'
-executable bowtie2-inspect
-packageName bowtie2
-packageVersion 2.1.0
-url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
-archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
-installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
-email langmea@cs.jhu.edu
-packageId md5sum c00c168f8825382896cee967e191d71b
-packageSize 15631689
+# overkill
+#toolId 545e73a9774e613c57a438ced5b227ea
+#name bowtie2-align
+#version 2.1.0
+#versionCommand bowtie2-align --version 2>&1 | grep bowtie | awk '{print $3}'
+#executable bowtie2-build
+#packageName bowtie2
+#packageVersion 2.1.0
+#url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+#archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+#installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+#email langmea@cs.jhu.edu
+#packageId md5sum c00c168f8825382896cee967e191d71b
+#packageSize 15631689
+#
+#toolId 545e73a9774e613c57a438ced5b227ea
+#name bowtie2-build
+#version 2.1.0
+#versionCommand bowtie2-build --version 2>&1 | grep bowtie | awk '{print $3}'
+#executable bowtie2-build
+#packageName bowtie2
+#packageVersion 2.1.0
+#url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+#archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+#installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+#email langmea@cs.jhu.edu
+#packageId md5sum c00c168f8825382896cee967e191d71b
+#packageSize 15631689
+#
+#toolId 7671d99d6282fcc729262b64b671d27d
+#name bowtie2-inspect
+#version 2.1.0
+#versionCommand bowtie2-inspect --version 2>&1 | grep bowtie | awk '{print $3}'
+#executable bowtie2-inspect
+#packageName bowtie2
+#packageVersion 2.1.0
+#url http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download
+#archive /hive/groups/encode/encode3/tools/bowtie2-2.1.0/bowtie2-2.1.0-linux-x86_64.zip
+#installed /hive/groups/encode/encode3/tools/bowtie2-2.1.0/
+#email langmea@cs.jhu.edu
+#packageId md5sum c00c168f8825382896cee967e191d71b
+#packageSize 15631689
 
 toolId 72a3416b1db65cd746378fe4401e82a1
 name tophat
@@ -428,7 +443,7 @@ version v2.0.8
 versionCommand tophat -v | awk '{print $2}'
 executable tophat
 packageName tophat
-packageVersion 2.0.8
+packageVersion v2.0.8
 url http://tophat.cbcb.umd.edu/downloads/tophat-2.0.8.Linux_x86_64.tar.gz
 archive /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/tophat-2.0.8.Linux_x86_64.tar.gz
 installed /hive/groups/encode/encode3/tools/tophat-2.0.8.Linux_x86_64/
@@ -450,109 +465,126 @@ email xwei@uchc.edu
 packageId gitId c3f99d8ae400b4e73a0ff35ee7d586734899283f
 packageSize 1654
 
+toolId 9343ec3fd3f8c8b2a4862021c521a01b
+name rsem-calculate-expression
+version v1.2.15
+versionCommand ${EAP_TOOLS_DIR}/rsem/rsem-calculate-expression --version | awk '{print $5}'
+executable rsem/rsem-calculate-expression
+packageName RSEM
+packageVersion v1.2.15
+url https://github.com/bli25wisc/RSEM/archive/v1.2.15.tar.gz
+archive /hive/groups/encode/encode3/tools/RSEM-1.2.15/RSEM-1.2.15.tar.gz
+installed /hive/groups/encode/encode3/tools/RSEM-1.2.15/
+email bli@cs.wisc.edu 
+packageId gitId 92b24279a3ecc72946e7e7c23149ad0d181f373a
+packageSize 9289400
+
+
 ### UCSC scripts section:
 
-toolId 1f5634ec995a813c45d74194cbb5bc92
+toolId 6ded633ef47fe5cc46c72d2484f4fe1a
 name bedGraphToBigWig
-version 4
-versionCommand bedGraphToBigWig 2>&1 | grep "bedGraphToBigWig v" | awk '{print $3}' 
+version v4
+versionCommand bedGraphToBigWig 2>&1 | grep "bedGraphToBigWig v" | awk '{print $2$3}' 
 executable bedGraphToBigWig
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-toolId fb9db8faa923f21e4d20e6c9c4088bcd
+toolId a0ab382afdb9d20949fd793f95648a92
 name bedToBigBed
-version 2.5
-versionCommand bedToBigBed 2>&1 | grep "bedToBigBed v" | awk '{print $3}'
+version v.2.6
+versionCommand bedToBigBed 2>&1 | grep "bedToBigBed v" | awk '{print $2$3}'
 executable bedToBigBed
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-toolId 9658540204cf1bcf91023f7c73cd0697
+toolId 4290688e1c35f9a93904c5c13db12d86
 name wigToBigWig
 version v4
 versionCommand wigToBigWig 2>&1 | grep "wigToBigWig v" | awk '{print $2$3}'
 executable wigToBigWig
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet
-toolId 89721e18b066082d455756eff7d56cc0
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/utils/fastqStatsAndSubsample; make
+toolId 55a4b8542a1766e7b46dd61889bea8a8
 name fastqStatsAndSubsample
 version v2
 versionCommand fastqStatsAndSubsample 2>&1 | grep "fastqStatsAndSubsample v" | awk '{print $2}'
 executable fastqStatsAndSubsample
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet
-toolId f0b3be0173d2d136a840cbabf1d9c959
+toolId f78eb131ad6d579e0359ade22abd2a32
 name bedGraphPack
 version v1
 versionCommand bedGraphPack 2>&1 | grep "bedGraphPack v" | awk '{print $2}'
 executable bedGraphPack
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet and unversioned
-toolId 80a5e8f28519f6179987b4d2776dec0d
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/hg/encode3/encodeDataWarehouse/utils/edwBamStats; make
+toolId 169111900bbb1dd5283b2cca6e92a9cf
 name edwBamStats
-version unversioned
-#versionCommand edwBamStats 2>&1 | grep "edwBamStats v" | awk '{print $3}'
+version v2
+versionCommand edwBamStats 2>&1 | grep "edwBamStats v" | awk '{print $2}'
 executable edwBamStats
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
-### Warning: not part of ucscUtils package yet and unversioned
-toolId 83f3f03e558a96f804e2dca69ba6d8fe
+### Warning: does not get built and put into bin automatically:
+### cd kentUtils-nnn/src/hg/encode3/encodeDataWarehouse/utils/edwSolexaToSangerFastq; make
+toolId 8b1f8c595944467d736f434c729f7c14
 name edwSolexaToSangerFastq
-version unversioned
-#versionCommand edwSolexaToSangerFastq 2>&1 | grep "edwSolexaToSangerFastq v" | awk '{print $3}'
+version v1
+versionCommand edwSolexaToSangerFastq 2>&1 | grep "edwSolexaToSangerFastq v" | awk '{print $2}'
 executable edwSolexaToSangerFastq
 packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+url https://github.com/ENCODE-DCC/kentUtils/archive/v302.0.0.tar.gz
+archive /hive/groups/encode/encode3/tools/kentUtils-302.0.0/kentUtils-302.0.0.tar.gz
+installed /hive/groups/encode/encode3/tools/kentUtils-302.0.0/
+packageVersion v302
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId 36d6274459f644d5400843b8fa097b380b8f7867
+packageSize 11696724
 
 ### eap_run scripts section:
 ### - all eap_* scripts need to be made a part of ucscUtils or some other package
@@ -562,322 +594,434 @@ name eap_run_bwa_pe
 version v4
 versionCommand grep \"usage `which eap_run_bwa_pe` | awk '{print $4}' | tr -d :
 executable eap_run_bwa_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 0c4ad38d77ce146083eaf0c3def18655
 name eap_run_bwa_se
 version v3
 versionCommand grep \"usage `which eap_run_bwa_se` | awk '{print $4}' | tr -d :
 executable eap_run_bwa_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 882993c4ebeb20f99686a0b3fc1a3c7b
 name eap_run_hotspot
 version v2
 versionCommand grep \"usage `which eap_run_hotspot` | awk '{print $4}' | tr -d :
 executable eap_run_hotspot
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 74f768b1cac4fee5d7755d56eedd907a
 name eap_run_macs2_chip_pe
 version v1
 versionCommand grep \"usage `which eap_run_macs2_chip_pe` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_chip_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId ad1eda2c7afeb14bbed6031898e3f01f
 name eap_run_macs2_chip_se
 version v1
 versionCommand grep \"usage `which eap_run_macs2_chip_se` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_chip_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId f64d0c7dcaa5f7b0ef29f871086c9020
+name eap_run_macs2_dnase_pe
+version v2
+versionCommand grep \"usage `which eap_run_macs2_dnase_pe` | awk '{print $4}' | tr -d :
+executable eap_run_macs2_dnase_pe
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 9b62aadd78b69ce7995ee3091cf15757
 name eap_run_macs2_dnase_se
 version v2
 versionCommand grep \"usage `which eap_run_macs2_dnase_se` | awk '{print $4}' | tr -d :
 executable eap_run_macs2_dnase_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 961ce3aec6e1a4eb47472d64ed634eda
 name eap_run_slx_bwa_pe
 version v3
 versionCommand grep \"usage `which eap_run_slx_bwa_pe` | awk '{print $4}' | tr -d :
 executable eap_run_slx_bwa_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 409e34ccdfa8e4e7dad4a8cde9de72b8
 name eap_run_slx_bwa_se
 version v1
 versionCommand grep \"usage `which eap_run_slx_bwa_se` | awk '{print $4}' | tr -d :
 executable eap_run_slx_bwa_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId d7c9cccc7fb432340783e3b5f9dea1ba
+toolId eefb8900ad3930daf63cc2bc8b640b7d
+name eap_run_rsem_long_pe
+version v2
+versionCommand grep \"usage `which eap_run_rsem_long_pe` | awk '{print $3}' | tr -d :
+executable eap_run_rsem_long_pe
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 8c346e7f1e7f93f668590d51adf32cfb
+name eap_run_rsem_long_se
+version v2
+versionCommand grep \"usage `which eap_run_rsem_long_se` | awk '{print $3}' | tr -d :
+executable eap_run_rsem_long_se
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 08681060ae21c124df106c2d933d466b
 name eap_run_star_long_pe
-version v1
+version v2
 versionCommand grep \"usage `which eap_run_star_long_pe` | awk '{print $3}' | tr -d :
 executable eap_run_star_long_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId cd59d6b561f1d495166122c28d50aa0e
+toolId d39d3a5955fee8ea18494b9394512b48
 name eap_run_star_long_se
-version v1
+version v2
 versionCommand grep \"usage `which eap_run_star_long_se` | awk '{print $3}' | tr -d :
 executable eap_run_star_long_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId 6b0f907aa0429bf01feb6008b0101041
-name eap_run_tophat_long_ercc_pe
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_ercc_pe` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_ercc_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+toolId 1ab0cdefbb4d33193c16f157f6592b11
+name eap_run_tophat_long_pe
+version v2
+versionCommand grep \"usage `which eap_run_tophat_long_pe` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_pe
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId eb5dc36a22b346a93f8ecd99de1228e4
-name eap_run_tophat_long_ercc_se
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_ercc_se` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_ercc_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+toolId d9d649eb28b6aa5121489447baaaa5f0
+name eap_run_tophat_long_se
+version v2
+versionCommand grep \"usage `which eap_run_tophat_long_se` | awk '{print $3}' | tr -d :
+executable eap_run_tophat_long_se
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId 37c690b1347f00d21253b3b20d834e6c
-name eap_run_tophat_long_wsc_pe
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_wsc_pe` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_wsc_pe
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
-email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
-
-toolId f2e05799e27b0009ce0dfe15e3fd3167
-name eap_run_tophat_long_wsc_se
-version v1
-versionCommand grep \"usage `which eap_run_tophat_long_wsc_se` | awk '{print $3}' | tr -d :
-executable eap_run_tophat_long_wsc_se
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
-email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
-
-toolId 90f4344e835890955940207eadea63c1
+toolId 6914547d8103c8e944a5d692c69b1c6e
 name eap_run_bam_to_bw_all_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_minus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_all_minus
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId bdc1cef76c5f6cfd463f5f299c692ee5
+toolId 192becae8c635350f445589375b32b36
 name eap_run_bam_to_bw_all_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_all_plus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_all_plus
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId 38ce608b5afc671f78296e0026b08def
+toolId ff6f77a4f2b4ee2281ebfb57e8f1b988
 name eap_run_bam_to_bw_uniq_minus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_minus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_uniq_minus
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId c92064c528d119e0fdb0607fa6f36454
+toolId 252dcf98f2e8e430121714a2c6dde910
 name eap_run_bam_to_bw_uniq_plus
 version v1
 versionCommand grep \"usage `which eap_run_bam_to_bw_uniq_plus` | awk '{print $3}' | tr -d :
 executable eap_run_bam_to_bw_uniq_plus
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId ec60abeb81eba89f4ac94d0b518cb166
+name eap_eval_bam
+version v1
+versionCommand grep \"usage `which eap_eval_bam` | awk '{print $3}' | tr -d :
+executable eap_eval_bam
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 683f4c3253cffd0ef62412e29a95ef54
+name eap_run_spp_chip_se
+version v1
+versionCommand grep \"usage `which eap_run_spp_chip_se` | awk '{print $4}' | tr -d :
+executable eap_run_spp_chip_se
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId d7aae2b208839342839e4cfc0b543f82
 name eap_broadPeak_to_bigBed
 version v2
 versionCommand grep \"usage `which eap_broadPeak_to_bigBed` | awk '{print $4}' | tr -d :
 executable eap_broadPeak_to_bigBed
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 4982c2d61d9a3485ebe9f9fadd53385b
 name eap_narrowPeak_to_bigBed
 version v2
 versionCommand grep \"usage `which eap_narrowPeak_to_bigBed` | awk '{print $4}' | tr -d :
 executable eap_narrowPeak_to_bigBed
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId ebba7d239184d101c6c5cad9df862549
 name eap_macs2_xls_to_narrowPeak
 version v1
 versionCommand grep \"usage `which eap_macs2_xls_to_narrowPeak` | awk '{print $4}' | tr -d :
 executable eap_macs2_xls_to_narrowPeak
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
-toolId f118a52563a75a64f3908e3b2d04e9f3
+toolId 3f6ffd472a862d064eb205af9185e268
+name eap_bam_sort
+version v1
+versionCommand grep \"usage `which eap_bam_sort` | awk '{print $4}' | tr -d :
+executable eap_bam_sort
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId bf7abe8287f5fa0e4996fdca0aeecedb
+name eap_dnase_stats
+version v1
+versionCommand grep \"usage `which eap_dnase_stats` | awk '{print $4}' | tr -d :
+executable eap_dnase_stats
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 1aaaaaf5a33376f631b24b3ecee6dea0
+name eap_pool_big_wig
+version v2
+versionCommand grep \"usage `which eap_pool_big_wig` | awk '{print $4}' | tr -d :
+executable eap_pool_big_wig
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId d4d310a184ac1b023a24aab478b6d888
+name eap_pool_hotspot
+version v2
+versionCommand grep \"usage `which eap_pool_hotspot` | awk '{print $4}' | tr -d :
+executable eap_pool_hotspot
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 8df57ed51e8006a66242eb1ca4539b06
+name eap_sum_bigWig
+version v2
+versionCommand grep \"usage `which eap_sum_bigWig` | awk '{print $4}' | tr -d :
+executable eap_sum_bigWig
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
+email genome@soe.ucsc.edu           
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
+
+toolId 638ccfa3c512d229d4b3f6e2d1700f82
 name hotspot.py
-version 2
+version 4
 versionCommand grep Version `which hotspot.py` | awk '{print $12 }' | tr -d \'\)
 executable python2.7 hotspot.py
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 toolId 3e90bec1f71afd0ff767745c2d3bf161
 name toolsRaCheck.py
 version v1
 versionCommand toolsRaCheck.py -version | head -1 | awk '{print $2}'
 executable toolsRaCheck.py
-packageName ucscUtils
-url https://github.com/ENCODE-DCC/kentUtils/archive/v293.0.0.tar.gz
-archive /hive/groups/encode/encode3/tools/kentUtils-293.0.0/kentUtils-293.0.0.tar.gz
-installed /hive/groups/encode/encode3/tools/kentUtils-293.0.0/
-packageVersion v293
+packageName uniformAnalysis
+url https://github.com/ENCODE-DCC/uniformAnalysis/archive/uniformAnalysis-1.1.tar.gz
+archive /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/uniformAnalysis-1.1.tar.gz
+installed /hive/groups/encode/encode3/tools/uniformAnalysis-1.1/
+packageVersion v1.1
 email genome@soe.ucsc.edu           
-packageId gitId 2c94e9f19a496a97d2a1ff7c64621f8115d4e168
-packageSize 42410574
+packageId gitId a9ff5a49df5ec34792af857002218f628330bcb7
+packageSize 77116
 
 ### Engines for running other tools:
 
@@ -907,17 +1051,17 @@ packageSize 42410574
 # packageVersion 1.6.0_24
 
 toolId d0574c3d29e4683a2a7d82b35b857b55
-name python
+name python2.7
 version 2.7.6
 versionCommand python2.7 -V 2>&1 | awk '{print $2}'
 executable python2.7
-packageName python
-url http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz
-archive /hive/groups/encode/encode3/tools/Python/Python-2.7.1.tgz
+packageName python2.7
+url http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tgz
+archive /hive/groups/encode/encode3/tools/Python/Python-2.7.6.tgz
 installed /hive/groups/encode/encode3/tools/Python/
 packageVersion 2.7.6
 packageId md5sum 15ed56733655e3fab785e49a7278d2fb
-packageSize 14058131
+packageSize 14725931
 
 toolId 0c2ac8785541107b40cdca1af5f7f82f
 name Rscript

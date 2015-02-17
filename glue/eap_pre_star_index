@@ -1,0 +1,67 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 6 ]; then 
+echo "usage v1: eap_pre_star_index genomeRef.fa spikeIn.fa annotation.gtf tRNA.gtf \\"
+echo "          starRefIndexDir outStarIndex.tgz"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Expected versions:
+# package(tool): uniformAnalysis(eap_pre_star_index) [version: v1.0(v1)]
+# package(tool): STAR(STAR) [version: 2.3.1z12(2.3.1z12_r468)]
+# package(tool): STAR(GTF.awk) [version: 2.3.1z12]
+
+# Label parameters and copying input(s) to local tmp dir
+genomeRefFa=$1         # INPUT: Full path to genome reference in fa format (e.g. female.hg19.fa)
+spikeInFa=$2           # INPUT: Full path to spike-in to be included in fa format (e.g. ERCC.fa)
+annotationGtf=$3       # INPUT: Full path to gene/transcript annotation (e.g. gencode.v19.gtf)
+tRnaGtf=$4             # INPUT: Full path to tRNA annotation (e.g. gencode.v19.tRNAs.gtf)
+starRefIndexDir=$5     # Directory to build STAR generated index on genome and spike-in
+outStarIndexTgz=$6     # OUTPUT: archive of directory that may be accessioned
+combinedGtf=${starRefIndexDir}/anno-tRNA-spikeIn.gtf
+
+# TODO: Acquire a female gencode annotation.
+
+# Make target dir and build index files
+mkdir -p ${starRefIndexDir}
+GTF.awk ${annotationGtf} ${tRnaGtf} ${spikeInFa} > ${combinedGtf}
+
+STAR --runMode genomeGenerate --genomeFastaFiles ${genomeRefFa} ${spikeInFa} --sjdbOverhang 100 \
+     --sjdbGTFfile ${combinedGtf} --runThreadN 6 --genomeDir ${starRefIndexDir}  \
+                                         --outFileNamePrefix ${starRefIndexDir}
+      
+# Attempt to make bamCommentLines.txt, which should be reviewed. NOTE tabs handled by assignment.
+refComment="@CO\tREFID:$(basename ${genomeRefFa%.*})"
+annotationComment="@CO\tANNID:$(basename ${annotationGtf})"
+spikeId=`echo ${spikeInFa} | cut -d . -f 2`
+spikeInComment="@CO\tSPIKEID:${spikeId}"
+echo -e ${refComment} > ${starRefIndexDir}/bamCommentLines.txt
+echo -e ${annotationComment} >> ${starRefIndexDir}/bamCommentLines.txt
+echo -e ${spikeInComment} >> ${starRefIndexDir}/bamCommentLines.txt
+
+# tar up dir for accessioning
+pushd ${starRefIndexDir%/*}
+tar -czf starIndex.tgz ${starRefIndexDir##*/}
+
+# deliver results:
+mv starIndex.tgz ${outStarIndexTgz}
+popd
+
+# Command lines to run at UCSC:
+# female.hg19/ERCC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/female.hg19/female.hg19.fa \
+#                   ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                  ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                 ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                ${EAP_REF_DIR}/female.hg19/starData \
+#               ${EAP_REF_DIR}/female.hg19/starData/starIndex_hg19F_ERCC_gencodeV19_tRNAs.tgz
+# male.hg19/ERCC/gencode.v19:
+# eap_pre_star_index ${EAP_REF_DIR}/male.hg19/male.hg19.fa \
+#                   ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                  ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                 ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                ${EAP_REF_DIR}/male.hg19/starData \
+#               ${EAP_REF_DIR}/male.hg19/starData/starIndex_hg19M_ERCC_gencodeV19_tRNAs.tgz

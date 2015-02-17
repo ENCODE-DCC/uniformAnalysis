@@ -1,10 +1,10 @@
-<tool id="bamToBigWigE3" name="EAP alignment to signal" version="1.0">
-    <description> (bam to bigwig)</description>
+<tool id="rsemQuantifyE3" name="EAP transcript quantification by RSEM" version="1.0">
+    <description> (fastQ to bam)</description>
     <command interpreter="python">
-        bamToBigWigE3.py $bamInput $bamEval $readFilter $strand $signalBw
+        rsemQuantifyE3.py $bamInput $bamEval $geneResults $transcriptResults
         $genome $expType $repNo ${name}U${__user_id__}
     </command>
-    <version_command>python ../../../../tools/encode/bamToBigWigE3.py --version</version_command>
+    <version_command>python ../../../../tools/encode/starAlignE3.py --version</version_command>
     <stdio>
         <exit_code range="1:" level="fatal" description="Fatal error" />
         <regex match=".*" source="stderr" level="log" />
@@ -16,19 +16,13 @@
         <param name="expType" type="select" label="Experiment Type">
             <option value="RNAseq-long" selected="true">long RNA-seq</option>
         </param>
-        <param name="bamInput" type="data" label="Alignments file (bam)" format="bam" />
-        <param name="bamEval"  type="data" label="Alignments Evaluation file (json)"
+        <param name="spike" type="select" label="Spike-In Control">
+            <option value="ERCC" selected="true">ERCC/NIST/Ambion</option>
+        </param>
+        <param name="bamInput" type="data" label="Annotation bam (alignments file)" format="bam" />
+        <param name="bamEval"  type="data" label="Genome bam Evaluation file (json)"
                format="txt" />
         <param name="repNo" type="integer" value="1" label="Replicate" min="0" help="Numbers only">
-        </param>
-        <param name="readFilter" type="select" label="Read Filter">
-            <option value="All" selected="true">All reads</option>
-            <option value="Uniq">Unique only</option>
-        </param>
-        <param name="strand" type="select" label="Strand">
-            <!-- <option value="Unstranded" selected="true">Unstranded</option> -->
-            <option value="Plus">Plus</option>
-            <option value="Minus">Minus</option>
         </param>
         <param name="name" type="text" value="" size="40" optional="true" label="Analysis Name" 
                help="Letters and numbers only [optional]">
@@ -36,35 +30,38 @@
         </param>
     </inputs>
     <outputs>
-        <data name="signalBw" format="bigWig" 
-              label="Signal ${readFilter} ${strand} ${name}Rep${repNo} from $bamInput.name" />
+        <data format="txt" name="geneResults"
+              label="Gene quantification ${name}Rep${repNo}" />
+        <data format="txt" name="transcriptResults"
+              label="Transcript quantification ${name}Rep${repNo}" />
     </outputs>
     <help>
 .. class:: infomark
 
-   Aligns high-throughput-sequencing reads to the reference genome using 'STAR'. 
+   Quantification of known transcripts found in the GENCODE annotation, performed by 'RSEM'. 
    An *ENCODE3 Analysis Pipeline* involves multiple steps and dataset replicates, of which this
    is one. Use *EAP workflows* to ensure that all analysis steps are performed in the proper
    sequence.
 
 **Inputs:**
-    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  Currently
-    only the GRCh37/hg19 reference is supported.  Note that some steps are only appropriate
-    for some experiment types.
+    All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
+    Currently only the GRCh37/hg19 reference genome is supported. Note that some steps are 
+    only appropriate for some experiment types.
     
-    The **Alignments file** is expected to be the generated output from a previous 
-    *EAP fastQ alignment* step.  
+    All ENCODE long RNA-seq experiments are expected to include the ERCC/NIST/Ambion **Spike-In** 
+    control set.  Spike-ins provide a method of normalization across experiments.
+    
+    The **Annotation bam** is the file of reads aligned to the gencode annotation.  This should 
+    not be confused with its companion "genome bam: which contains alignments tothe whole genome.
 
-    The **Alignments Evaluation** file in json format is expected to be the generated output from
-    a previous *EAP bam evaluation* step.  
-
+    The **Genome bam Evaluation** file is required by this analysis step.  This evaluation file is 
+    in json format generated from a previous *EAP bam evaluation* step.  NOTE that the 
+    evaluation is of the companion "Genome bam" file and not the **Annotation bam** file 
+    that is the major input to this step. 
+    
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
     replicate number is not incremented then repeated steps within the same named analysis will 
     overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
-    
-    The **Read Filter** allows excluding reads mapped to multiple locations in the signal.
-    
-    Set the **Strand** to ensure that signals reflect the strand reads were aligned to.
     
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 
@@ -73,8 +70,12 @@
     can share the same named analysis, but two separate users cannot.
     
 **Outputs:**
-    This step is expected to produce a single file: **Signal** covering All or Uniquely mapped 
-    reads on the Plus or Minus strand.
+    This step is expected to produce two files.  The results should reflect a gender neutral 
+    annotation with ERCC spike-ins.  In other words, a female bio-sample run through the 
+    long RNA-seq analysis will contain chrY gene results but they will be zero.  The two files are:
+    
+    - **Gene quantification** is a tab delimited quanitfication file, one line per gene.
+    - **Transcript quantification** is a tab delimited quanitfication file, one line per transcript.
 
     The **log** of this single step can be seen under *view details* stdout.
 

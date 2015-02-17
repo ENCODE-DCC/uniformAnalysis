@@ -1,0 +1,64 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+# Check command line and provide usage and version information
+if [ $# -ne 7 ]; then 
+#echo "usage v1: eap_pre_rsem_index genomeRef.fa spikeIn.fa annotation.gtf tRNA.gtf resemRefDir \\"
+echo "          rsemIndexPrefix outIndex.tgz"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Expected versions:
+# package(tool): uniformAnalysis(eap_pre_rsem_index) [version: v1.0(v1)]
+# package(tool): STAR(GTF.awk) [version: 2.3.1z12]
+# package(tool): RSEM(rsem-prepare-reference) [version: v1.2.15]
+# tool: bowtie2 [version: 2.1.0]
+
+# Label parameters and copying input(s) to local tmp dir
+genomeRefFa=$1            # INPUT: Full path to genome reference in fa format (e.g. female.hg19.fa)
+spikeInFa=$2              # INPUT: Full path to spike-in to be included in fa format (e.g. ERCC.fa)
+annotationGtf=$3          # INPUT: Full path to gene/transcript annotation (e.g. gencode.v19.gtf)
+tRnaGtf=$4                # INPUT: Full path to tRNA annotation (e.g. gencode.v19.tRNAs.gtf)
+rsemRefDir=$5             # Directory to contain RSEM index on genome,spike-in grouped by prefix
+rsemIndexPrefix=$6        # Prefix to be applied to all genome index files (just like RSEM wants)
+outRsemIndexTgz=$7        # OUTPUT: archive of genome index files that may be accessioned
+combinedGtf=${rsemRefDir}/${rsemIndexPrefix}-anno-tRNA-spikeIn.gtf
+
+# Make target dir and build index files
+mkdir -p ${rsemRefDir}
+GTF.awk ${annotationGtf} ${tRnaGtf} ${spikeInFa} > ${combinedGtf}
+
+${EAP_TOOLS_DIR}/rsem/rsem-prepare-reference --no-polyA --gtf ${combinedGtf} \
+                                       ${genomeRefFa},${spikeInFa} ${rsemRefDir}/${rsemIndexPrefix} 
+
+# Attempt to make bamCommentLines.txt, which should be reviewed. NOTE tabs handled by assignment.
+refComment="@CO\tREFID:$(basename ${genomeRefFa%.*})"
+annotationComment="@CO\tANNID:$(basename ${annotationGtf})"
+spikeId=`echo ${spikeInFa} | cut -d . -f 2`
+spikeInComment="@CO\tSPIKEID:${spikeId}"
+echo -e ${refComment} > ${rsemIndexPrefix}_bamCommentLines.txt
+echo -e ${annotationComment} >> ${rsemIndexPrefix}_bamCommentLines.txt
+echo -e ${spikeInComment} >> ${rsemIndexPrefix}_bamCommentLines.txt
+
+# TODO: rsem may expect single ${rsemIndexPrefix}.fa containing genome and spike-in
+#       If so, this is generated on first run of RSEM alignment and should be move into place 
+# rsem-build-read-index 32 1 0 rsemOut.temp/rsemOut_alignable_1.fq rsemOut.temp/rsemOut_alignable_2.fq
+# Build Index rsemOut.temp/rsemOut_alignable_1.fq is Done!
+
+# tar up index set for accessioning
+pushd ${rsemRefDir}
+tar -czf rsemIndex.tgz ${rsemIndexPrefix}*
+popd
+
+# deliver results:
+mv rsemIndex.tgz ${outRsemIndexTgz}
+
+# Command lines to run at UCSC:
+# gencode.v19/ERCC:
+# eap_pre_rsem_index ${EAP_REF_DIR}/hg19/male.hg19.fa \
+#                   ${EAP_REF_DIR}/hg19/rnaSpikeIns.ENCFF001RTP.fasta \
+#                  ${EAP_REF_DIR}/hg19/gencode.v19.annotation.gtf \
+#                 ${EAP_REF_DIR}/hg19/gencode.v19.tRNAs.gtf \
+#                ${EAP_REF_DIR}/hg19/rsemData rsemIndex \
+#               ${EAP_REF_DIR}/hg19/rsemData/rsemIndex_hg19M_ERCC_gencodeV19_tRNAs.tgz

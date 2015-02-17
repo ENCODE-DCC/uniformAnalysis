@@ -3,41 +3,82 @@
 # Remove -x for cleaner usage message
 
 # Check command line and provide usage and version information
-if [ $# -ne 5 ]; then 
-echo "usage v1: eap_run_star_long_pe star-genomeDir libraryId read1.fq read2.fq out.bam"
+if [ $# -ne 12 ]; then 
+echo "usage v2: eap_run_star_long_pe starRefIndexDir chromFile libraryId read1.fq.gz read2.fq.gz \\"
+echo "          outGenome.bam outAnnotation.bam \\"
+echo "          outAllMinus.bw outAllPlus.bw outUniqMinus.bw outUniqPlus.bw outStats.txt"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
-# Copy reads to local tmp file since will be making several passes
-cp $3 read1.fq.gz
-cp $4 read2.fq.gz
+# Expected versions:
+# package(tool): uniformAnalysis(eap_run_star_long_pe) [version: v1.0(v2)]
+# package(tool): STAR [version: 2.3.1z10(2.3.1z10_r456)]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): ucscUtils(bedGraphToBigWig) [version: v293(v4)]
 
-# samtools command, library and COfile will be folded into bam header
-samtoolsCommand="samtools view -buS - | samtools sort -m10G - sorted"
-libraryId="@CO\tLIBID:$2"
-echo -e $libraryId > COfile.txt
-cat $1/COfile.txt >> COfile.txt
+# Label parameters and copying input(s) to local tmp dir
+starRefIndexDir=$1     # Directory containing STAR generated index on genome and spike-in
+chromFile=$2           # Chrom info file for the genome and gender
+libraryId=$3           # Accession ID (or other identifier) of bio-sample used to generate fastq(s)
+cp $4 read1.fq.gz      # INPUT: gzipped fastq of read1 of paired-end reads
+cp $5 read2.fq.gz      # INPUT: gzipped fastq of read2 of paired-end reads
+outGenomeBam=$6        # OUTPUT: reads aligned to whole genome by STAR (*.bai is also generated)
+outAnnotationBam=$7    # OUTPUT: reads aligned to gencode annotation by STAR
+outAllMinusBw=$8       # OUTPUT: bigWig signal of unique and multi-mapped minus-strand reads
+outAllPlusBw=$9        # OUTPUT: bigWig signal of unique and multi-mapped plus-strand reads
+outUniqMinusBw=${10}   # OUTPUT: bigWig signal of uniquely mapped minus-strand reads
+outUniqPlusBw=${11}    # OUTPUT: bigWig signal of uniquely mapped plus-strand reads
+outStats=${12}         # OUTPUT: useful statistics compiled by STAR
+
+# library and COfile will be folded into bam header
+libraryComment="@CO\tLIBID:${libraryId}"
+echo -e ${libraryComment} > COfile.txt
+cat ${starRefIndexDir}/COfile.txt >> COfile.txt
 
 # Note: in order to run on cluster, using:
 # - STAR symlinked to STARstatic, 
 # - --genomeLoad NoSharedMemory (instead of LoadAndRemove) 
 # - 32g ram, 12 cpus.
 
-# Using $1 as an reference genome, align reads ($2 and $3)
-STAR --genomeDir $1 --readFilesIn read1.fq.gz read2.fq.gz                           \
-     --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory             \
-     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1       \
-     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                     \
-     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000            \
-     --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD VN:1.4 SO:coordinate      \
-     --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:VN:0.1.19-96b5f2294a \
-     --outSAMunmapped Within --outFilterType BySJout --outStd SAM > star.sam
-     
-samtools view -buS star.sam > star.bam
-samtools sort -m10G star.bam sorted
+# Run star for pair-end and stranded reads.
+STAR --genomeDir ${starRefIndexDir} --readFilesIn read1.fq.gz read2.fq.gz        \
+     --readFilesCommand zcat --runThreadN 12 --genomeLoad NoSharedMemory          \
+     --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1    \
+     --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04                  \
+     --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000         \
+     --outSAMheaderCommentFile COfile.txt --outSAMheaderHD @HD VN:1.4 SO:coordinate   \
+     --outSAMunmapped Within --outFilterType BySJout --outSAMattributes NH HI AS NM MD \
+     --outWigType bedGraph --outWigStrand Stranded                                      \
+     --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM
 
-#rm read1.fq.gz read2.fq.gz star.sam star.bam
-mv sorted.bam $5
+samtools index Aligned.sortedByCoord.out.bam
+# samtools index Aligned.toTranscriptome.out.bam # No need and not sorted so indexing fails
+
+# Convert bedGraph to bigWigs.  Spike-ins must be excluded and piping doesn't work
+grep ^chr Signal.UniqueMultiple.str1.out.bg    > signalAllMinus.bg
+bedGraphToBigWig signalAllMinus.bg ${chromFile}  signalAllMinus.bw
+grep ^chr Signal.UniqueMultiple.str2.out.bg    > signalAllPlus.bg
+bedGraphToBigWig signalAllPlus.bg ${chromFile}   signalAllPlus.bw
+grep ^chr Signal.Unique.str1.out.bg            > signalUniqMinus.bg
+bedGraphToBigWig signalUniqMinus.bg ${chromFile} signalUniqMinus.bw
+grep ^chr Signal.Unique.str2.out.bg            > signalUniqPlus.bg
+bedGraphToBigWig signalUniqPlus.bg ${chromFile}  signalUniqPlus.bw
+
+# remove some larger files:
+rm read1.fq.gz read2.fq.gz
+rm signal*.bg
+#rm Signal.*.bg
+
+# deliver results:
+mv Aligned.sortedByCoord.out.bam ${outGenomeBam}
+mv Aligned.sortedByCoord.out.bam.bai ${outGenomeBam}.bai
+mv Aligned.toTranscriptome.out.bam ${outAnnotationBam}
+# mv Aligned.toTranscriptome.out.bam.bai ${outAnnotationBam}.bai
+mv signalAllMinus.bw ${outAllMinusBw}
+mv signalAllPlus.bw ${outAllPlusBw}
+mv signalUniqMinus.bw ${outUniqMinusBw}
+mv signalUniqPlus.bw ${outUniqPlusBw}
+cp Log.final.out ${outStats}
 
 # make sure star log is recorded.
 cat Log.final.out

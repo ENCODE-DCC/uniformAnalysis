@@ -7,7 +7,7 @@
         #else
              $fastqInput $fastqEval $fastqInput2 $fastqEval2 $bamPaired
         #end if
-        $spike $libId $gender $genome $expType $repNo ${name}U${__user_id__}
+        $libId $gender $genome $expType $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/starAlignE3.py --version</version_command>
     <stdio>
@@ -26,9 +26,8 @@
         <param name="expType" type="select" label="Experiment Type">
             <option value="RNAseq-long" selected="true">long RNA-seq</option>
         </param>
-        <param name="spike" type="select" label="Spike In Control">
+        <param name="spike" type="select" label="Spike-In Control">
             <option value="ERCC" selected="true">ERCC/NIST/Ambion</option>
-            <option value="WSC">Wold single-cell</option>
         </param>
         <param name="libId" type="text" value="" size="40" optional="false" label="Library ID" 
                help="Letters and numbers only [required]">
@@ -61,11 +60,11 @@
     </inputs>
     <outputs>
         <data format="bam" name="bamUnpaired" 
-              label="bam by tophat ${name}Rep${repNo} alignments (unpaired)">
+              label="bam by tophat ${name}Rep${repNo} genome alignments (unpaired)">
             <filter>(runType['singlePaired'] == 'single')</filter>
         </data>
         <data format="bam" name="bamPaired" 
-              label="bam by tophat ${name}Rep${repNo} alignments (paired-end)">
+              label="bam by tophat ${name}Rep${repNo} genome alignments (paired-end)">
             <filter>(runType['singlePaired'] == 'paired')</filter>
         </data>
     </outputs>
@@ -79,12 +78,13 @@
 
 **Inputs:**
     All *Analysis Pipeline* steps require **Genome Assembly** and **Experiment Type**.  
-    Additionally, alignment steps should may also specify a **Gender**.  Currently only
+    Additionally, alignment steps may also specify a **Gender**.  Currently only
     the GRCh37/hg19 reference genome is supported. Note that some steps are only appropriate
     for some experiment types.
     
-    Select the **Spike In** control set used for this experiment.  Spike ins provide a method
-    of normalization across experiments.  Most EAP experiments use the ERCC set.  
+    All ENCODE long RNA-seq experiments are expected to include the ERCC/NIST/Ambion **Spike-In** 
+    control set.  Spike-ins provide a method of normalization across experiments.  Reads for
+    other spike-in sets will be included as unmapped in the result.
     
     Enter the required **Library ID** or a one word identifier for this experiment.  The 
     library ID will be added to the bam file header.  Only letters and numbers are supported. 
@@ -101,8 +101,8 @@
     *EAP fastQ validation* step.
     
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
-    replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results. 
+    replicate number is not incremented then repeated steps within the same named analysis will 
+    overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
     
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 

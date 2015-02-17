@@ -4,18 +4,31 @@
 
 # Check command line and provide usage and version information
 if [ $# -ne 3 ]; then 
-echo "usage v1: eap_run_bam_to_bw_all_plus in.bam chrom.file out.bw"
+echo "usage v1: eap_run_bam_to_bw_all_plus in.bam chromFile outUniqMinus.bw"
 echo "Makes temp files so should be run in a freshly created directory."
 exit -1; fi
 
-# Copy reads and index to local tmp file since will be making several passes
-cp $1 tmp.bam
-cp ${1}.bai tmp.bam.bai
+# Expected versions:
+# package(tool): uniformAnalysis(eap_run_bam_to_bw_all_plus) [version: v1.0(v1)]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): GeorgiScripts(makewigglefromBAM-NH.py) [version: Last modified 09/06/2013]
+# package(tool): python(python2.7) [version: 2.7.6]
+# package(tool): ucscUtils(bedGraphToBigWig) [version: v302(v4)]
 
-# generate plus strand wig file from all mapped reads from bam and using chrom.file ($2)
-python2.7 ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py --- tmp.bam $2 tmpAllMinus.wig -stranded + \
-          -RPM -notitle -fragments second-read-strand
-wigToBigWig tmpAllMinus.wig $2 tmpAllMinus.bw
-rm tmpAllMinus.wig
+# Label parameters and copying input(s) to local tmp dir
+cp $1 tmp.bam            # INPUT: alignment bam
+cp ${1}.bai tmp.bam.bai  # INPUT: alignment bam index
+chromFile=$2             # Chrom info file for the genome and gender
+outAllPlusBw=$3          # OUTPUT: bigWig signal of unique and multi-mapped plus-strand reads
 
-mv tmpAllMinus.bw $3 
+# generate plus strand wig file from all mapped reads from bam
+python2.7 ${EAP_TOOLS_DIR}/makewigglefromBAM-NH.py --- tmp.bam ${chromFile} tmpAllPlus.bg \
+          -stranded + -RPM -notitle -fragments second-read-strand
+bedGraphToBigWig tmpAllPlus.bg ${chromFile} out_all_plus.bw
+
+# remove some larger files:
+rm tmp.bam tmp.bam.bai
+#rm tmpAllPlus.bg
+
+# deliver results:
+mv out_all_plus.bw ${outAllPlusBw} 

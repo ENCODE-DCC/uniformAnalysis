@@ -3,11 +3,9 @@
 # It takes a bam input and generates bigWig signal.
 #
 # Inputs: 1 bam, pre-registered in analysis, keyed as: 'alignment' + suffix + '.bam'
-# Outputs: target signal file, keyed as: 'signal + suffix + readFiler + strand + '.bw'
+# Outputs: target signal file, keyed as: 'signal + suffix + readFilter + strand + '.bw'
 
-import os
 from src.logicalStep import LogicalStep
-from src.wrappers import samtools
 
 class BamToBwStep(LogicalStep):
 
@@ -19,21 +17,22 @@ class BamToBwStep(LogicalStep):
                                                     readFilter.lower() + strand + '_' + suffix)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all set versions
 
-    def writeVersions(self,raFile=None,allLevels=False):
+    def writeVersions(self,raFile=None,allLevels=False,scriptName=None):
         '''Writes versions to to the log or a file.'''
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
-        script = 'eap_run_bam_to_bw_' + self.readFilter.lower() + '_' + self.strand.lower()
         if raFile != None:
-            raFile.add(script, self.getToolVersion(script))
-            self.getToolVersion('samtools')
+            if scriptName != None:
+                raFile.add(scriptName,self.getToolVersion(scriptName))
+            raFile.add('samtools',    self.getToolVersion('samtools'))
             raFile.add('makewigglefromBAM-NH.py', \
-                       self.getToolVersion('makewigglefromBAM-NH.py'))
+                                      self.getToolVersion('makewigglefromBAM-NH.py'))
             raFile.add('python2.7',   self.getToolVersion('python2.7'))
-            raFile.add('wigToBigWig',  self.getToolVersion('wigToBigWig'))
+            raFile.add('wigToBigWig', self.getToolVersion('wigToBigWig'))
             #raFile.add('perl', self.getToolVersion('perl'))
         else:
-            self.getToolVersion(script)
+            if scriptName != None:
+                self.getToolVersion(scriptName)
             self.getToolVersion('samtools')
             self.getToolVersion('makewigglefromBAM-NH.py')
             self.getToolVersion('python2.7')
@@ -82,11 +81,7 @@ class BamToBwStep(LogicalStep):
               tool=toolName, bam=inBam, chroms=chromFile, bwOut=outBw)
             
         self.toolBegins(toolName)
-        self.getToolVersion(toolName)
-        self.getToolVersion('samtools')
-        self.getToolVersion('makewigglefromBAM-NH.py')
-        self.getToolVersion('python2.7')
-        self.getToolVersion('wigToBigWig')
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)

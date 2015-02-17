@@ -1,0 +1,73 @@
+This README contains instructions on setting up a test instance of galaxy as done at UCSC on 
+hgwdev.  There are further steps needed to set up a production version that has a dedicated
+'galaxy' user, mysql database and uses apache web server.  The test version uses the simple 
+DB and web server packaged with galaxy.
+
+A few easy steps to make a test galaxy that will run the ENCODE pipleine methods
+
+1) Download and install galaxy following these instructions:
+    https://wiki.galaxyproject.org/Admin/GetGalaxy
+ using the tarball found here:
+    https://bitbucket.org/galaxy/galaxy-dist/get/tip.tar.gz
+Alternatively, just move /hive/users/tdreszer/galaxy/galaxy-dist to your own location and take 
+ownership.  This will save a lot of steps below.
+   
+2) Get the uniformAnalysys git repository here: 
+    https://github.com/ENCODE-DCC/uniformAnalysis
+
+3) Make sure you have a PYTHON_PATH in your env that covers python2.7 and your uniformAnalysis dir:
+   e.g.
+    PYTHONPATH=/hive/users/tdreszer/galaxy/uniformAnalysis:/Python/lib/python2.7:...
+    
+4) Make sure you have the following env variables set:
+   EAP_REF_DIR=/hive/groups/encode/encode3/encValData
+   EAP_TOOLS_DIR=/hive/groups/encode/encode3/tools
+
+5) Tie the uniformAnalysis repository to your galaxy instance:
+   a) make your own settingsNNN.txt in the uniformAnalysis/src/galaxy/ dir.  Be sure you set
+    tmpDir /hive/users/kate/galaxy/tmp/ # some place relevant to you.
+   Note: the settings file is fine with # comments.
+   Most of the settings in here are no longer used if you have EAP_TOOLS_DIR and EAP_REF_DIR set.
+   b) Modify in uniformAnalysis/src/galaxy/makefile to cover your settings.txt and galaxy location.  
+   Currently it supports locations based upon the GEHOME env variable, and alpha/install.
+   c) Make the following subdir: galaxy-dist/tools/encode
+   d) Make in uniformAnalysis/src/galaxy/
+
+6)  Modify the galaxy-dist/tool_conf.xml dir to enclude an encode section:
+  <section name="ENCODE Tools" id="EncodeTools">
+    <tool file="encode/gencode_partition.xml" />
+    <tool file="encode/random_intervals.xml" />
+    <tool file="encode/metadata.xml" />
+    <tool file="encode/fastqValidateE3.xml" />
+    <tool file="encode/bwaAlignE3.xml" />
+    <tool file="encode/starAlignE3.xml" />
+    <tool file="encode/tophatAlignE3.xml" />
+    <tool file="encode/bamValidateE3.xml" />
+    <tool file="encode/rsemQuantifyE3.xml" />
+    <tool file="encode/mergeBamsE3.xml" />
+    <tool file="encode/bamToBigWigE3.xml" />
+    <tool file="encode/hotspotE3.xml" />
+    <tool file="encode/macsE3.xml" />
+  </section>
+  You can also comment out or remove many of the other tools you don't care about.
+
+7) Copy this file:
+   cp /hive/users/tdreszer/galaxy/galaxy-dist/universe_wsgi.ini galaxy-dist/universe_wsgi.ini
+Alternatively make the changes seen by this command:
+   diff universe_wsgi.ini.sample /hive/users/tdreszer/galaxy/galaxy-dist/universe_wsgi.ini
+There should only be 5 changes.  The production version has additional changes.
+
+8) copy and modify as you please:
+   cp /hive/users/tdreszer/galaxy/galaxy-dist/static/welcome.html galaxy-dist/static/welcome.html
+   
+9) copy this file 
+   cp /hive/users/tdreszer/galaxy/galaxy-dist/galDaemon galaxy-dist/galDaemon
+
+10) run 
+    galaxy-dist/galDaemon start
+   to start your galaxy.
+   Note: you will need help from cluster-admin if there is to be more than one instance of galaxy 
+   running on hgwdev.  Otherwise, look for it here: 
+    http://hgwdev.cse.ucsc.edu:8080
+
+

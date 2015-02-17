@@ -1,7 +1,7 @@
 <tool id="bamEvaluateE3" name="EAP bam evaluation" version="1.0">
     <description> using UCSC and phantom tools.</description>
     <command interpreter="python">
-        bamValidateE3.py $bamInput $bamSample $bamEval
+        bamValidateE3.py $bamInput $bamEval
         $genome $expType $repNo ${name}U${__user_id__}
     </command>
     <version_command>python ../../../../tools/encode/bamValidateE3.py --version</version_command>
@@ -27,8 +27,6 @@
         </param>
     </inputs>
     <outputs>
-        <data format="bam" name="bamSample"  
-              label="bam sample ${name}Rep${repNo} from $bamInput.name" />
         <data format="txt" name="bamEval"
               label="bam Evaluation (json) ${name}Rep${repNo} of $bamInput.name" />
     </outputs>
@@ -49,8 +47,8 @@
     *EAP fastQ alignment* step.  
 
     The **Replicate** number allows combining multiple replicates into a single analysis.  If the 
-    replicate number is not incremented then repeated steps will overwrite previous replicate 
-    results.  Merged replicates should have a 0 (zero) replicate number. 
+    replicate number is not incremented then repeated steps within the same named analysis will 
+    overwrite previous step results.  Merged replicates should have a 0 (zero) replicate number. 
 
     The optional **Analysis Name** field will be used to tie multiple steps together into 
     one analysis, ensuring related files are well named and a single log records all processing 
@@ -59,10 +57,9 @@
     can share the same named analysis, but two separate users cannot.
 
 **Outputs:**
-    This step is expected to produce two files:
-    
-    - **bam sample** is a randomized sample of the bam alignments file that will be evaluated. It will also be input for later processing in the ENCODE 3 pipeline.
-    - **bam Evaluation** (json) including summary statistics from 'phantom-tools' and UCSC. This file is used as input for later ENCODE3 Analysis Pipeline steps.
+    This step is expected to produce a single file: **bam Evaluation** (json) including summary 
+    statistics from 'phantom-tools' and UCSC. This file is used as input for later 
+    ENCODE3 Analysis Pipeline steps.
     
     The **log** of this single step can be seen under *view details* stdout.
     

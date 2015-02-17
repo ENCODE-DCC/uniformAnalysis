@@ -124,6 +124,8 @@ class LogicalStep(Target):
         self._status = 'Fail'
         stepEnded = datetime.now()
         stepTook = str(stepEnded - self._stepBegan + timedelta(seconds=0.5)).split('.')[0]
+        if e.message != None and e.message != "":
+            self.log.out(">>> FAILURE: '" + e.message)
         self.log.out(">>> Failure during '" + self._stepName + ': ' + str(e) + "' [" + \
                      stepEnded.strftime("%Y-%m-%d %X (%A)") + ' duration:' + stepTook + "]\n")
         if logTrace:

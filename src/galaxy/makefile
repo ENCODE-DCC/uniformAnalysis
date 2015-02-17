@@ -2,7 +2,7 @@
 
 FILE_ROOTS=fastqValidateE3 bamValidateE3 \
              bwaAlignE3 starAlignE3 tophatAlignE3 \
-             hotspotE3 macsE3 \
+             hotspotE3 macsE3 rsemQuantifyE3 \
              mergeBamsE3 bamToBigWigE3
 
 alpha:

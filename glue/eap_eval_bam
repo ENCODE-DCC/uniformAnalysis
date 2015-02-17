@@ -1,0 +1,46 @@
+#!/bin/bash -ex
+# Run bash with -e exit on first error, -x add +command stream to sterr.
+# Remove -x for cleaner usage message
+
+### Experimental: not sure this should be a "step"
+
+# Check command line and provide usage and version information
+if [ $# -ne 4 ]; then 
+echo "usage v1: eap_eval_bam in.bam outSample.bam outBamStats.ra outStrand.corr"
+echo "Makes temp files so should be run in a freshly created directory."
+exit -1; fi
+
+# Expected versions:
+# package(tool): uniformAnalysis(eap_run_bam_evaluate) [version: v1.0(v1)]
+# package(tool): ucscUtils(edwBamStats) [version: v293(unversioned)]
+# tool: samtools [version: 0.1.19-96b5f2294a]
+# package(tool): R(Rscript) [version: 2.15.2]
+# package(tool): phantomTools(run_spp.R) [version: 2.0]
+
+# Label parameters and copying input(s) to local tmp dir
+cp $1 tmp.bam            # INPUT: alignment bam
+cp ${1}.bai tmp.bam.bai  # INPUT: alignment bam index
+outStarGenomeBam=$2      # OUTPUT: 5 million read sampling of input bam (*.bai is also generated)
+outBamStatsRa=$3         # OUTPUT: Some statistics derived from the bam sampling in RA format 
+outStrandCorr=$4         # OUTPUT: Strand correlation statistics derived from sampled bam
+
+### # Read header to determine aligner and start someStats.ra
+### samtools view -H tmp.bam | grep \@PG > headerPg.txt
+### echo alignedBy `grep -o "ID\:\S*" headerPg.txt | cut -b 4- | grep -Eio "bwa|STAR|TopHat|RSEM"` > someStats.ra
+### ### Would be easier with an if in case aligner not found
+
+# bam stats
+edwBamStats tmp.bam outBamStats.ra -sampleBam=sample.bam -sampleBamSize=5000000
+samtools index sample.bam
+
+# phantom tools strand correlation
+eap_run_phantom_peak_spp sample.bam strandCorr.tab
+
+# remove some larger files:
+rm tmp.bam tmp.bam.bai
+
+# deliver results:
+mv sample.bam ${outStarGenomeBam} 
+mv sample.bam.bai ${outStarGenomeBam}.bai
+mv outBamStats.ra ${outBamStatsRa}
+mv strandCorr.tab ${outStrandCorr}

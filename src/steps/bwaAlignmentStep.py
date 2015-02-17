@@ -21,14 +21,18 @@ class BwaAlignmentStep(LogicalStep):
                                                                                    self.replicate)
         self._stepVersion = self._stepVersion + 0  # Increment allows changing all step versions
 
-    def writeVersions(self,raFile=None,allLevels=False):
+    def writeVersions(self,raFile=None,allLevels=False,scriptName=None):
         '''Writes versions to to the log or a file.'''
         if allLevels:
             LogicalStep.writeVersions(self, raFile)
         if raFile != None:
+            if scriptName != None:
+                raFile.add(scriptName, self.getToolVersion(scriptName))
             raFile.add('bwa', self.getToolVersion('bwa'))
             raFile.add('samtools', self.getToolVersion('samtools'))
         else:
+            if scriptName != None:
+                self.getToolVersion(scriptName)
             self.getToolVersion('bwa')
             self.getToolVersion('samtools')
         
@@ -80,9 +84,7 @@ class BwaAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_bwa_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('bwa',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -97,9 +99,7 @@ class BwaAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_bwa_pe'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('bwa',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -114,10 +114,7 @@ class BwaAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_slx_bwa_se'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('bwa',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
-        self.getToolVersion('edwSolexaToSangerFastq',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
@@ -132,10 +129,7 @@ class BwaAlignmentStep(LogicalStep):
               
         toolName = 'eap_run_slx_bwa_pe'
         self.toolBegins(toolName)
-        self.getToolVersion(toolName,logOut=True)
-        self.getToolVersion('bwa',logOut=True)
-        self.getToolVersion('samtools',logOut=True)
-        self.getToolVersion('edwSolexaToSangerFastq',logOut=True)
+        self.writeVersions(scriptName=toolName)
         
         self.err = self.ana.runCmd(cmd, log=self.log)
         self.toolEnds(toolName,self.err)
